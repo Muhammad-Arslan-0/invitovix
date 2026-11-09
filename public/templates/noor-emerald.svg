@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#114232"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#C99A3B" stroke-width="1.5" stroke-opacity="0.7"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#FAF6EE"/>
+  <path d="M200 66C140 66 92 114 92 174V446H308V174C308 114 260 66 200 66Z" fill="#FFFDF8" stroke="#C99A3B" stroke-width="1.5"/>
+  <circle cx="200" cy="148" r="28" fill="#114232" fill-opacity="0.08" stroke="#C99A3B" stroke-width="1.2"/>
+  <path d="M188 148C194 138 206 138 212 148C206 158 194 158 188 148Z" fill="#C99A3B"/>
+  <text x="200" y="232" text-anchor="middle" fill="#114232" font-family="Georgia, serif" font-size="26" letter-spacing="2">AMINA &amp; ZAYAN</text>
+  <line x1="145" y1="252" x2="255" y2="252" stroke="#C99A3B" stroke-width="1"/>
+  <text x="200" y="282" text-anchor="middle" fill="#5E6B64" font-family="Georgia, serif" font-size="13" letter-spacing="3">ROYAL NIKAH</text>
+  <circle cx="200" cy="378" r="34" fill="#B3842B"/>
+  <circle cx="200" cy="378" r="27" stroke="#FAF6EE" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#FAF6EE" font-family="Georgia, serif" font-size="14" font-weight="bold">A&amp;Z</text>
+</svg>
+

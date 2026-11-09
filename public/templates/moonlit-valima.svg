@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#0E1324"/>
+  <rect x="24" y="24" width="352" height="472" rx="18" fill="#161D35" stroke="#E5C185" stroke-opacity="0.45" stroke-width="1.5"/>
+  <circle cx="90" cy="95" r="2" fill="#F3D9B1"/>
+  <circle cx="310" cy="110" r="2.5" fill="#F3D9B1"/>
+  <circle cx="275" cy="75" r="1.5" fill="#F3D9B1"/>
+  <circle cx="135" cy="135" r="1.5" fill="#F3D9B1"/>
+  <path d="M200 84C144 84 100 128 100 184V436H300V184C300 128 256 84 200 84Z" stroke="#E5C185" stroke-width="1.2"/>
+  <path d="M210 138A22 22 0 1 1 186 164A18 18 0 1 0 210 138Z" fill="#E5C185"/>
+  <text x="200" y="232" text-anchor="middle" fill="#F7F3EA" font-family="Georgia, serif" font-size="26" letter-spacing="1.5">HAMZA &amp; SANA</text>
+  <line x1="150" y1="252" x2="250" y2="252" stroke="#E5C185" stroke-opacity="0.7" stroke-width="1"/>
+  <text x="200" y="280" text-anchor="middle" fill="#A8B2CE" font-family="sans-serif" font-size="12" letter-spacing="3">VALIMA RECEPTION</text>
+  <circle cx="200" cy="374" r="32" fill="#C99A4E"/>
+  <circle cx="200" cy="374" r="25" stroke="#0E1324" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="200" y="380" text-anchor="middle" fill="#0E1324" font-family="Georgia, serif" font-size="14" font-weight="bold">H&amp;S</text>
+</svg>
+

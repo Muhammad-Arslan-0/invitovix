@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#FFF7F2"/>
+  <rect x="24" y="24" width="352" height="472" rx="18" fill="#FFFFFF" stroke="#C94B38" stroke-width="1.5" stroke-opacity="0.3"/>
+  <circle cx="92" cy="110" r="14" fill="#F29E74" fill-opacity="0.5"/>
+  <circle cx="315" cy="145" r="10" fill="#E8B931" fill-opacity="0.65"/>
+  <rect x="96" y="340" width="22" height="10" rx="5" transform="rotate(-25 96 340)" fill="#C94B38" fill-opacity="0.7"/>
+  <rect x="285" y="320" width="24" height="10" rx="5" transform="rotate(20 285 320)" fill="#F29E74" fill-opacity="0.8"/>
+  <text x="200" y="185" text-anchor="middle" fill="#755F59" font-family="sans-serif" font-size="12" letter-spacing="3">CELEBRATING</text>
+  <text x="200" y="232" text-anchor="middle" fill="#C94B38" font-family="sans-serif" font-size="30" font-weight="bold">MAYA TURNS 30</text>
+  <text x="200" y="266" text-anchor="middle" fill="#755F59" font-family="sans-serif" font-size="13">ROOFTOP DINNER &amp; VINYL NIGHT</text>
+  <circle cx="200" cy="368" r="34" fill="#E8B931"/>
+  <text x="200" y="376" text-anchor="middle" fill="#231917" font-family="sans-serif" font-size="18" font-weight="bold">30</text>
+</svg>
+
