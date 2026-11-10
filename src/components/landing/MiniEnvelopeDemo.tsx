@@ -2,83 +2,189 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Sparkles, Volume2 } from "lucide-react";
 import { STARTER_TEMPLATES } from "@/lib/templates/presets";
+import {
+  getDisplayFontFamily,
+  getScriptFontFamily,
+} from "@/lib/utils/fonts";
 import { WaxSeal } from "@/components/invitation/WaxSeal";
 
-export function MiniEnvelopeDemo() {
+interface MiniEnvelopeDemoProps {
+  selectedIdx?: number;
+  onSelectIdx?: (idx: number) => void;
+}
+
+export function MiniEnvelopeDemo({
+  selectedIdx: controlledIdx,
+  onSelectIdx,
+}: MiniEnvelopeDemoProps) {
+  const [internalIdx, setInternalIdx] = useState(0);
   const [unsealed, setUnsealed] = useState(false);
-  const template = STARTER_TEMPLATES[0].default_config;
+
+  const activeIdx = controlledIdx ?? internalIdx;
+  const setActiveIdx = (idx: number) => {
+    setUnsealed(false);
+    setInternalIdx(idx);
+    onSelectIdx?.(idx);
+  };
+
+  const templateRecord = STARTER_TEMPLATES[activeIdx] ?? STARTER_TEMPLATES[0];
+  const cfg = templateRecord.default_config;
+  const { palette, typography } = cfg.theme;
 
   return (
-    <div className="relative mx-auto w-full max-w-[360px]">
-      <motion.div
-        animate={unsealed ? { y: -14 } : { y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-3xl border border-amber-300/60 bg-[#114232] p-6 text-center shadow-2xl relative overflow-hidden"
-      >
-        <div className="absolute inset-3 rounded-2xl border border-amber-400/30 pointer-events-none" />
-
-        <div className="relative z-10 rounded-2xl bg-[#FAF6EE] px-5 py-6 text-[#17261F] shadow-inner">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-[#5E6B64]">
-            Together with their families
-          </p>
-          <h3
-            className="mt-2 text-2xl font-semibold text-[#114232]"
-            style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
-          >
-            Amina &amp; Zayan
-          </h3>
-          <p
-            className="mt-1 text-lg text-[#B3842B]"
-            style={{ fontFamily: "var(--font-great-vibes), cursive" }}
-          >
-            February 14, 2027
-          </p>
-
-          {unsealed && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 pt-3 border-t border-amber-900/15 space-y-2"
+    <div className="relative mx-auto w-full max-w-[376px]">
+      {/* Theme Swatch Switcher */}
+      <div className="mb-4 flex items-center justify-center gap-1.5 rounded-full border border-stone-200/80 bg-white/85 backdrop-blur-md p-1 shadow-xs">
+        {STARTER_TEMPLATES.map((tpl, idx) => {
+          const active = idx === activeIdx;
+          return (
+            <button
+              key={tpl.id}
+              type="button"
+              onClick={() => setActiveIdx(idx)}
+              className={`relative rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition cursor-pointer ${
+                active ? "text-white" : "text-stone-600 hover:text-stone-900"
+              }`}
             >
-              <p className="text-xs text-[#5E6B64]">
-                The Serai Courtyard · Lahore
-              </p>
-              <Link
-                href="/e/demo"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#114232] px-4 py-1.5 text-[11px] font-medium text-amber-100 hover:bg-[#175440] transition"
-              >
-                <span>Open Full Experience</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </motion.div>
-          )}
-        </div>
+              {active && (
+                <motion.span
+                  layoutId="hero-theme-pill"
+                  transition={{ type: "spring", bounce: 0.25, duration: 0.4 }}
+                  className="absolute inset-0 rounded-full bg-stone-900 shadow-xs"
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <span
+                  className="w-2 h-2 rounded-full inline-block"
+                  style={{
+                    backgroundColor: tpl.default_config.envelope.waxSeal.color,
+                  }}
+                />
+                <span>{tpl.category}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="relative z-20 -mt-7 flex flex-col items-center">
-          <WaxSeal
-            waxSeal={template.envelope.waxSeal}
-            onClick={() => setUnsealed((prev) => !prev)}
-            size="sm"
+      {/* Ambient radial glow matching active theme */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-6 -z-10 rounded-full blur-2xl opacity-45 transition-colors duration-500"
+        style={{
+          background: `radial-gradient(circle, ${palette.accent}55 0%, transparent 70%)`,
+        }}
+      />
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={templateRecord.id}
+          initial={{ opacity: 0.5, scale: 0.97, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: unsealed ? -10 : 0 }}
+          exit={{ opacity: 0.4, scale: 0.97 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            backgroundColor: cfg.envelope.envelopeColor,
+            borderColor: `${cfg.envelope.linerColor}66`,
+          }}
+          className="rounded-3xl border p-6 text-center shadow-[0_28px_65px_-16px_rgba(24,20,15,0.45)] relative overflow-hidden"
+        >
+          <div
+            className="absolute inset-3 rounded-2xl border opacity-45 pointer-events-none"
+            style={{ borderColor: cfg.envelope.linerColor }}
           />
-          <span className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-amber-100/90">
-            {unsealed ? (
-              <>
-                <Volume2 className="w-3 h-3 text-amber-300" />
-                <span>Tap seal to reseal or launch full demo</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3 h-3 text-amber-300" />
-                <span>Tap wax seal to preview reveal</span>
-              </>
+
+          {/* Inner Card Slip */}
+          <motion.div
+            animate={unsealed ? { y: -8, scale: 1.02 } : { y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              backgroundColor: palette.surface,
+              color: palette.text,
+              borderColor: `${palette.accent}44`,
+            }}
+            className="relative z-10 rounded-2xl border px-5 py-6 shadow-inner"
+          >
+            <p
+              className="text-[10px] uppercase tracking-[0.22em]"
+              style={{ color: palette.mutedText }}
+            >
+              {cfg.content.hostLine}
+            </p>
+            <h3
+              className="mt-2 text-2xl font-semibold leading-tight"
+              style={{
+                color: palette.primary,
+                fontFamily: getDisplayFontFamily(typography.displayFont),
+              }}
+            >
+              {cfg.content.headline}
+            </h3>
+            <p
+              className="mt-1 text-base"
+              style={{
+                color: palette.accent,
+                fontFamily: getScriptFontFamily(typography.scriptFont),
+              }}
+            >
+              {cfg.audio.trackTitle}
+            </p>
+
+            {unsealed && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 pt-3 border-t space-y-2.5"
+                style={{ borderColor: `${palette.accent}33` }}
+              >
+                <p
+                  className="text-xs line-clamp-2"
+                  style={{ color: palette.mutedText }}
+                >
+                  {cfg.content.subtitle}
+                </p>
+                <Link
+                  href="/e/demo"
+                  style={{
+                    backgroundColor: cfg.envelope.envelopeColor,
+                    color: "#FAF6EE",
+                    borderColor: `${cfg.envelope.linerColor}55`,
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-[11px] font-medium hover:opacity-90 transition"
+                >
+                  <span>Open Full Experience</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </motion.div>
             )}
-          </span>
-        </div>
-      </motion.div>
+          </motion.div>
+
+          {/* Embossed Scalloped Wax Seal */}
+          <div className="relative z-20 -mt-7 flex flex-col items-center">
+            <WaxSeal
+              waxSeal={cfg.envelope.waxSeal}
+              onClick={() => setUnsealed((prev) => !prev)}
+              size="sm"
+            />
+            <span className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-amber-50/90">
+              {unsealed ? (
+                <>
+                  <Volume2 className="w-3 h-3 text-amber-300" />
+                  <span>Tap seal to reseal or explore /e/demo</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span>Tap wax seal to preview reveal</span>
+                </>
+              )}
+            </span>
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
-

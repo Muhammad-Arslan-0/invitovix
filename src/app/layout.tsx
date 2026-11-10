@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,6 +35,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-screen bg-[#fcfaf7] text-stone-900 antialiased selection:bg-amber-200 selection:text-stone-950"
       >
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         {children}
       </body>
     </html>

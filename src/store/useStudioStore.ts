@@ -80,7 +80,7 @@ const initialMeta: StudioEventMeta = {
   slug: "",
   title: "",
   event_type: "wedding",
-  event_date: new Date().toISOString(),
+  event_date: "2027-02-14T18:30:00.000Z",
   venue_name: "",
   venue_address: "",
   venue_map_url: "",

@@ -128,13 +128,19 @@ export function StoryCountdownScene({
                 { label: "Hours", value: remaining.hours },
                 { label: "Mins", value: remaining.minutes },
                 { label: "Secs", value: remaining.seconds },
-              ].map((unit) => (
-                <div
+              ].map((unit, idx) => (
+                <motion.div
                   key={unit.label}
-                  className="rounded-2xl border py-3.5 px-2 shadow-sm"
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: idx * 0.06 }}
+                  whileHover={{ y: -2 }}
+                  className="rounded-2xl border py-3.5 px-2 shadow-sm backdrop-blur-xs"
                   style={{
                     backgroundColor: theme.palette.surface,
-                    borderColor: `${theme.palette.accent}40`,
+                    borderColor: `${theme.palette.accent}48`,
+                    boxShadow: `0 10px 25px -12px ${theme.palette.accent}44`,
                   }}
                 >
                   <div
@@ -154,7 +160,7 @@ export function StoryCountdownScene({
                   >
                     {unit.label}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}

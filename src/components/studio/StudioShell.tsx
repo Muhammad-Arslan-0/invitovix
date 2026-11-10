@@ -12,6 +12,7 @@ import { ThemePanel } from "./panels/ThemePanel";
 import { EnvelopePanel } from "./panels/EnvelopePanel";
 import { ContentPanel } from "./panels/ContentPanel";
 import { MotionAudioPanel } from "./panels/MotionAudioPanel";
+import { LuxLoader } from "@/components/ui/LuxLoader";
 
 interface StudioShellProps {
   initialEvent: EventRecord;
@@ -86,6 +87,17 @@ export function StudioShell({
 
   async function handleTogglePublish() {
     await persistEvent(!eventMeta.is_published);
+  }
+
+  if (eventMeta.id !== initialEvent.id) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[#fcfaf7] luxury-editorial-bg">
+        <LuxLoader
+          title="Opening Creator Studio"
+          subtitle={`Loading "${initialEvent.title}" canvas and motion layers...`}
+        />
+      </div>
+    );
   }
 
   return (

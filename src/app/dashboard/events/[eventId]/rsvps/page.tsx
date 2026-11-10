@@ -23,21 +23,22 @@ export default async function EventRsvpsPage({ params }: EventRsvpsPageProps) {
     redirect("/login");
   }
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id, title, slug, user_id")
-    .eq("id", eventId)
-    .maybeSingle();
+  const [{ data: event }, { data: rsvps }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, title, slug, user_id")
+      .eq("id", eventId)
+      .maybeSingle(),
+    supabase
+      .from("rsvps")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (!event || event.user_id !== user.id) {
     notFound();
   }
-
-  const { data: rsvps } = await supabase
-    .from("rsvps")
-    .select("*")
-    .eq("event_id", event.id)
-    .order("created_at", { ascending: false });
 
   return (
     <RsvpTable
@@ -48,4 +49,3 @@ export default async function EventRsvpsPage({ params }: EventRsvpsPageProps) {
     />
   );
 }
-

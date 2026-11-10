@@ -63,6 +63,55 @@ body {
     radial-gradient(circle at 80% 85%, rgba(212, 175, 55, 0.06), transparent 50%);
 }
 
+/* Atelier dot-grid backdrop for Studio Canvas & hero ambience */
+.drafting-grid {
+  background-color: #f4f1ea;
+  background-image: radial-gradient(rgba(28, 25, 23, 0.09) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.luxury-editorial-bg {
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(201, 154, 59, 0.11), transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(17, 66, 50, 0.07), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(201, 154, 59, 0.07), transparent 45%);
+}
+
+/* Warm champagne shimmer for skeleton loading states */
+@keyframes invitovix-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(231, 226, 218, 0.72) 25%,
+    rgba(250, 245, 235, 0.95) 50%,
+    rgba(231, 226, 218, 0.72) 75%
+  );
+  background-size: 200% 100%;
+  animation: invitovix-shimmer 1.6s infinite linear;
+}
+
+/* Gold foil shimmer bar for top navigation & launch overlays */
+@keyframes invitovix-bar-glide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.animate-bar-glide {
+  animation: invitovix-bar-glide 1.35s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Custom sleek scrollbars for Studio panels */
 ::-webkit-scrollbar {
   width: 6px;
@@ -78,4 +127,3 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 113, 108, 0.5);
 }
-

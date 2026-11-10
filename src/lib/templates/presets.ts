@@ -401,6 +401,19 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
 export const DEFAULT_DESIGN_DATA: EventDesignData =
   STARTER_TEMPLATES[0].default_config;
 
+function stripNullish<T extends Record<string, unknown>>(
+  obj: Partial<T> | null | undefined
+): Partial<T> {
+  if (!obj || typeof obj !== "object") return {};
+  const cleaned: Partial<T> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== null && v !== undefined) {
+      cleaned[k as keyof T] = v as T[keyof T];
+    }
+  }
+  return cleaned;
+}
+
 export function mergeDesignData(raw: unknown): EventDesignData {
   const parsed = eventDesignDataSchema.safeParse(raw);
   if (parsed.success) {
@@ -415,27 +428,31 @@ export function mergeDesignData(raw: unknown): EventDesignData {
   return {
     theme: {
       ...DEFAULT_DESIGN_DATA.theme,
-      ...candidate.theme,
+      ...stripNullish(candidate.theme),
       palette: {
         ...DEFAULT_DESIGN_DATA.theme.palette,
-        ...candidate.theme?.palette,
+        ...stripNullish(candidate.theme?.palette),
       },
       typography: {
         ...DEFAULT_DESIGN_DATA.theme.typography,
-        ...candidate.theme?.typography,
+        ...stripNullish(candidate.theme?.typography),
       },
     },
     envelope: {
       ...DEFAULT_DESIGN_DATA.envelope,
-      ...candidate.envelope,
+      ...stripNullish(candidate.envelope),
       waxSeal: {
         ...DEFAULT_DESIGN_DATA.envelope.waxSeal,
-        ...candidate.envelope?.waxSeal,
+        ...stripNullish(candidate.envelope?.waxSeal),
       },
     },
     content: {
       ...DEFAULT_DESIGN_DATA.content,
-      ...candidate.content,
+      ...stripNullish(candidate.content),
+      heroImageUrl:
+        typeof candidate.content?.heroImageUrl === "string"
+          ? candidate.content.heroImageUrl
+          : null,
       itinerary: Array.isArray(candidate.content?.itinerary)
         ? candidate.content.itinerary
         : DEFAULT_DESIGN_DATA.content.itinerary,
@@ -445,15 +462,19 @@ export function mergeDesignData(raw: unknown): EventDesignData {
     },
     sections: {
       ...DEFAULT_DESIGN_DATA.sections,
-      ...candidate.sections,
+      ...stripNullish(candidate.sections),
     },
     motion: {
       ...DEFAULT_DESIGN_DATA.motion,
-      ...candidate.motion,
+      ...stripNullish(candidate.motion),
     },
     audio: {
       ...DEFAULT_DESIGN_DATA.audio,
-      ...candidate.audio,
+      ...stripNullish(candidate.audio),
+      customUrl:
+        typeof candidate.audio?.customUrl === "string"
+          ? candidate.audio.customUrl
+          : null,
     },
   };
 }

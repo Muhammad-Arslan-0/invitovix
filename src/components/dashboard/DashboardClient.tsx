@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Calendar,
   Check,
   Copy,
   ExternalLink,
   Globe,
+  Loader2,
   LogOut,
   MapPin,
   Palette,
@@ -19,6 +21,7 @@ import {
 import { EventRecord, TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
 import { CreateEventModal } from "./CreateEventModal";
+import { startNavigation } from "@/components/ui/NavigationProgress";
 
 interface EventWithCount extends EventRecord {
   rsvp_count: number;
@@ -44,6 +47,13 @@ export function DashboardClient({
   const [events, setEvents] = useState<EventWithCount[]>(initialEvents);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [navTarget, setNavTarget] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const totalPublished = events.filter((e) => e.is_published).length;
   const totalRsvps = events.reduce((sum, e) => sum + e.rsvp_count, 0);
@@ -52,11 +62,23 @@ export function DashboardClient({
     0
   );
 
+  function handleNavigate(key: string, href: string) {
+    setNavTarget(key);
+    startNavigation();
+    startTransition(() => {
+      router.push(href);
+    });
+  }
+
   async function handleSignOut() {
+    setNavTarget("signout");
+    startNavigation();
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    startTransition(() => {
+      router.push("/");
+      router.refresh();
+    });
   }
 
   async function handleCopyLink(event: EventWithCount) {
@@ -113,12 +135,12 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfaf7]">
+    <div className="min-h-screen bg-[#fcfaf7] luxury-editorial-bg">
       {/* Top Navbar */}
-      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-30">
+      <header className="border-b border-stone-200/90 bg-white/85 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-stone-900 text-amber-300 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="w-8 h-8 rounded-xl bg-stone-900 text-amber-300 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
               <Sparkles className="w-4 h-4" />
             </span>
             <span className="font-serif text-lg font-semibold tracking-wide text-stone-900">
@@ -127,16 +149,21 @@ export function DashboardClient({
           </Link>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-xs text-stone-500">
+            <span className="hidden sm:inline text-xs font-medium text-stone-500">
               {userName || userEmail}
             </span>
             <button
               type="button"
+              disabled={navTarget === "signout"}
               onClick={handleSignOut}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 disabled:opacity-60 transition cursor-pointer"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
+              {navTarget === "signout" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <LogOut className="w-3.5 h-3.5" />
+              )}
+              <span>{navTarget === "signout" ? "Signing out..." : "Sign Out"}</span>
             </button>
           </div>
         </div>
@@ -144,9 +171,20 @@ export function DashboardClient({
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header & Create CTA */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-stone-900">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-amber-700 font-semibold">
+              Creator Workspace
+            </p>
+            <h1
+              className="mt-1 text-2xl sm:text-3xl font-semibold text-stone-900"
+              style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
+            >
               Host Dashboard
             </h1>
             <p className="text-sm text-stone-500 mt-1">
@@ -155,98 +193,143 @@ export function DashboardClient({
             </p>
           </div>
           <CreateEventModal templates={templates} userId={userId} />
-        </div>
+        </motion.div>
 
         {/* KPI Cards */}
         <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Total Invitations", value: events.length },
-            { label: "Published Live", value: totalPublished },
-            { label: "RSVP Submissions", value: totalRsvps },
-            { label: "Confirmed Guests", value: totalConfirmedGuests },
-          ].map((stat) => (
-            <div
+            { label: "Total Invitations", value: events.length, accent: "border-stone-200" },
+            { label: "Published Live", value: totalPublished, accent: "border-emerald-200/80" },
+            { label: "RSVP Submissions", value: totalRsvps, accent: "border-amber-200/90" },
+            { label: "Confirmed Guests", value: totalConfirmedGuests, accent: "border-stone-200" },
+          ].map((stat, idx) => (
+            <motion.div
               key={stat.label}
-              className="rounded-2xl border border-stone-200 bg-white p-5 shadow-2xs"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: idx * 0.05 }}
+              className={`rounded-2xl border ${stat.accent} bg-white/95 p-5 shadow-2xs hover:shadow-md transition-shadow`}
             >
               <p className="text-xs font-medium text-stone-500">{stat.label}</p>
-              <p className="mt-2 text-2xl sm:text-3xl font-serif font-semibold text-stone-900">
+              <p className="mt-2 text-2xl sm:text-3xl font-serif font-semibold text-stone-900 tabular-nums">
                 {stat.value}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Events Grid */}
         <section className="mt-9">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500 mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 mb-4">
             Your Invitations
           </h2>
 
           {events.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-stone-300 bg-white p-12 text-center">
-              <Sparkles className="w-8 h-8 text-amber-600 mx-auto" />
-              <h3 className="mt-3 text-lg font-serif font-semibold text-stone-900">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-3xl border border-dashed border-stone-300 bg-white/90 p-12 text-center shadow-2xs"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="mt-4 text-lg font-serif font-semibold text-stone-900">
                 No invitations created yet
               </h3>
-              <p className="mt-1 text-sm text-stone-500 max-w-md mx-auto">
+              <p className="mt-1.5 text-sm text-stone-500 max-w-md mx-auto">
                 Click &ldquo;New Invitation&rdquo; above to pick a curated
                 template and customize your interactive wax-seal invitation.
               </p>
-            </div>
+            </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {events.map((event) => {
+              {events.map((event, idx) => {
                 const palette = event.design_data.theme.palette;
+                const waxSeal = event.design_data.envelope.waxSeal;
                 const formattedDate = new Date(
                   event.event_date
                 ).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
+                  ...(mounted ? {} : { timeZone: "UTC" }),
                 });
 
+                const studioKey = `studio-${event.id}`;
+                const rsvpKey = `rsvp-${event.id}`;
+                const isOpeningStudio = navTarget === studioKey && isPending;
+                const isOpeningRsvps = navTarget === rsvpKey && isPending;
+
                 return (
-                  <div
+                  <motion.div
                     key={event.id}
-                    className="rounded-3xl border border-stone-200 bg-white overflow-hidden shadow-2xs flex flex-col justify-between"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.45,
+                      delay: Math.min(idx * 0.06, 0.3),
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    whileHover={{ y: -3 }}
+                    className="group rounded-3xl border border-stone-200/90 bg-white overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                   >
                     {/* Visual swatch header */}
                     <div
-                      className="h-32 p-5 flex flex-col justify-between relative"
+                      className="h-36 p-5 flex flex-col justify-between relative overflow-hidden"
                       style={{
                         backgroundColor: palette.background,
                         borderBottom: `1px solid ${palette.accent}33`,
                       }}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
-                          style={{
-                            backgroundColor: `${palette.accent}22`,
-                            color: palette.primary,
-                          }}
-                        >
-                          {event.event_type}
-                        </span>
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-20"
+                        style={{
+                          background: `radial-gradient(circle, ${palette.accent}, transparent 70%)`,
+                        }}
+                      />
+
+                      <div className="relative z-10 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow ring-1 ring-white/40"
+                            style={{ backgroundColor: waxSeal.color }}
+                          >
+                            {waxSeal.monogram || "INV"}
+                          </span>
+                          <span
+                            className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                            style={{
+                              backgroundColor: `${palette.accent}22`,
+                              color: palette.primary,
+                            }}
+                          >
+                            {event.event_type}
+                          </span>
+                        </div>
+
                         <button
                           type="button"
                           disabled={busyId === event.id}
                           onClick={() => handleTogglePublish(event)}
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium cursor-pointer transition ${
                             event.is_published
-                              ? "bg-emerald-600 text-white"
-                              : "bg-stone-800/80 text-stone-100"
+                              ? "bg-emerald-600 text-white shadow-xs"
+                              : "bg-stone-900/80 text-stone-100 hover:bg-stone-900"
                           }`}
                         >
-                          <Globe className="w-3 h-3" />
+                          {busyId === event.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Globe className="w-3 h-3" />
+                          )}
                           <span>
                             {event.is_published ? "Published" : "Draft"}
                           </span>
                         </button>
                       </div>
 
-                      <div>
+                      <div className="relative z-10">
                         <h3
                           className="text-lg font-serif font-semibold line-clamp-1"
                           style={{ color: palette.primary }}
@@ -285,28 +368,62 @@ export function DashboardClient({
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 pt-1">
-                        <Link
-                          href={`/studio/${event.id}`}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-stone-900 px-3 py-2 text-xs font-medium text-white hover:bg-stone-800 transition"
+                        <button
+                          type="button"
+                          onMouseEnter={() => router.prefetch(`/studio/${event.id}`)}
+                          onClick={() =>
+                            handleNavigate(studioKey, `/studio/${event.id}`)
+                          }
+                          disabled={isOpeningStudio}
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-stone-900 px-3 py-2.5 text-xs font-medium text-white hover:bg-stone-800 disabled:opacity-75 transition cursor-pointer"
                         >
-                          <Palette className="w-3.5 h-3.5" />
-                          <span>Open Studio</span>
-                        </Link>
-                        <Link
-                          href={`/dashboard/events/${event.id}/rsvps`}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-200 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 transition"
+                          {isOpeningStudio ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-300" />
+                              <span>Opening...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Palette className="w-3.5 h-3.5 text-amber-300" />
+                              <span>Open Studio</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onMouseEnter={() =>
+                            router.prefetch(`/dashboard/events/${event.id}/rsvps`)
+                          }
+                          onClick={() =>
+                            handleNavigate(
+                              rsvpKey,
+                              `/dashboard/events/${event.id}/rsvps`
+                            )
+                          }
+                          disabled={isOpeningRsvps}
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-75 transition cursor-pointer"
                         >
-                          <Users className="w-3.5 h-3.5" />
-                          <span>RSVPs ({event.rsvp_count})</span>
-                        </Link>
+                          {isOpeningRsvps ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Loading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Users className="w-3.5 h-3.5" />
+                              <span>RSVPs ({event.rsvp_count})</span>
+                            </>
+                          )}
+                        </button>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <button
                             type="button"
                             onClick={() => handleCopyLink(event)}
-                            className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 cursor-pointer transition"
                           >
                             {copiedId === event.id ? (
                               <>
@@ -326,7 +443,7 @@ export function DashboardClient({
                           <Link
                             href={`/e/${event.slug}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900"
+                            className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 transition"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                             <span>Preview</span>
@@ -337,14 +454,14 @@ export function DashboardClient({
                           type="button"
                           disabled={busyId === event.id}
                           onClick={() => handleDelete(event)}
-                          className="text-stone-400 hover:text-rose-600 p-1 cursor-pointer"
+                          className="text-stone-400 hover:text-rose-600 p-1 cursor-pointer transition"
                           title="Delete invitation"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -354,4 +471,3 @@ export function DashboardClient({
     </div>
   );
 }
-

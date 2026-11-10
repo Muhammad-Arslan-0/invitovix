@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Download,
+  Loader2,
+  Palette,
   Search,
   Trash2,
   Users,
 } from "lucide-react";
 import { AttendingStatus, RsvpRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
+import { startNavigation } from "@/components/ui/NavigationProgress";
 
 interface RsvpTableProps {
   eventId: string;
@@ -25,10 +28,21 @@ export function RsvpTable({
   eventSlug,
   initialRsvps,
 }: RsvpTableProps) {
+  const router = useRouter();
   const [rsvps, setRsvps] = useState<RsvpRecord[]>(initialRsvps);
   const [filter, setFilter] = useState<"all" | AttendingStatus>("all");
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [navTarget, setNavTarget] = useState<"dashboard" | "studio" | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function navigateTo(target: "dashboard" | "studio", href: string) {
+    setNavTarget(target);
+    startNavigation();
+    startTransition(() => {
+      router.push(href);
+    });
+  }
 
   const stats = useMemo(() => {
     let attendingHeadcount = 0;
@@ -116,25 +130,46 @@ export function RsvpTable({
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900"
+            <button
+              type="button"
+              onClick={() => navigateTo("dashboard", "/dashboard")}
+              disabled={isPending && navTarget === "dashboard"}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 cursor-pointer disabled:opacity-70"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Dashboard
-            </Link>
+              {isPending && navTarget === "dashboard" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowLeft className="w-3.5 h-3.5" />
+              )}
+              <span>
+                {isPending && navTarget === "dashboard"
+                  ? "Returning to Dashboard..."
+                  : "Back to Dashboard"}
+              </span>
+            </button>
             <h1 className="mt-2 text-2xl sm:text-3xl font-serif font-semibold text-stone-900">
               {eventTitle} — Guest RSVPs
             </h1>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <Link
-              href={`/studio/${eventId}`}
-              className="rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50"
+            <button
+              type="button"
+              onClick={() => navigateTo("studio", `/studio/${eventId}`)}
+              disabled={isPending && navTarget === "studio"}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 cursor-pointer disabled:opacity-70"
             >
-              Edit Invite
-            </Link>
+              {isPending && navTarget === "studio" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Palette className="w-3.5 h-3.5 text-amber-700" />
+              )}
+              <span>
+                {isPending && navTarget === "studio"
+                  ? "Opening Studio..."
+                  : "Edit Invite"}
+              </span>
+            </button>
             <button
               type="button"
               onClick={exportCsv}

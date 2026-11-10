@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/supabase/env";
+import { startNavigation } from "@/components/ui/NavigationProgress";
+import { LuxLoader } from "@/components/ui/LuxLoader";
 
 function LoginForm() {
   const router = useRouter();
@@ -27,6 +30,7 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "auth_callback_failed"
       ? "Magic link verification failed or expired. Please try again."
@@ -82,8 +86,11 @@ function LoginForm() {
           return;
         }
         if (data.session) {
-          router.push(nextPath);
-          router.refresh();
+          startNavigation();
+          startTransition(() => {
+            router.push(nextPath);
+            router.refresh();
+          });
           return;
         }
         setMagicSent(true);
@@ -98,8 +105,11 @@ function LoginForm() {
         setError(signInError.message);
         return;
       }
-      router.push(nextPath);
-      router.refresh();
+      startNavigation();
+      startTransition(() => {
+        router.push(nextPath);
+        router.refresh();
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication error");
     } finally {
@@ -108,7 +118,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfaf7] flex flex-col justify-between px-4 py-8">
+    <div className="min-h-screen bg-[#fcfaf7] luxury-editorial-bg flex flex-col justify-between px-4 py-8">
       <div className="max-w-md w-full mx-auto">
         <Link
           href="/"
@@ -119,14 +129,22 @@ function LoginForm() {
         </Link>
       </div>
 
-      <div className="max-w-md w-full mx-auto my-8">
-        <div className="rounded-3xl border border-stone-200 bg-white p-7 sm:p-8 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="max-w-md w-full mx-auto my-8"
+      >
+        <div className="rounded-3xl border border-stone-200/90 bg-white/95 backdrop-blur-sm p-7 sm:p-8 shadow-xl shadow-stone-900/5">
           <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold uppercase tracking-[0.22em]">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Invitovix Studio</span>
           </div>
 
-          <h1 className="mt-2 text-2xl font-serif font-semibold text-stone-900">
+          <h1
+            className="mt-2 text-2xl font-semibold text-stone-900"
+            style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
+          >
             {mode === "signup"
               ? "Create Host Account"
               : mode === "magic"
@@ -166,24 +184,34 @@ function LoginForm() {
                 { id: "signup", label: "Sign Up" },
                 { id: "magic", label: "Magic Link" },
               ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setMode(tab.id);
-                  setError(null);
-                  setMagicSent(false);
-                }}
-                className={`rounded-lg py-2 transition cursor-pointer ${
-                  mode === tab.id
-                    ? "bg-white text-stone-900 shadow-sm"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            ).map((tab) => {
+              const active = mode === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setMode(tab.id);
+                    setError(null);
+                    setMagicSent(false);
+                  }}
+                  className={`relative rounded-lg py-2 transition cursor-pointer ${
+                    active
+                      ? "text-stone-900"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="login-mode-pill"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.35 }}
+                      className="absolute inset-0 rounded-lg bg-white shadow-sm"
+                    />
+                  )}
+                  <span className="relative z-10">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {magicSent ? (
@@ -255,13 +283,15 @@ function LoginForm() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-stone-900 py-3 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-60 transition cursor-pointer"
+                disabled={loading || isPending}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-stone-900 py-3 text-sm font-medium text-white shadow-sm hover:bg-stone-800 disabled:opacity-60 transition cursor-pointer"
               >
-                {loading ? (
+                {loading || isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Please wait...</span>
+                    <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+                    <span>
+                      {isPending ? "Opening Dashboard..." : "Please wait..."}
+                    </span>
                   </>
                 ) : mode === "magic" ? (
                   <>
@@ -277,7 +307,7 @@ function LoginForm() {
             </form>
           )}
         </div>
-      </div>
+      </motion.div>
 
       <p className="text-center text-xs text-stone-400">
         Invitovix · Interactive Digital Invitations
@@ -290,8 +320,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#fcfaf7] flex items-center justify-center text-sm text-stone-500">
-          Loading Invitovix...
+        <div className="min-h-screen bg-[#fcfaf7] luxury-editorial-bg flex items-center justify-center">
+          <LuxLoader title="Invitovix Studio" subtitle="Preparing host sign-in..." />
         </div>
       }
     >

@@ -61,17 +61,22 @@ export function EnvelopeStage({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 50% 42%, ${theme.palette.accent}24 0%, transparent 65%)`,
+          background: `radial-gradient(circle at 50% 42%, ${theme.palette.accent}2B 0%, ${theme.palette.primary}10 42%, transparent 72%)`,
         }}
       />
 
       {/* Audio preference pill at top */}
       {audio.enabled && (
-        <div className="relative z-20 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-20 mb-6"
+        >
           <button
             type="button"
             onClick={onToggleStartMuted}
-            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium backdrop-blur-md border transition hover:opacity-90 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium backdrop-blur-md border shadow-xs transition hover:opacity-90 cursor-pointer"
             style={{
               backgroundColor: `${theme.palette.surface}CC`,
               borderColor: `${theme.palette.accent}44`,
@@ -93,15 +98,16 @@ export function EnvelopeStage({
               </>
             )}
           </button>
-        </div>
+        </motion.div>
       )}
 
-      {/* Envelope Container */}
+      {/* Envelope Container with 3D perspective */}
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-20 w-full max-w-[360px]"
+        style={{ perspective: 1200 }}
+        className="relative z-20 w-full max-w-[368px]"
       >
         {/* Lottie burst played upon unseal */}
         {isOpening && motionCfg.lottieAccent !== "none" && (
@@ -115,19 +121,24 @@ export function EnvelopeStage({
 
         {/* Inner rising invitation card preview */}
         <motion.div
-          initial={{ y: 24, opacity: 0.9 }}
+          initial={{ y: 26, opacity: 0.92 }}
           animate={
-            isOpening ? { y: -92, opacity: 1, scale: 1.02 } : { y: 12, opacity: 0.95 }
+            isOpening ? { y: -96, opacity: 1, scale: 1.03 } : { y: 14, opacity: 0.97 }
           }
-          transition={{ duration: 1.0, delay: isOpening ? 0.25 : 0, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.0, delay: isOpening ? 0.22 : 0, ease: [0.22, 1, 0.36, 1] }}
           style={{
             backgroundColor: theme.palette.surface,
             borderColor: `${theme.palette.accent}55`,
           }}
-          className="mx-4 rounded-t-2xl border p-6 text-center shadow-lg"
+          className="mx-4 rounded-t-2xl border p-6 text-center shadow-lg relative"
         >
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-2 rounded-t-xl border opacity-35"
+            style={{ borderColor: theme.palette.accent }}
+          />
           <p
-            className="text-[11px] uppercase tracking-[0.22em]"
+            className="relative z-10 text-[10px] uppercase tracking-[0.24em]"
             style={{
               color: theme.palette.mutedText,
               fontFamily: getBodyFontFamily(theme.typography.bodyFont),
@@ -136,7 +147,7 @@ export function EnvelopeStage({
             {content.hostLine}
           </p>
           <h2
-            className="mt-2 text-2xl font-semibold tracking-wide"
+            className="relative z-10 mt-2 text-2xl font-semibold tracking-wide"
             style={{
               color: theme.palette.primary,
               fontFamily: getDisplayFontFamily(theme.typography.displayFont),
@@ -146,7 +157,7 @@ export function EnvelopeStage({
           </h2>
           {formattedDate && (
             <p
-              className="mt-1 text-sm"
+              className="relative z-10 mt-1 text-base"
               style={{
                 color: theme.palette.accent,
                 fontFamily: getScriptFontFamily(theme.typography.scriptFont),
@@ -172,7 +183,7 @@ export function EnvelopeStage({
             backgroundColor: envelope.envelopeColor,
             borderColor: `${envelope.linerColor}66`,
           }}
-          className={`relative -mt-8 rounded-2xl border shadow-2xl overflow-hidden cursor-pointer select-none ${
+          className={`relative -mt-8 rounded-2xl border shadow-[0_30px_65px_-15px_rgba(0,0,0,0.42)] overflow-hidden cursor-pointer select-none ${
             envelope.style === "arch-pocket"
               ? "rounded-t-[90px]"
               : envelope.style === "art-deco"
@@ -186,23 +197,32 @@ export function EnvelopeStage({
             style={{ borderColor: envelope.linerColor }}
           />
 
-          {/* Top flap fold illusion */}
+          {/* Metallic inner liner peeking behind flap */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-28 opacity-25"
+            style={{
+              background: `linear-gradient(180deg, ${envelope.linerColor}, transparent)`,
+            }}
+          />
+
+          {/* 3D V-Flap fold */}
           <motion.div
             animate={
               isOpening
-                ? { rotateX: 165, opacity: 0.25 }
+                ? { rotateX: 165, opacity: 0.15 }
                 : { rotateX: 0, opacity: 1 }
             }
             transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             style={{
               transformOrigin: "top center",
-              background: `linear-gradient(160deg, color-mix(in srgb, ${envelope.envelopeColor} 88%, white) 0%, ${envelope.envelopeColor} 100%)`,
-              borderBottom: `1.5px solid ${envelope.linerColor}88`,
+              clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+              background: `linear-gradient(165deg, color-mix(in srgb, ${envelope.envelopeColor} 84%, white) 0%, ${envelope.envelopeColor} 92%)`,
             }}
-            className="relative z-10 h-32 w-full flex items-end justify-center pb-5 shadow-md"
+            className="relative z-10 h-36 w-full flex items-start justify-center pt-5 shadow-lg"
           >
             <div
-              className="text-[11px] uppercase tracking-[0.26em] opacity-80"
+              className="text-[10px] uppercase tracking-[0.28em] opacity-85"
               style={{
                 color: envelope.linerColor,
                 fontFamily: getDisplayFontFamily(theme.typography.displayFont),
@@ -212,8 +232,23 @@ export function EnvelopeStage({
             </div>
           </motion.div>
 
+          {/* Diagonal crease border accent */}
+          <svg
+            viewBox="0 0 368 144"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            className="pointer-events-none absolute top-0 left-0 w-full h-36 z-10 opacity-45"
+          >
+            <polyline
+              points="0,0 184,142 368,0"
+              fill="none"
+              stroke={envelope.linerColor}
+              strokeWidth="1.5"
+            />
+          </svg>
+
           {/* Wax Seal Centerpiece */}
-          <div className="relative z-20 -mt-12 flex flex-col items-center justify-center pb-10 pt-2 px-6 text-center">
+          <div className="relative z-20 -mt-13 flex flex-col items-center justify-center pb-10 pt-2 px-6 text-center">
             {envelope.waxSeal.enabled ? (
               <WaxSeal
                 waxSeal={envelope.waxSeal}
@@ -236,7 +271,7 @@ export function EnvelopeStage({
               </motion.button>
             )}
 
-            <div className="mt-6 flex items-center justify-center gap-1.5 text-xs tracking-wide opacity-90">
+            <div className="mt-5 flex items-center justify-center gap-1.5 text-xs tracking-wide opacity-90">
               <Sparkles
                 className="w-3.5 h-3.5 shrink-0"
                 style={{ color: envelope.linerColor }}
@@ -263,4 +298,3 @@ export function EnvelopeStage({
     </div>
   );
 }
-

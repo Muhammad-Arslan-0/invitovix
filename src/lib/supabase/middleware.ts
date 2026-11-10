@@ -28,6 +28,28 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  const requestCookies = request.cookies.getAll();
+  const hasAuthCookie = requestCookies.some((c) => c.name.startsWith("sb-"));
+
+  // Fast-path when visitor has no Supabase session cookie at all (0ms, avoids unnecessary Auth round trip)
+  if (!hasAuthCookie) {
+    if (isProtected) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/login";
+      redirectUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+    return supabaseResponse;
+  }
+
+  // Skip remote auth verification during Next.js background prefetches on public routes only
+  const isPrefetch =
+    request.headers.get("next-router-prefetch") === "1" ||
+    request.headers.get("purpose") === "prefetch";
+  if (isPrefetch && !isProtected) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
@@ -61,9 +83,12 @@ export async function updateSession(request: NextRequest) {
   if (user && pathname === "/login") {
     const dashUrl = request.nextUrl.clone();
     dashUrl.pathname = "/dashboard";
-    return NextResponse.redirect(dashUrl);
+    const redirectRes = NextResponse.redirect(dashUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      redirectRes.cookies.set(c.name, c.value);
+    });
+    return redirectRes;
   }
 
   return supabaseResponse;
 }
-
