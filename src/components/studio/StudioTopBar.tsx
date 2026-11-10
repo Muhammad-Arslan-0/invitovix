@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { memo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -19,9 +19,19 @@ interface StudioTopBarProps {
   onTogglePublish: () => Promise<void>;
 }
 
-export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
+export const StudioTopBar = memo(function StudioTopBar({
+  onSave,
+  onTogglePublish,
+}: StudioTopBarProps) {
   const router = useRouter();
-  const { eventMeta, isDirty, isSaving, updateMeta } = useStudioStore();
+  const eventId = useStudioStore((s) => s.eventMeta.id);
+  const eventTitle = useStudioStore((s) => s.eventMeta.title);
+  const eventSlug = useStudioStore((s) => s.eventMeta.slug);
+  const isPublished = useStudioStore((s) => s.eventMeta.is_published);
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const isSaving = useStudioStore((s) => s.isSaving);
+  const updateMeta = useStudioStore((s) => s.updateMeta);
+
   const [navTarget, setNavTarget] = useState<"dashboard" | "rsvps" | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -41,7 +51,7 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
           onClick={() => navigateTo("dashboard", "/dashboard")}
           onMouseEnter={() => router.prefetch("/dashboard")}
           disabled={isPending && navTarget === "dashboard"}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-70 transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer"
         >
           {isPending && navTarget === "dashboard" ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -55,7 +65,7 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
 
         <input
           type="text"
-          value={eventMeta.title}
+          value={eventTitle}
           onChange={(e) => updateMeta({ title: e.target.value })}
           className="text-sm font-serif font-semibold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-stone-900 focus:outline-none px-1 py-0.5 truncate max-w-[180px] sm:max-w-xs"
           aria-label="Invitation Title"
@@ -81,13 +91,13 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
         <button
           type="button"
           onClick={() =>
-            navigateTo("rsvps", `/dashboard/events/${eventMeta.id}/rsvps`)
+            navigateTo("rsvps", `/dashboard/events/${eventId}/rsvps`)
           }
           onMouseEnter={() =>
-            router.prefetch(`/dashboard/events/${eventMeta.id}/rsvps`)
+            router.prefetch(`/dashboard/events/${eventId}/rsvps`)
           }
           disabled={isPending && navTarget === "rsvps"}
-          className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-70 transition cursor-pointer"
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer"
         >
           {isPending && navTarget === "rsvps" ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -100,9 +110,9 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
         </button>
 
         <ShareDialog
-          slug={eventMeta.slug}
-          title={eventMeta.title}
-          isPublished={eventMeta.is_published}
+          slug={eventSlug}
+          title={eventTitle}
+          isPublished={isPublished}
           onTogglePublish={onTogglePublish}
         />
 
@@ -110,21 +120,21 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
           type="button"
           onClick={onTogglePublish}
           disabled={isSaving}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
-            eventMeta.is_published
+          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+            isPublished
               ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs"
               : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>{eventMeta.is_published ? "Published" : "Publish"}</span>
+          <span>{isPublished ? "Published" : "Publish"}</span>
         </button>
 
         <button
           type="button"
           onClick={onSave}
           disabled={isSaving || !isDirty}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition cursor-pointer shadow-xs"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
         >
           {isSaving ? (
             <>
@@ -146,4 +156,4 @@ export function StudioTopBar({ onSave, onTogglePublish }: StudioTopBarProps) {
       </div>
     </header>
   );
-}
+});

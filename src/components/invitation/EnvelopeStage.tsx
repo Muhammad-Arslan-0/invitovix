@@ -19,6 +19,7 @@ interface EnvelopeStageProps {
   startMuted: boolean;
   onToggleStartMuted: () => void;
   onUnseal: () => void;
+  bounded?: boolean;
 }
 
 export function EnvelopeStage({
@@ -28,10 +29,12 @@ export function EnvelopeStage({
   startMuted,
   onToggleStartMuted,
   onUnseal,
+  bounded = false,
 }: EnvelopeStageProps) {
   const { theme, envelope, content, motion: motionCfg, audio } = designData;
   const isOpening = stage === "opening";
   const [mounted, setMounted] = useState(false);
+  const coverBackdropUrl = content.heroImageUrl || content.gallery[0]?.url || null;
 
   useEffect(() => {
     setMounted(true);
@@ -50,12 +53,37 @@ export function EnvelopeStage({
 
   return (
     <div
-      className="relative min-h-[680px] h-full w-full flex flex-col items-center justify-center px-5 py-10 overflow-hidden"
+      className={`relative w-full flex flex-col items-center justify-center overflow-hidden ${
+        bounded
+          ? "min-h-full h-full px-4 py-6 sm:px-5 sm:py-8"
+          : "min-h-[680px] h-full px-5 py-10"
+      }`}
       style={{
         backgroundColor: theme.palette.background,
         color: theme.palette.text,
       }}
     >
+      {/* Subtle cover photography atmosphere behind the envelope when available */}
+      {coverBackdropUrl && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverBackdropUrl}
+            alt=""
+            className="w-full h-full object-cover opacity-20 blur-sm scale-105"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(180deg, ${theme.palette.background}D8 0%, ${theme.palette.background}B5 48%, ${theme.palette.background}E8 100%)`,
+            }}
+          />
+        </div>
+      )}
+
       {/* Ambient radial spotlight */}
       <div
         aria-hidden="true"

@@ -11,12 +11,14 @@ import {
 } from "@/lib/utils/fonts";
 
 interface HeroSceneProps {
+  id?: string;
   designData: EventDesignData;
   eventDate: string;
   venueName: string;
 }
 
 export function HeroScene({
+  id = "invite-hero",
   designData,
   eventDate,
   venueName,
@@ -83,8 +85,9 @@ export function HeroScene({
 
   return (
     <section
+      id={id}
       ref={containerRef}
-      className="relative px-6 pt-12 pb-10 text-center flex flex-col items-center"
+      className="scroll-mt-4 relative px-6 pt-12 pb-10 text-center flex flex-col items-center"
     >
       {/* Ornate header crest */}
       <div

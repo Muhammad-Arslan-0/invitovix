@@ -1,8 +1,8 @@
 "use client";
 
+import { memo, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { Play, Square } from "lucide-react";
-import { useState } from "react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { AUDIO_TRACK_PRESETS } from "@/lib/templates/presets";
 import { audioEngine } from "@/lib/audio/audioEngine";
@@ -12,10 +12,15 @@ interface MotionAudioPanelProps {
   userId: string;
 }
 
-export function MotionAudioPanel({ userId }: MotionAudioPanelProps) {
-  const { eventMeta, designData, updateMotion, updateAudio, updateMeta } =
-    useStudioStore();
-  const { motion, audio } = designData;
+export const MotionAudioPanel = memo(function MotionAudioPanel({
+  userId,
+}: MotionAudioPanelProps) {
+  const eventId = useStudioStore((s) => s.eventMeta.id);
+  const motion = useStudioStore((s) => s.designData.motion);
+  const audio = useStudioStore((s) => s.designData.audio);
+  const updateMotion = useStudioStore((s) => s.updateMotion);
+  const updateAudio = useStudioStore((s) => s.updateAudio);
+  const updateMeta = useStudioStore((s) => s.updateMeta);
   const [testingAudio, setTestingAudio] = useState(false);
 
   function handleTestAudio() {
@@ -190,7 +195,7 @@ export function MotionAudioPanel({ userId }: MotionAudioPanelProps) {
 
             <MediaUploader
               userId={userId}
-              eventId={eventMeta.id}
+              eventId={eventId}
               accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg"
               label="Upload Custom MP3 / WAV Track"
               folder="audio"
@@ -247,5 +252,5 @@ export function MotionAudioPanel({ userId }: MotionAudioPanelProps) {
       </div>
     </div>
   );
-}
+});
 

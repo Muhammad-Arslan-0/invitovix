@@ -1,29 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageIcon, X } from "lucide-react";
 import { EventDesignData, GalleryPhoto } from "@/types/invitation";
 import { getDisplayFontFamily } from "@/lib/utils/fonts";
 
 interface GallerySceneProps {
+  id?: string;
   designData: EventDesignData;
   isStudioPreview?: boolean;
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function GalleryScene({
+  id = "invite-gallery",
   designData,
   isStudioPreview = false,
+  scrollRootRef,
 }: GallerySceneProps) {
   const { theme, content, sections } = designData;
   const [activePhoto, setActivePhoto] = useState<GalleryPhoto | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!sections.showGallery) return null;
 
   if (content.gallery.length === 0) {
     if (!isStudioPreview) return null;
     return (
-      <section className="px-6 py-6 max-w-lg mx-auto">
+      <section id={id} className="scroll-mt-4 px-6 py-6 max-w-lg mx-auto">
         <div
           className="rounded-2xl border border-dashed p-6 text-center"
           style={{ borderColor: `${theme.palette.accent}55` }}
@@ -42,7 +52,7 @@ export function GalleryScene({
   }
 
   return (
-    <section className="px-6 py-8 max-w-lg mx-auto">
+    <section id={id} className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto">
       <div className="text-center mb-6">
         <p
           className="text-[11px] uppercase tracking-[0.25em]"
@@ -69,8 +79,12 @@ export function GalleryScene({
             onClick={() => setActivePhoto(photo)}
             initial={{ opacity: 0, scale: 0.94 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, delay: idx * 0.08 }}
+            viewport={{
+              once: true,
+              amount: 0.05,
+              ...(scrollRootRef ? { root: scrollRootRef } : {}),
+            }}
+            transition={{ duration: 0.4, delay: idx * 0.06 }}
             whileHover={{ y: -3 }}
             className={`group relative overflow-hidden rounded-2xl border shadow-sm text-left cursor-pointer ${
               idx === 0 && content.gallery.length % 2 === 1
@@ -99,46 +113,51 @@ export function GalleryScene({
         ))}
       </div>
 
-      {/* Lightbox Modal */}
-      <AnimatePresence>
-        {activePhoto && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActivePhoto(null)}
-            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-lg w-full rounded-2xl overflow-hidden bg-stone-950 border border-white/15"
-            >
-              <button
-                type="button"
+      {/* Portal Lightbox Modal so constrained card frames never clip zoom views */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {activePhoto && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setActivePhoto(null)}
-                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 cursor-pointer"
-                aria-label="Close photo"
+                className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
               >
-                <X className="w-4 h-4" />
-              </button>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activePhoto.url}
-                alt={activePhoto.caption || "Photo"}
-                className="w-full max-h-[75vh] object-contain"
-              />
-              {activePhoto.caption && (
-                <p className="p-3.5 text-center text-sm text-stone-200">
-                  {activePhoto.caption}
-                </p>
-              )}
-            </motion.div>
-          </motion.div>
+                <motion.div
+                  initial={{ scale: 0.92, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.92, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative max-w-lg w-full rounded-2xl overflow-hidden bg-stone-950 border border-white/15"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActivePhoto(null)}
+                    className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 cursor-pointer"
+                    aria-label="Close photo"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={activePhoto.url}
+                    alt={activePhoto.caption || "Photo"}
+                    className="w-full max-h-[75vh] object-contain"
+                  />
+                  {activePhoto.caption && (
+                    <p className="p-3.5 text-center text-sm text-stone-200">
+                      {activePhoto.caption}
+                    </p>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </section>
   );
 }

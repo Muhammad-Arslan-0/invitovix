@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { TemplateRecord } from "@/types/invitation";
 import { useStudioStore } from "@/store/useStudioStore";
 
@@ -7,17 +8,17 @@ interface ThemePanelProps {
   templates: TemplateRecord[];
 }
 
-export function ThemePanel({ templates }: ThemePanelProps) {
-  const {
-    eventMeta,
-    designData,
-    applyTemplate,
-    updatePalette,
-    updateTypography,
-    setPaperTexture,
-  } = useStudioStore();
+export const ThemePanel = memo(function ThemePanel({
+  templates,
+}: ThemePanelProps) {
+  const templateId = useStudioStore((s) => s.eventMeta.template_id);
+  const theme = useStudioStore((s) => s.designData.theme);
+  const applyTemplate = useStudioStore((s) => s.applyTemplate);
+  const updatePalette = useStudioStore((s) => s.updatePalette);
+  const updateTypography = useStudioStore((s) => s.updateTypography);
+  const setPaperTexture = useStudioStore((s) => s.setPaperTexture);
 
-  const { palette, typography, paperTexture } = designData.theme;
+  const { palette, typography, paperTexture } = theme;
 
   return (
     <div className="space-y-6">
@@ -28,7 +29,7 @@ export function ThemePanel({ templates }: ThemePanelProps) {
         </h3>
         <div className="grid grid-cols-2 gap-2.5">
           {templates.map((tpl) => {
-            const active = eventMeta.template_id === tpl.id;
+            const active = templateId === tpl.id;
             const p = tpl.default_config.theme.palette;
             return (
               <button
@@ -189,5 +190,5 @@ export function ThemePanel({ templates }: ThemePanelProps) {
       </div>
     </div>
   );
-}
+});
 

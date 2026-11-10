@@ -1,5 +1,6 @@
 "use client";
 
+import { type RefObject } from "react";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
@@ -9,10 +10,16 @@ import {
 } from "@/lib/utils/fonts";
 
 interface ItinerarySceneProps {
+  id?: string;
   designData: EventDesignData;
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
-export function ItineraryScene({ designData }: ItinerarySceneProps) {
+export function ItineraryScene({
+  id = "invite-schedule",
+  designData,
+  scrollRootRef,
+}: ItinerarySceneProps) {
   const { theme, content, sections } = designData;
 
   if (!sections.showItinerary || content.itinerary.length === 0) {
@@ -20,7 +27,7 @@ export function ItineraryScene({ designData }: ItinerarySceneProps) {
   }
 
   return (
-    <section className="px-6 py-8 max-w-lg mx-auto">
+    <section id={id} className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto">
       <div className="text-center mb-7">
         <p
           className="text-[11px] uppercase tracking-[0.25em]"
@@ -52,10 +59,14 @@ export function ItineraryScene({ designData }: ItinerarySceneProps) {
             key={item.id}
             initial={{ opacity: 0, x: -12 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
+            viewport={{
+              once: true,
+              amount: 0.05,
+              ...(scrollRootRef ? { root: scrollRootRef } : {}),
+            }}
             transition={{
-              duration: 0.55,
-              delay: idx * 0.1,
+              duration: 0.45,
+              delay: idx * 0.08,
               ease: [0.22, 1, 0.36, 1],
             }}
             className="relative rounded-2xl border p-4 shadow-sm"

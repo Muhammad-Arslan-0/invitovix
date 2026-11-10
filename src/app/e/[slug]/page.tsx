@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { DEMO_EVENT, mergeDesignData } from "@/lib/templates/presets";
 import { EventRecord } from "@/types/invitation";
-import { InvitationPlayer } from "@/components/invitation/InvitationPlayer";
+import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
 
 export const dynamic = "force-dynamic";
 
@@ -133,34 +133,18 @@ export default async function GuestInvitePage({
   }
 
   return (
-    <main className="min-h-screen">
-      {isOwnerDraft && (
-        <div className="sticky top-0 z-50 bg-amber-950 text-amber-100 px-4 py-2 text-center text-xs flex items-center justify-center gap-3 shadow">
-          <span>
-            <strong>Draft Preview:</strong> Only visible to you. Publish in
-            Creator Studio to share with guests.
-          </span>
-          <Link
-            href={`/studio/${event.id}`}
-            className="underline underline-offset-2 font-semibold hover:text-white"
-          >
-            Back to Studio
-          </Link>
-        </div>
-      )}
-
-      <InvitationPlayer
-        eventId={event.id}
-        slug={event.slug}
-        title={event.title}
-        eventDate={event.event_date}
-        venueName={event.venue_name}
-        venueAddress={event.venue_address}
-        venueMapUrl={event.venue_map_url}
-        audioUrl={event.audio_url}
-        designData={event.design_data}
-      />
-    </main>
+    <GuestInviteShell
+      eventId={event.id}
+      slug={event.slug}
+      title={event.title}
+      eventDate={event.event_date}
+      venueName={event.venue_name}
+      venueAddress={event.venue_address}
+      venueMapUrl={event.venue_map_url}
+      audioUrl={event.audio_url}
+      designData={event.design_data}
+      isOwnerDraft={isOwnerDraft}
+    />
   );
 }
 

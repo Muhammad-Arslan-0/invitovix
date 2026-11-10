@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, Minus, Plus, Send } from "lucide-react";
 import {
@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { DEMO_EVENT } from "@/lib/templates/presets";
+import { getContrastTextColor } from "@/lib/utils/colors";
 import {
   getBodyFontFamily,
   getDisplayFontFamily,
@@ -18,15 +19,19 @@ import {
 import { LottieAccent } from "../LottieAccent";
 
 interface RsvpSceneProps {
+  id?: string;
   eventId: string;
   designData: EventDesignData;
   isStudioPreview?: boolean;
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function RsvpScene({
+  id = "invite-rsvp",
   eventId,
   designData,
   isStudioPreview = false,
+  scrollRootRef,
 }: RsvpSceneProps) {
   const { theme, content, sections } = designData;
 
@@ -101,19 +106,20 @@ export function RsvpScene({
     }
   }
 
-  const buttonTextColor =
-    theme.palette.background === "#0E1324" ||
-    theme.palette.background === "#0B0B0D"
-      ? "#111111"
-      : "#FFFFFF";
+  const buttonTextColor = getContrastTextColor(theme.palette.primary);
 
   return (
     <motion.section
+      id={id}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className="px-6 pt-8 pb-16 max-w-lg mx-auto"
+      viewport={{
+        once: true,
+        amount: 0.05,
+        ...(scrollRootRef ? { root: scrollRootRef } : {}),
+      }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="scroll-mt-4 px-6 pt-8 pb-24 max-w-lg mx-auto"
     >
       <div
         className="relative rounded-3xl border p-6 sm:p-7 shadow-md overflow-hidden"

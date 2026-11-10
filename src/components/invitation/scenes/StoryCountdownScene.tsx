@@ -1,67 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type RefObject } from "react";
 import { motion } from "framer-motion";
 import { Shirt } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
+import { useCountdown } from "@/hooks/useCountdown";
 import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
 
 interface StoryCountdownSceneProps {
+  id?: string;
   designData: EventDesignData;
   eventDate: string;
-}
-
-interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isPast: boolean;
-}
-
-function calcRemaining(targetIso: string): TimeRemaining {
-  const diff = new Date(targetIso).getTime() - Date.now();
-  if (Number.isNaN(diff) || diff <= 0) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true };
-  }
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  return { days, hours, minutes, seconds, isPast: false };
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function StoryCountdownScene({
+  id = "invite-story",
   designData,
   eventDate,
+  scrollRootRef,
 }: StoryCountdownSceneProps) {
   const { theme, content, sections } = designData;
-  const [remaining, setRemaining] = useState<TimeRemaining>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isPast: false,
-  });
-
-  useEffect(() => {
-    setRemaining(calcRemaining(eventDate));
-    const timer = setInterval(() => {
-      setRemaining(calcRemaining(eventDate));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [eventDate]);
+  const remaining = useCountdown(eventDate);
 
   return (
     <motion.section
+      id={id}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="px-6 py-8 max-w-lg mx-auto text-center"
+      viewport={{
+        once: true,
+        amount: 0.05,
+        ...(scrollRootRef ? { root: scrollRootRef } : {}),
+      }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto text-center"
     >
       {/* Quote Card */}
       {content.storyQuote && (
@@ -133,7 +109,10 @@ export function StoryCountdownScene({
                   key={unit.label}
                   initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{
+                    once: true,
+                    ...(scrollRootRef ? { root: scrollRootRef } : {}),
+                  }}
                   transition={{ duration: 0.45, delay: idx * 0.06 }}
                   whileHover={{ y: -2 }}
                   className="rounded-2xl border py-3.5 px-2 shadow-sm backdrop-blur-xs"

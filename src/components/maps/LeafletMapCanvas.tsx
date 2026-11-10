@@ -138,7 +138,9 @@ export default function LeafletMapCanvas({
     const resizeObserver =
       typeof ResizeObserver !== "undefined"
         ? new ResizeObserver(() => {
-            map.invalidateSize({ animate: false });
+            if (container.clientWidth > 0 && container.clientHeight > 0) {
+              map.invalidateSize({ animate: false });
+            }
           })
         : null;
     resizeObserver?.observe(container);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { CalendarPlus, Download, MapPin, Navigation } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
@@ -12,6 +13,7 @@ import {
   buildOsmLinkUrl,
   parseCoordinatesFromMapUrl,
 } from "@/lib/utils/location";
+import { getContrastTextColor } from "@/lib/utils/colors";
 import { VenuePreviewMap } from "@/components/maps/VenuePreviewMap";
 import {
   getBodyFontFamily,
@@ -19,6 +21,7 @@ import {
 } from "@/lib/utils/fonts";
 
 interface VenueSceneProps {
+  id?: string;
   designData: EventDesignData;
   title: string;
   slug: string;
@@ -26,9 +29,11 @@ interface VenueSceneProps {
   venueName: string;
   venueAddress?: string | null;
   venueMapUrl?: string | null;
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function VenueScene({
+  id = "invite-venue",
   designData,
   title,
   slug,
@@ -36,8 +41,14 @@ export function VenueScene({
   venueName,
   venueAddress,
   venueMapUrl,
+  scrollRootRef,
 }: VenueSceneProps) {
   const { theme, content, sections } = designData;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!sections.showVenue) return null;
 
@@ -52,7 +63,7 @@ export function VenueScene({
     venueAddress,
     description: content.subtitle,
     url:
-      typeof window !== "undefined"
+      mounted && typeof window !== "undefined"
         ? `${window.location.origin}/e/${slug}`
         : undefined,
   };
@@ -60,11 +71,16 @@ export function VenueScene({
 
   return (
     <motion.section
+      id={id}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className="px-6 py-8 max-w-lg mx-auto"
+      viewport={{
+        once: true,
+        amount: 0.05,
+        ...(scrollRootRef ? { root: scrollRootRef } : {}),
+      }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto"
     >
       <div
         className="rounded-3xl border p-6 text-center shadow-sm"
@@ -128,11 +144,7 @@ export function VenueScene({
             rel="noopener noreferrer"
             style={{
               backgroundColor: theme.palette.primary,
-              color:
-                theme.palette.background === "#0E1324" ||
-                theme.palette.background === "#0B0B0D"
-                  ? "#111111"
-                  : "#FFFFFF",
+              color: getContrastTextColor(theme.palette.primary),
             }}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-md transition hover:opacity-90"
           >

@@ -128,6 +128,77 @@ body {
   background: rgba(120, 113, 108, 0.5);
 }
 
+/* Hide scrollbars inside luxury centered stationery frame */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Slow vinyl rotation & subtle ambient backdrop motion */
+@keyframes invitovix-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-disc-spin {
+  animation: invitovix-spin-slow 9s linear infinite;
+}
+
+@keyframes invitovix-ambient-drift {
+  0%,
+  100% {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.12) translate3d(-1.5%, 1.2%, 0);
+  }
+}
+
+.animate-ambient-drift {
+  animation: invitovix-ambient-drift 18s ease-in-out infinite;
+}
+
+/* Pure compositor ambient particles for InvitationPlayer */
+@keyframes invitovix-particle-fall {
+  0% {
+    transform: translate3d(0, -24px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.75;
+  }
+  88% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(var(--particle-drift, 14px), 108vh, 0)
+      rotate(var(--particle-rotate, 0deg));
+    opacity: 0;
+  }
+}
+
+.invitovix-particle {
+  will-change: transform, opacity;
+  animation: invitovix-particle-fall var(--particle-duration, 8s) linear
+    var(--particle-delay, 0s) infinite;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-disc-spin,
+  .animate-ambient-drift,
+  .invitovix-particle {
+    animation: none;
+  }
+}
+
 /* Bespoke styling for embedded Leaflet / OpenStreetMap pickers */
 .leaflet-container {
   font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif !important;

@@ -16,6 +16,14 @@ const pushMock = vi.fn();
 const refreshMock = vi.fn();
 const prefetchMock = vi.fn();
 
+vi.mock("next/dynamic", () => ({
+  default: () => {
+    return function MockDynamicMap() {
+      return <div data-testid="mock-leaflet-map" />;
+    };
+  },
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: pushMock,
@@ -137,9 +145,38 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     fireEvent.click(sealTab);
     expect(screen.getByText("Embossed Wax Seal")).toBeTruthy();
 
+    // Switch through Content and Audio, then back to Seal; visited panels remain cached (hidden, not destroyed)
+    const contentTab = screen.getByRole("tab", { name: /content/i });
+    fireEvent.mouseDown(contentTab, { button: 0, ctrlKey: false });
+    fireEvent.click(contentTab);
+    expect(screen.getByText("Venue Name (Manual)")).toBeTruthy();
+
+    const audioTab = screen.getByRole("tab", { name: /audio/i });
+    fireEvent.mouseDown(audioTab, { button: 0, ctrlKey: false });
+    fireEvent.click(audioTab);
+    expect(screen.getByText("Background Music")).toBeTruthy();
+
+    fireEvent.mouseDown(sealTab, { button: 0, ctrlKey: false });
+    fireEvent.click(sealTab);
+    expect(screen.getByText("Embossed Wax Seal")).toBeTruthy();
+    expect(screen.getByText("Venue Name (Manual)")).toBeTruthy();
+
+    // Confirm all 6 bottom dock items render inside Studio Inside Card view
+    const dock = screen.getByRole("navigation", { name: /invitation sections/i });
+    const dockLabels = Array.from(dock.querySelectorAll("button")).map((b) =>
+      b.textContent?.trim()
+    );
+    expect(dockLabels).toEqual(["Cover", "Story", "Events", "Venue", "Gallery", "RSVP"]);
+
+    // Toggle Tablet & Desktop device frames cleanly
+    fireEvent.click(screen.getByRole("button", { name: /tablet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /desktop/i }));
+    fireEvent.click(screen.getByRole("button", { name: /mobile/i }));
+    expect(screen.getByText("Preview RSVP Submit")).toBeTruthy();
+
     fireEvent.click(screen.getByRole("button", { name: /dashboard/i }));
     expect(pushMock).toHaveBeenCalledWith("/dashboard");
-  });
+  }, 10000);
 
   it("renders RsvpTable and navigates to Studio from Edit Invite", () => {
     render(

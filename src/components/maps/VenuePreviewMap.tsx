@@ -19,6 +19,7 @@ interface VenuePreviewMapProps {
   venueName: string;
   pinColor?: string;
   accentColor?: string;
+  heightClass?: string;
 }
 
 export function VenuePreviewMap({
@@ -26,6 +27,7 @@ export function VenuePreviewMap({
   venueName,
   pinColor,
   accentColor,
+  heightClass = "h-44",
 }: VenuePreviewMapProps) {
   return (
     <div className="relative rounded-2xl overflow-hidden border border-black/10 shadow-xs">
@@ -37,7 +39,7 @@ export function VenuePreviewMap({
         accentColor={accentColor}
         venueLabel={venueName}
         tileStyle="street"
-        className="w-full h-44"
+        className={`w-full ${heightClass}`}
       />
     </div>
   );

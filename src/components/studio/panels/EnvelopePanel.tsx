@@ -1,12 +1,14 @@
 "use client";
 
+import { memo } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useStudioStore } from "@/store/useStudioStore";
 
-export function EnvelopePanel() {
-  const { designData, updateEnvelope, updateWaxSeal, setPreviewStage } =
-    useStudioStore();
-  const { envelope } = designData;
+export const EnvelopePanel = memo(function EnvelopePanel() {
+  const envelope = useStudioStore((s) => s.designData.envelope);
+  const updateEnvelope = useStudioStore((s) => s.updateEnvelope);
+  const updateWaxSeal = useStudioStore((s) => s.updateWaxSeal);
+  const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
 
   return (
     <div className="space-y-6">
@@ -191,5 +193,5 @@ export function EnvelopePanel() {
       </div>
     </div>
   );
-}
+});
 

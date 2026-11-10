@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { Plus, Trash2 } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
@@ -11,25 +12,30 @@ interface ContentPanelProps {
   userId: string;
 }
 
-export function ContentPanel({ userId }: ContentPanelProps) {
-  const {
-    eventMeta,
-    designData,
-    updateMeta,
-    updateContent,
-    updateSections,
-    addItineraryItem,
-    updateItineraryItem,
-    removeItineraryItem,
-    addGalleryPhoto,
-    removeGalleryPhoto,
-    setPreviewStage,
-  } = useStudioStore();
+export const ContentPanel = memo(function ContentPanel({
+  userId,
+}: ContentPanelProps) {
+  const eventId = useStudioStore((s) => s.eventMeta.id);
+  const eventSlug = useStudioStore((s) => s.eventMeta.slug);
+  const eventDate = useStudioStore((s) => s.eventMeta.event_date);
+  const venueName = useStudioStore((s) => s.eventMeta.venue_name);
+  const venueAddress = useStudioStore((s) => s.eventMeta.venue_address);
+  const venueMapUrl = useStudioStore((s) => s.eventMeta.venue_map_url);
+  const content = useStudioStore((s) => s.designData.content);
+  const sections = useStudioStore((s) => s.designData.sections);
 
-  const { content, sections } = designData;
+  const updateMeta = useStudioStore((s) => s.updateMeta);
+  const updateContent = useStudioStore((s) => s.updateContent);
+  const updateSections = useStudioStore((s) => s.updateSections);
+  const addItineraryItem = useStudioStore((s) => s.addItineraryItem);
+  const updateItineraryItem = useStudioStore((s) => s.updateItineraryItem);
+  const removeItineraryItem = useStudioStore((s) => s.removeItineraryItem);
+  const addGalleryPhoto = useStudioStore((s) => s.addGalleryPhoto);
+  const removeGalleryPhoto = useStudioStore((s) => s.removeGalleryPhoto);
+  const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
 
   const localDatetimeValue = (() => {
-    const d = new Date(eventMeta.event_date);
+    const d = new Date(eventDate);
     if (Number.isNaN(d.getTime())) return "";
     const offset = d.getTimezoneOffset() * 60000;
     return new Date(d.getTime() - offset).toISOString().slice(0, 16);
@@ -45,11 +51,11 @@ export function ContentPanel({ userId }: ContentPanelProps) {
 
         <div>
           <label className="block text-xs text-stone-600 mb-1">
-            Event Slug (/e/{eventMeta.slug})
+            Event Slug (/e/{eventSlug})
           </label>
           <input
             type="text"
-            value={eventMeta.slug}
+            value={eventSlug}
             onChange={(e) => updateMeta({ slug: toSlug(e.target.value) })}
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs font-mono focus:border-stone-900 focus:outline-none"
           />
@@ -79,7 +85,7 @@ export function ContentPanel({ userId }: ContentPanelProps) {
           </label>
           <input
             type="text"
-            value={eventMeta.venue_name}
+            value={venueName}
             onChange={(e) => updateMeta({ venue_name: e.target.value })}
             placeholder="e.g., Royal Palm Conservatory"
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
@@ -87,9 +93,9 @@ export function ContentPanel({ userId }: ContentPanelProps) {
         </div>
 
         <VenueLocationPicker
-          address={eventMeta.venue_address}
-          mapUrl={eventMeta.venue_map_url}
-          venueName={eventMeta.venue_name}
+          address={venueAddress}
+          mapUrl={venueMapUrl}
+          venueName={venueName}
           onChangeAddress={(val) => updateMeta({ venue_address: val })}
           onChangeMapUrl={(val) => updateMeta({ venue_map_url: val })}
           onLocationPicked={({ address, mapUrl }) =>
@@ -112,7 +118,7 @@ export function ContentPanel({ userId }: ContentPanelProps) {
           </label>
           <input
             type="url"
-            value={eventMeta.venue_map_url}
+            value={venueMapUrl}
             onChange={(e) => updateMeta({ venue_map_url: e.target.value })}
             placeholder="https://www.google.com/maps/search/?api=1&query=..."
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
@@ -221,7 +227,7 @@ export function ContentPanel({ userId }: ContentPanelProps) {
 
         <MediaUploader
           userId={userId}
-          eventId={eventMeta.id}
+          eventId={eventId}
           accept="image/png,image/jpeg,image/webp"
           label={content.heroImageUrl ? "Replace Hero Photo" : "Upload Hero Photo"}
           folder="images"
@@ -338,7 +344,7 @@ export function ContentPanel({ userId }: ContentPanelProps) {
         {content.gallery.length < 8 && (
           <MediaUploader
             userId={userId}
-            eventId={eventMeta.id}
+            eventId={eventId}
             accept="image/png,image/jpeg,image/webp"
             label="Add Gallery Photo"
             folder="images"
@@ -416,5 +422,5 @@ export function ContentPanel({ userId }: ContentPanelProps) {
       </div>
     </div>
   );
-}
+});
 
