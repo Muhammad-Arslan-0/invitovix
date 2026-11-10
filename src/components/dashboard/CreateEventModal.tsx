@@ -11,6 +11,7 @@ import { generateUniqueSlug, toSlug } from "@/lib/utils/slug";
 import { mergeDesignData } from "@/lib/templates/presets";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 import { LuxLoader } from "@/components/ui/LuxLoader";
+import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
 
 interface CreateEventModalProps {
   templates: TemplateRecord[];
@@ -33,6 +34,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
   });
   const [venueName, setVenueName] = useState("");
   const [venueAddress, setVenueAddress] = useState("");
+  const [venueMapUrl, setVenueMapUrl] = useState("");
   const [launchPhase, setLaunchPhase] = useState<"idle" | "creating" | "opening">("idle");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +69,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
         event_date: new Date(eventDate).toISOString(),
         venue_name: venueName.trim(),
         venue_address: venueAddress.trim() || null,
+        venue_map_url: venueMapUrl.trim() || null,
         design_data: baseDesign,
         is_published: false,
       })
@@ -338,7 +341,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                     <label className="block text-xs font-medium text-stone-700 mb-1">
                       <span className="inline-flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                        Venue Name *
+                        Venue Name (Manual) *
                       </span>
                     </label>
                     <input
@@ -352,18 +355,22 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
-                    Venue Address (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={venueAddress}
-                    onChange={(e) => setVenueAddress(e.target.value)}
-                    placeholder="Street, city, landmark for Google Maps directions"
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none transition"
-                  />
-                </div>
+                <VenueLocationPicker
+                  address={venueAddress}
+                  mapUrl={venueMapUrl}
+                  venueName={venueName}
+                  onChangeAddress={setVenueAddress}
+                  onChangeMapUrl={setVenueMapUrl}
+                  onLocationPicked={({ address, mapUrl }) => {
+                    setVenueAddress(address);
+                    setVenueMapUrl(mapUrl);
+                  }}
+                  onApplySuggestedName={(name) => setVenueName(name)}
+                  addressLabel="Event Location / Address (Auto-fills from Map)"
+                  addressPlaceholder="Search place or point on map below — or type street & city"
+                  defaultMapExpanded
+                  allowModalExpand={false}
+                />
 
                 {error && (
                   <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">

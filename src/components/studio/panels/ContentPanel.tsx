@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { toSlug } from "@/lib/utils/slug";
 import { MediaUploader } from "../MediaUploader";
+import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
 
 interface ContentPanelProps {
   userId: string;
@@ -74,37 +75,46 @@ export function ContentPanel({ userId }: ContentPanelProps) {
 
         <div>
           <label className="block text-xs text-stone-600 mb-1">
-            Venue Name
+            Venue Name (Manual)
           </label>
           <input
             type="text"
             value={eventMeta.venue_name}
             onChange={(e) => updateMeta({ venue_name: e.target.value })}
+            placeholder="e.g., Royal Palm Conservatory"
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
           />
         </div>
 
-        <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Venue Address
-          </label>
-          <input
-            type="text"
-            value={eventMeta.venue_address}
-            onChange={(e) => updateMeta({ venue_address: e.target.value })}
-            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
-          />
-        </div>
+        <VenueLocationPicker
+          address={eventMeta.venue_address}
+          mapUrl={eventMeta.venue_map_url}
+          venueName={eventMeta.venue_name}
+          onChangeAddress={(val) => updateMeta({ venue_address: val })}
+          onChangeMapUrl={(val) => updateMeta({ venue_map_url: val })}
+          onLocationPicked={({ address, mapUrl }) =>
+            updateMeta({
+              venue_address: address,
+              venue_map_url: mapUrl,
+            })
+          }
+          onApplySuggestedName={(name) => updateMeta({ venue_name: name })}
+          addressLabel="Venue Location (Auto-fills from Map)"
+          addressPlaceholder="Click on map or search address..."
+          defaultMapExpanded
+          allowModalExpand
+          compact
+        />
 
         <div>
           <label className="block text-xs text-stone-600 mb-1">
-            Custom Google Maps URL (Optional)
+            Pinned Maps URL (Auto-generated or custom)
           </label>
           <input
             type="url"
             value={eventMeta.venue_map_url}
             onChange={(e) => updateMeta({ venue_map_url: e.target.value })}
-            placeholder="https://maps.google.com/..."
+            placeholder="https://www.google.com/maps/search/?api=1&query=..."
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
           />
         </div>

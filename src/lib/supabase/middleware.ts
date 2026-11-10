@@ -15,6 +15,11 @@ export async function updateSession(request: NextRequest) {
 
   const { url, anonKey, isConfigured } = getSupabaseEnv();
   const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith("/api/geocode")) {
+    return supabaseResponse;
+  }
+
   const isProtected =
     pathname.startsWith("/dashboard") || pathname.startsWith("/studio");
 

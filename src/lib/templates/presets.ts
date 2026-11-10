@@ -490,7 +490,7 @@ export const DEMO_EVENT: EventRecord = {
   venue_name: "The Serai Courtyard & Conservatory",
   venue_address: "42 Rose Garden Avenue, Gulberg III, Lahore",
   venue_map_url:
-    "https://www.google.com/maps/search/?api=1&query=Gulberg+III+Lahore",
+    "https://www.google.com/maps/search/?api=1&query=31.510500,74.348700",
   audio_url: "/audio/ambient-piano.wav",
   design_data: STARTER_TEMPLATES[0].default_config,
   is_published: true,

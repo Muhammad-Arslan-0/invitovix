@@ -9,6 +9,11 @@ import {
   downloadIcsFile,
 } from "@/lib/utils/calendar";
 import {
+  buildOsmLinkUrl,
+  parseCoordinatesFromMapUrl,
+} from "@/lib/utils/location";
+import { VenuePreviewMap } from "@/components/maps/VenuePreviewMap";
+import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
@@ -37,6 +42,8 @@ export function VenueScene({
   if (!sections.showVenue) return null;
 
   const mapsUrl = buildMapsUrl(venueName, venueAddress, venueMapUrl);
+  const coords = parseCoordinatesFromMapUrl(venueMapUrl);
+  const osmUrl = coords ? buildOsmLinkUrl(coords.lat, coords.lng) : null;
   const calendarInput = {
     title: content.headline || title,
     startDateIso: eventDate,
@@ -103,7 +110,18 @@ export function VenueScene({
           </p>
         )}
 
-        <div className="mt-6 flex flex-col gap-2.5">
+        {coords && (
+          <div className="mt-5 text-left">
+            <VenuePreviewMap
+              coordinates={coords}
+              venueName={venueName}
+              pinColor={theme.palette.primary}
+              accentColor={theme.palette.accent}
+            />
+          </div>
+        )}
+
+        <div className="mt-5 flex flex-col gap-2.5">
           <a
             href={mapsUrl}
             target="_blank"
@@ -121,6 +139,25 @@ export function VenueScene({
             <Navigation className="w-4 h-4" />
             <span>Open Directions in Google Maps</span>
           </a>
+
+          {osmUrl && (
+            <a
+              href={osmUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                borderColor: `${theme.palette.accent}44`,
+                color: theme.palette.mutedText,
+              }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-medium transition hover:opacity-80"
+            >
+              <MapPin
+                className="w-3 h-3"
+                style={{ color: theme.palette.accent }}
+              />
+              <span>Open Pin in OpenStreetMap</span>
+            </a>
+          )}
 
           <div className="grid grid-cols-2 gap-2.5">
             <a
