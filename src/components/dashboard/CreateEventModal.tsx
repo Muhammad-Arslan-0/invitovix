@@ -1,15 +1,33 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "framer-motion";
-import { Calendar, Check, Loader2, MapPin, Plus, Sparkles, X } from "lucide-react";
-import { TemplateRecord } from "@/types/invitation";
+import {
+  Award,
+  Cake,
+  Calendar,
+  Check,
+  Heart,
+  Loader2,
+  MapPin,
+  PartyPopper,
+  Plus,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { InvitationDomainId, TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
 import { generateUniqueSlug, toSlug } from "@/lib/utils/slug";
 import {
-  isWeddingTemplate,
+  INVITATION_DOMAINS,
+  formatCategoryBadge,
+  getDomainConfig,
+  getInvitationTypeMeta,
+} from "@/lib/templates/categories";
+import {
+  getTemplatesByDomain,
   mergeDesignData,
   resolveCardBackdropUrl,
 } from "@/lib/templates/presets";
@@ -20,14 +38,29 @@ import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
 interface CreateEventModalProps {
   templates: TemplateRecord[];
   userId: string;
+  defaultDomain?: InvitationDomainId;
 }
 
-export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
+const DOMAIN_ICONS: Record<InvitationDomainId, typeof Heart> = {
+  wedding: Heart,
+  birthday: Cake,
+  gala: Award,
+  party: PartyPopper,
+};
+
+export function CreateEventModal({
+  templates,
+  userId,
+  defaultDomain = "wedding",
+}: CreateEventModalProps) {
   const router = useRouter();
-  const weddingTemplates = templates.filter(isWeddingTemplate);
   const [open, setOpen] = useState(false);
+  const [selectedDomain, setSelectedDomain] =
+    useState<InvitationDomainId>(defaultDomain);
+
+  const domainTemplates = getTemplatesByDomain(templates, selectedDomain);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
-    weddingTemplates[0]?.id ?? ""
+    () => getTemplatesByDomain(templates, defaultDomain)[0]?.id ?? ""
   );
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -40,13 +73,33 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
   const [venueName, setVenueName] = useState("");
   const [venueAddress, setVenueAddress] = useState("");
   const [venueMapUrl, setVenueMapUrl] = useState("");
-  const [launchPhase, setLaunchPhase] = useState<"idle" | "creating" | "opening">("idle");
+  const [launchPhase, setLaunchPhase] = useState<
+    "idle" | "creating" | "opening"
+  >("idle");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!open) {
+      setSelectedDomain(defaultDomain);
+      const list = getTemplatesByDomain(templates, defaultDomain);
+      setSelectedTemplateId(list[0]?.id ?? "");
+    }
+  }, [defaultDomain, open, templates]);
+
+  function handleDomainSelect(domainId: InvitationDomainId) {
+    setSelectedDomain(domainId);
+    const list = getTemplatesByDomain(templates, domainId);
+    setSelectedTemplateId(list[0]?.id ?? "");
+  }
+
   const selectedTemplate =
-    weddingTemplates.find((t) => t.id === selectedTemplateId) ??
-    weddingTemplates[0];
+    domainTemplates.find((t) => t.id === selectedTemplateId) ??
+    domainTemplates[0];
+  const domainConfig = getDomainConfig(selectedDomain);
+  const typeMeta = getInvitationTypeMeta(
+    selectedTemplate?.category ?? domainConfig.subCategories[0]?.id ?? "wedding"
+  );
 
   const isBusy = launchPhase !== "idle" || isPending;
 
@@ -187,6 +240,12 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
       open={open}
       onOpenChange={(next) => {
         if (isBusy) return;
+        if (next) {
+          setError(null);
+          setSelectedDomain(defaultDomain);
+          const list = getTemplatesByDomain(templates, defaultDomain);
+          setSelectedTemplateId(list[0]?.id ?? "");
+        }
         setOpen(next);
       }}
     >
@@ -234,10 +293,10 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                     <span>New Experience</span>
                   </div>
                   <Dialog.Title className="mt-1 text-xl font-serif font-semibold text-stone-900">
-                    Create Wedding Invitation
+                    Create Digital Invitation
                   </Dialog.Title>
                   <Dialog.Description className="text-sm text-stone-500 mt-0.5">
-                    Pick a starter wedding template and enter your ceremony details.
+                    {domainConfig.createModalSubtitle}
                   </Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
@@ -252,14 +311,79 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
               </div>
 
               <form onSubmit={handleCreate} className="mt-6 space-y-5">
-                {/* Template Picker */}
+                {/* Step 1: Strictly Separated Invitation Category Selector */}
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
-                    1. Choose Wedding Template
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">
+                    1. Choose Invitation Category
                   </label>
+                  <div
+                    role="tablist"
+                    aria-label="Choose invitation category"
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                  >
+                    {INVITATION_DOMAINS.map((domain) => {
+                      const active = selectedDomain === domain.id;
+                      const Icon = DOMAIN_ICONS[domain.id];
+                      const count = getTemplatesByDomain(templates, domain.id).length;
+                      return (
+                        <button
+                          key={domain.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          onClick={() => handleDomainSelect(domain.id)}
+                          className={`rounded-2xl border px-3 py-2.5 text-left transition cursor-pointer ${
+                            active
+                              ? "border-stone-900 bg-stone-900 text-white shadow-sm"
+                              : "border-stone-200 bg-stone-50/70 text-stone-700 hover:bg-white hover:border-stone-300"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1.5">
+                            <Icon
+                              className={`w-3.5 h-3.5 shrink-0 ${
+                                active ? "text-amber-300" : "text-amber-700"
+                              }`}
+                            />
+                            <span
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                                active
+                                  ? "bg-white/15 text-amber-200"
+                                  : "bg-stone-200/80 text-stone-600"
+                              }`}
+                            >
+                              {count}
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-xs font-semibold leading-tight">
+                            {domain.label}
+                          </p>
+                          <p
+                            className={`mt-0.5 text-[10px] line-clamp-1 ${
+                              active ? "text-stone-300" : "text-stone-500"
+                            }`}
+                          >
+                            {domain.subLabel}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Step 2: Category-Isolated Template Picker */}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500">
+                      2. Choose {domainConfig.templateLabel} Template
+                    </label>
+                    <span className="text-[11px] font-medium text-stone-500">
+                      {domainTemplates.length}{" "}
+                      {domainTemplates.length === 1 ? "design" : "designs"}
+                    </span>
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                    {weddingTemplates.map((tpl) => {
-                      const active = tpl.id === selectedTemplateId;
+                    {domainTemplates.map((tpl) => {
+                      const active = tpl.id === selectedTemplate?.id;
                       const palette = tpl.default_config.theme.palette;
                       const sceneUrl = resolveCardBackdropUrl(
                         tpl.default_config.theme.cardArt
@@ -299,10 +423,10 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                               {tpl.default_config.envelope.waxSeal.monogram}
                             </span>
                             <span
-                              className="relative z-10 mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-1.5 rounded-full bg-white/75"
+                              className="relative z-10 mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-1.5 rounded-full bg-white/80"
                               style={{ color: palette.primary }}
                             >
-                              {tpl.category}
+                              {formatCategoryBadge(tpl.category)}
                             </span>
                           </div>
                           <p className="mt-2 text-xs font-medium text-stone-900 line-clamp-1">
@@ -323,14 +447,14 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-stone-700 mb-1">
-                      Couple / Wedding Headline *
+                      {typeMeta.createHeadlineLabel}
                     </label>
                     <input
                       type="text"
                       required
                       value={title}
                       onChange={(e) => handleTitleChange(e.target.value)}
-                      placeholder="e.g., Zara & Bilal Nikah"
+                      placeholder={typeMeta.createHeadlinePlaceholder}
                       className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none transition"
                     />
                   </div>
@@ -351,7 +475,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                           setSlugTouched(true);
                           setSlug(toSlug(e.target.value));
                         }}
-                        placeholder="zara-bilal-nikah"
+                        placeholder={typeMeta.createSlugPlaceholder}
                         className="w-full px-3 py-2.5 text-sm focus:outline-none"
                       />
                     </div>
@@ -385,7 +509,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                       required
                       value={venueName}
                       onChange={(e) => setVenueName(e.target.value)}
-                      placeholder="e.g., Royal Palm Conservatory"
+                      placeholder={typeMeta.createVenuePlaceholder}
                       className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none transition"
                     />
                   </div>

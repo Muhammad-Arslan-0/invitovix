@@ -25,7 +25,7 @@ describe("useStudioStore", () => {
     expect(useStudioStore.getState().isDirty).toBe(false);
   });
 
-  it("switches templates while preserving existing headline", () => {
+  it("switches same-domain templates while preserving existing headline and portraits", () => {
     const store = useStudioStore.getState();
     store.hydrateEvent(DEMO_EVENT);
     store.updateContent({ headline: "Custom Event Title" });
@@ -51,5 +51,38 @@ describe("useStudioStore", () => {
       "https://example.com/groom.jpg"
     );
   });
-});
 
+  it("switches categories cleanly across domains and updates layout defaults", () => {
+    const store = useStudioStore.getState();
+    store.hydrateEvent(DEMO_EVENT);
+    store.updateCouple({
+      brideImageUrl: "https://example.com/honoree.jpg",
+    });
+
+    // Switching from starter Wedding headline replaces starter copy with Birthday copy
+    store.switchEventCategory("birthday", STARTER_TEMPLATES);
+    let state = useStudioStore.getState();
+    expect(state.eventMeta.event_type).toBe("birthday");
+    expect(state.designData.theme.presetId).toBe("confetti-atelier");
+    expect(state.designData.content.headline).toBe("Maya Turns 30");
+    expect(state.designData.content.couple.layout).toBe("featured-solo");
+    expect(state.designData.content.couple.brideImageUrl).toBe(
+      "https://example.com/honoree.jpg"
+    );
+
+    // Custom headline is preserved across cross-domain switches
+    store.updateContent({ headline: "Custom Milestone Bash" });
+    store.switchEventCategory("baby-shower", STARTER_TEMPLATES);
+    state = useStudioStore.getState();
+    expect(state.eventMeta.event_type).toBe("baby-shower");
+    expect(state.designData.theme.presetId).toBe("baby-shower-cloud");
+    expect(state.designData.content.headline).toBe("Custom Milestone Bash");
+    expect(state.designData.content.couple.layout).toBe("featured-solo");
+
+    // Within same domain ("party"), switching to anniversary toggles from solo to side-by-side
+    store.switchEventCategory("anniversary", STARTER_TEMPLATES);
+    state = useStudioStore.getState();
+    expect(state.eventMeta.event_type).toBe("anniversary");
+    expect(state.designData.content.couple.layout).toBe("side-by-side");
+  });
+});

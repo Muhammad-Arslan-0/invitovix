@@ -6,10 +6,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ImageIcon, X } from "lucide-react";
 import { EventDesignData, GalleryPhoto } from "@/types/invitation";
 import { getDisplayFontFamily } from "@/lib/utils/fonts";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 
 interface GallerySceneProps {
   id?: string;
   designData: EventDesignData;
+  eventType?: string;
   isStudioPreview?: boolean;
   scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
@@ -17,10 +19,12 @@ interface GallerySceneProps {
 export function GalleryScene({
   id = "invite-gallery",
   designData,
+  eventType = "wedding",
   isStudioPreview = false,
   scrollRootRef,
 }: GallerySceneProps) {
   const { theme, content, sections } = designData;
+  const typeMeta = getInvitationTypeMeta(eventType);
   const [activePhoto, setActivePhoto] = useState<GalleryPhoto | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -43,8 +47,7 @@ export function GalleryScene({
             style={{ color: theme.palette.accent }}
           />
           <p className="text-xs" style={{ color: theme.palette.mutedText }}>
-            Photo Gallery section is enabled — add couple or venue photos in
-            the Content panel.
+            {typeMeta.galleryEmptyHint}
           </p>
         </div>
       </section>

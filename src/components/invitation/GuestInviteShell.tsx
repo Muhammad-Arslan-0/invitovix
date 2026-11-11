@@ -31,6 +31,7 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { formatCategoryBadge } from "@/lib/templates/categories";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { useCountdown } from "@/hooks/useCountdown";
 import { VenuePreviewMap } from "@/components/maps/VenuePreviewMap";
@@ -45,6 +46,7 @@ interface GuestInviteShellProps {
   eventId: string;
   slug: string;
   title: string;
+  eventType?: string;
   eventDate: string;
   venueName: string;
   venueAddress?: string | null;
@@ -58,6 +60,7 @@ export function GuestInviteShell({
   eventId,
   slug,
   title,
+  eventType = "wedding",
   eventDate,
   venueName,
   venueAddress,
@@ -220,7 +223,7 @@ export function GuestInviteShell({
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-400/15 text-amber-200 border border-amber-400/30">
                 <Sparkles className="w-2.5 h-2.5" />
-                Official
+                {formatCategoryBadge(eventType)}
               </span>
             </div>
 
@@ -329,6 +332,7 @@ export function GuestInviteShell({
             eventId={eventId}
             slug={slug}
             title={title}
+            eventType={eventType}
             eventDate={eventDate}
             venueName={venueName}
             venueAddress={venueAddress}

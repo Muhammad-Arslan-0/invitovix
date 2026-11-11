@@ -33,6 +33,15 @@ export const cardBorderStyleSchema = z.enum([
   "botanical-vine",
 ]);
 
+export const invitationDomainIdSchema = z.enum([
+  "wedding",
+  "birthday",
+  "gala",
+  "party",
+]);
+
+export type InvitationDomainId = z.infer<typeof invitationDomainIdSchema>;
+
 export const cardBackdropPresetSchema = z.enum([
   "none",
   "nikah-courtyard",
@@ -42,6 +51,11 @@ export const cardBackdropPresetSchema = z.enum([
   "engagement-bloom",
   "abstract-silk",
   "moonlit-garden",
+  "birthday-confetti",
+  "birthday-candles",
+  "gala-noir",
+  "baby-shower",
+  "graduation-laurel",
   "custom",
 ]);
 
@@ -57,6 +71,7 @@ export const coupleFrameShapeSchema = z.enum([
   "oval",
   "scallop",
   "polaroid",
+  "rounded",
 ]);
 
 export const cardArtSchema = z.object({
@@ -69,7 +84,7 @@ export const cardArtSchema = z.object({
 });
 
 export const coupleProfileSchema = z.object({
-  layout: z.enum(["side-by-side", "editorial-split"]),
+  layout: z.enum(["side-by-side", "editorial-split", "featured-solo"]),
   frameShape: coupleFrameShapeSchema,
   crestText: z.string().max(16),
   brideName: z.string(),
@@ -180,9 +195,15 @@ export type EventCategory =
   | "mehndi"
   | "baraat"
   | "valima"
+  | "walima"
   | "engagement"
   | "birthday"
-  | "gala";
+  | "gala"
+  | "corporate"
+  | "baby-shower"
+  | "anniversary"
+  | "graduation"
+  | "party";
 export type AttendingStatus = "attending" | "declined" | "tentative";
 
 export interface TemplateRecord {

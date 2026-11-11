@@ -4,7 +4,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
 import { getVisibleInvitationSections } from "@/components/invitation/InvitationBottomNav";
-import { DEMO_EVENT, mergeDesignData } from "@/lib/templates/presets";
+import {
+  DEMO_EVENT,
+  mergeDesignData,
+  resolveDemoEventForPreset,
+} from "@/lib/templates/presets";
 import { getContrastTextColor, isLightHexColor } from "@/lib/utils/colors";
 
 vi.mock("next/link", () => ({
@@ -77,7 +81,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
     expect(getContrastTextColor("#114232")).toBe("#FFFFFF");
   });
 
-  it("filters bottom navigation sections dynamically based on EventDesignData flags", () => {
+  it("filters bottom navigation sections dynamically based on EventDesignData flags & category", () => {
     const base = mergeDesignData(DEMO_EVENT.design_data);
     expect(getVisibleInvitationSections(base).map((i) => i.id)).toEqual([
       "invite-hero",
@@ -87,6 +91,17 @@ describe("Dual-Viewport Invitation Architecture", () => {
       "invite-venue",
       "invite-rsvp",
     ]);
+
+    expect(
+      getVisibleInvitationSections(base, false, "birthday").find(
+        (i) => i.id === "invite-couple"
+      )?.label
+    ).toBe("Honoree");
+    expect(
+      getVisibleInvitationSections(base, false, "gala").find(
+        (i) => i.id === "invite-couple"
+      )?.label
+    ).toBe("Hosts");
 
     const studioWithGallery = {
       ...base,
@@ -240,5 +255,43 @@ describe("Dual-Viewport Invitation Architecture", () => {
     fireEvent.click(coverTab!);
     expect(coverTab!.getAttribute("aria-current")).toBe("location");
     expect(rsvpTab!.getAttribute("aria-current")).toBeNull();
+  });
+
+  it("renders Birthday GuestInviteShell with solo honoree spotlight, Birthday wing badge, and Honoree nav", async () => {
+    const birthdayDemo = resolveDemoEventForPreset("confetti-atelier");
+
+    render(
+      <GuestInviteShell
+        eventId={birthdayDemo.id}
+        slug={birthdayDemo.slug}
+        title={birthdayDemo.title}
+        eventType={birthdayDemo.event_type}
+        eventDate={birthdayDemo.event_date}
+        venueName={birthdayDemo.venue_name}
+        venueAddress={birthdayDemo.venue_address}
+        venueMapUrl={birthdayDemo.venue_map_url}
+        audioUrl={birthdayDemo.audio_url}
+        designData={birthdayDemo.design_data}
+      />
+    );
+
+    expect(screen.getByTestId("desktop-left-wing").textContent).toContain(
+      "Birthday"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open & rsvp/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("solo-spotlight-card")).toBeTruthy();
+        expect(screen.getByRole("heading", { name: "Birthday Star" })).toBeTruthy();
+        expect(screen.getByText("Party Schedule")).toBeTruthy();
+        expect(
+          screen.getByRole("navigation", { name: /invitation sections/i })
+            .textContent
+        ).toContain("Honoree");
+      },
+      { timeout: 3000 }
+    );
   });
 });

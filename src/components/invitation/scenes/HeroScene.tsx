@@ -9,11 +9,13 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { PortraitFrame } from "../PortraitFrame";
 
 interface HeroSceneProps {
   id?: string;
   designData: EventDesignData;
+  eventType?: string;
   eventDate: string;
   venueName: string;
 }
@@ -21,9 +23,11 @@ interface HeroSceneProps {
 export function HeroScene({
   id = "invite-hero",
   designData,
+  eventType = "wedding",
   eventDate,
   venueName,
 }: HeroSceneProps) {
+  const typeMeta = getInvitationTypeMeta(eventType);
   const containerRef = useRef<HTMLElement | null>(null);
   const { theme, content, motion: motionCfg } = designData;
   const [mounted, setMounted] = useState(false);
@@ -108,7 +112,7 @@ export function HeroScene({
         }}
       >
         <Sparkles className="w-3 h-3" />
-        <span>Cordially Invited</span>
+        <span>{typeMeta.heroPillLabel}</span>
       </div>
 
       {/* Host Line */}

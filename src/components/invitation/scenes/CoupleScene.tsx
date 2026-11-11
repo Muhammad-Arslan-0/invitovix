@@ -8,12 +8,14 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { PortraitFrame } from "../PortraitFrame";
 import { OrnamentalDivider } from "../CardOrnamentFrame";
 
 interface CoupleSceneProps {
   id?: string;
   designData: EventDesignData;
+  eventType?: string;
   isStudioPreview?: boolean;
   scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
@@ -21,6 +23,7 @@ interface CoupleSceneProps {
 export function CoupleScene({
   id = "invite-couple",
   designData,
+  eventType = "wedding",
   isStudioPreview = false,
   scrollRootRef,
 }: CoupleSceneProps) {
@@ -28,7 +31,14 @@ export function CoupleScene({
   if (!sections.showCouple) return null;
 
   const { couple } = content;
-  const isSplit = couple.layout === "editorial-split";
+  const typeMeta = getInvitationTypeMeta(eventType);
+  const isSolo =
+    couple.layout === "featured-solo" ||
+    (!couple.groomName.trim() && typeMeta.isSoloDefault);
+  const isSplit = !isSolo && couple.layout === "editorial-split";
+
+  const person1Name = couple.brideName || typeMeta.person1ShortLabel;
+  const person2Name = couple.groomName || typeMeta.person2ShortLabel;
 
   return (
     <motion.section
@@ -55,7 +65,7 @@ export function CoupleScene({
           className="text-[10px] sm:text-[11px] uppercase tracking-[0.26em]"
           style={{ color: theme.palette.accent }}
         >
-          With Blessings &amp; Love
+          {typeMeta.eyebrow}
         </p>
         <h2
           className="mt-1 text-2xl sm:text-3xl font-semibold"
@@ -64,24 +74,87 @@ export function CoupleScene({
             fontFamily: getDisplayFontFamily(theme.typography.displayFont),
           }}
         >
-          Bride &amp; Groom
+          {typeMeta.sectionHeading}
         </h2>
       </div>
 
-      {isSplit ? (
+      {isSolo ? (
+        <div
+          data-testid="solo-spotlight-card"
+          className="rounded-3xl border px-6 py-7 shadow-sm backdrop-blur-xs text-center flex flex-col items-center"
+          style={{
+            backgroundColor: `${theme.palette.surface}EB`,
+            borderColor: `${theme.palette.accent}42`,
+          }}
+        >
+          <div className="w-40 sm:w-44">
+            <PortraitFrame
+              imageUrl={couple.brideImageUrl}
+              alt={person1Name}
+              roleBadge={typeMeta.person1BadgeLabel}
+              caption={typeMeta.person1ShortLabel}
+              shape={couple.frameShape}
+              primaryColor={theme.palette.primary}
+              accentColor={theme.palette.accent}
+              surfaceColor={theme.palette.background}
+              textColor={theme.palette.text}
+              displayFont={theme.typography.displayFont}
+              scriptFont={theme.typography.scriptFont}
+              isStudioPreview={isStudioPreview}
+            />
+          </div>
+          {couple.crestText && (
+            <span
+              aria-hidden="true"
+              className="mt-3 inline-flex w-8 h-8 rounded-full border items-center justify-center text-sm shadow-xs"
+              style={{
+                borderColor: `${theme.palette.accent}66`,
+                color: theme.palette.accent,
+                backgroundColor: theme.palette.surface,
+              }}
+            >
+              {couple.crestText}
+            </span>
+          )}
+          <h3
+            className="mt-2.5 text-2xl font-semibold leading-snug"
+            style={{
+              color: theme.palette.primary,
+              fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+            }}
+          >
+            {person1Name}
+          </h3>
+          {couple.brideRole && (
+            <p
+              className="mt-1.5 text-xs sm:text-sm leading-relaxed max-w-xs"
+              style={{
+                color: theme.palette.mutedText,
+                fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+              }}
+            >
+              {couple.brideRole}
+            </p>
+          )}
+        </div>
+      ) : isSplit ? (
         <div className="space-y-4">
           {[
             {
               key: "bride",
-              name: couple.brideName || "The Bride",
-              role: couple.brideRole || "The Bride",
+              name: person1Name,
+              badge: typeMeta.person1BadgeLabel,
+              shortRole: typeMeta.person1ShortLabel,
+              role: couple.brideRole || typeMeta.person1ShortLabel,
               imageUrl: couple.brideImageUrl,
               tilt: "left" as const,
             },
             {
               key: "groom",
-              name: couple.groomName || "The Groom",
-              role: couple.groomRole || "The Groom",
+              name: person2Name,
+              badge: typeMeta.person2BadgeLabel,
+              shortRole: typeMeta.person2ShortLabel,
+              role: couple.groomRole || typeMeta.person2ShortLabel,
               imageUrl: couple.groomImageUrl,
               tilt: "right" as const,
             },
@@ -100,7 +173,7 @@ export function CoupleScene({
                 <PortraitFrame
                   imageUrl={partner.imageUrl}
                   alt={partner.name}
-                  roleBadge={partner.key === "bride" ? "Bride" : "Groom"}
+                  roleBadge={partner.badge}
                   caption={partner.name}
                   shape={couple.frameShape}
                   primaryColor={theme.palette.primary}
@@ -118,7 +191,7 @@ export function CoupleScene({
                   className="text-[10px] uppercase tracking-[0.22em] font-medium"
                   style={{ color: theme.palette.accent }}
                 >
-                  {partner.key === "bride" ? "The Bride" : "The Groom"}
+                  {partner.shortRole}
                 </span>
                 <h3
                   className="mt-1 text-xl font-semibold leading-snug"
@@ -155,14 +228,14 @@ export function CoupleScene({
           }}
         >
           <div className="grid grid-cols-2 gap-4 sm:gap-6 items-start relative">
-            {/* Bride Column */}
+            {/* Person 1 Column */}
             <div className="text-center flex flex-col items-center">
               <div className="w-full max-w-[144px]">
                 <PortraitFrame
                   imageUrl={couple.brideImageUrl}
-                  alt={couple.brideName || "The Bride"}
-                  roleBadge="Bride"
-                  caption={couple.brideName || "The Bride"}
+                  alt={person1Name}
+                  roleBadge={typeMeta.person1BadgeLabel}
+                  caption={person1Name}
                   shape={couple.frameShape}
                   primaryColor={theme.palette.primary}
                   accentColor={theme.palette.accent}
@@ -183,7 +256,7 @@ export function CoupleScene({
                   ),
                 }}
               >
-                {couple.brideName || "The Bride"}
+                {person1Name}
               </h3>
               {couple.brideRole && (
                 <p
@@ -217,14 +290,14 @@ export function CoupleScene({
               </div>
             </div>
 
-            {/* Groom Column */}
+            {/* Person 2 Column */}
             <div className="text-center flex flex-col items-center">
               <div className="w-full max-w-[144px]">
                 <PortraitFrame
                   imageUrl={couple.groomImageUrl}
-                  alt={couple.groomName || "The Groom"}
-                  roleBadge="Groom"
-                  caption={couple.groomName || "The Groom"}
+                  alt={person2Name}
+                  roleBadge={typeMeta.person2BadgeLabel}
+                  caption={person2Name}
                   shape={couple.frameShape}
                   primaryColor={theme.palette.primary}
                   accentColor={theme.palette.accent}
@@ -245,7 +318,7 @@ export function CoupleScene({
                   ),
                 }}
               >
-                {couple.groomName || "The Groom"}
+                {person2Name}
               </h3>
               {couple.groomRole && (
                 <p

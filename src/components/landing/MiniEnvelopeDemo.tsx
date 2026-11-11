@@ -4,7 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Sparkles, Volume2 } from "lucide-react";
-import { resolveCardBackdropUrl, STARTER_TEMPLATES } from "@/lib/templates/presets";
+import {
+  resolveCardBackdropUrl,
+  WEDDING_STARTER_TEMPLATES,
+} from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
 import {
   getDisplayFontFamily,
@@ -41,16 +44,17 @@ export function MiniEnvelopeDemo({
     onSelectIdx?.(idx);
   };
 
-  const templateRecord = STARTER_TEMPLATES[activeIdx] ?? STARTER_TEMPLATES[0];
+  const templateRecord =
+    WEDDING_STARTER_TEMPLATES[activeIdx] ?? WEDDING_STARTER_TEMPLATES[0];
   const cfg = templateRecord.default_config;
   const { palette, typography, cardArt } = cfg.theme;
   const backdropUrl = resolveCardBackdropUrl(cardArt);
 
   return (
     <div className="relative mx-auto w-full max-w-[390px]">
-      {/* Theme Swatch Switcher */}
-      <div className="mx-auto mb-4 flex max-w-[285px] flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
-        {STARTER_TEMPLATES.map((tpl, idx) => {
+      {/* Wedding Theme Swatch Switcher */}
+      <div className="mx-auto mb-4 flex max-w-[330px] flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
+        {WEDDING_STARTER_TEMPLATES.map((tpl, idx) => {
           const active = idx === activeIdx;
           const shortName =
             SHORT_LABEL_BY_PRESET[tpl.default_config.theme.presetId] ??

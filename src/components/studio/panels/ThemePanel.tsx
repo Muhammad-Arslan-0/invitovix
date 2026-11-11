@@ -1,15 +1,22 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { ImagePlus, Sparkles, Trash2 } from "lucide-react";
 import { TemplateRecord } from "@/types/invitation";
 import { useStudioStore } from "@/store/useStudioStore";
+import {
+  INVITATION_DOMAINS,
+  formatCategoryBadge,
+  getDomainConfig,
+  getDomainForCategory,
+} from "@/lib/templates/categories";
 import {
   CARD_BACKDROP_PRESETS,
   CARD_BORDER_OPTIONS,
   CARD_MOTIF_OPTIONS,
   HERO_FRAME_OPTIONS,
-  isWeddingTemplate,
+  getBackdropPresetsForDomain,
+  getTemplatesByDomain,
   resolveCardBackdropUrl,
 } from "@/lib/templates/presets";
 import { MediaUploader } from "../MediaUploader";
@@ -24,28 +31,112 @@ export const ThemePanel = memo(function ThemePanel({
   userId,
 }: ThemePanelProps) {
   const eventId = useStudioStore((s) => s.eventMeta.id);
+  const eventType = useStudioStore((s) => s.eventMeta.event_type);
   const templateId = useStudioStore((s) => s.eventMeta.template_id);
   const theme = useStudioStore((s) => s.designData.theme);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
+  const switchEventCategory = useStudioStore((s) => s.switchEventCategory);
   const updatePalette = useStudioStore((s) => s.updatePalette);
   const updateTypography = useStudioStore((s) => s.updateTypography);
   const updateCardArt = useStudioStore((s) => s.updateCardArt);
   const setPaperTexture = useStudioStore((s) => s.setPaperTexture);
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
 
+  const [showAllScenes, setShowAllScenes] = useState(false);
+
   const { palette, typography, paperTexture, cardArt } = theme;
   const activeBackdropUrl = resolveCardBackdropUrl(cardArt);
-  const weddingTemplates = templates.filter(isWeddingTemplate);
+  const currentDomain = getDomainForCategory(eventType);
+  const domainConfig = getDomainConfig(currentDomain);
+  const domainTemplates = getTemplatesByDomain(templates, currentDomain);
+  const domainScenes = showAllScenes
+    ? CARD_BACKDROP_PRESETS
+    : getBackdropPresetsForDomain(currentDomain);
 
   return (
     <div className="space-y-6">
-      {/* Starter Template Switcher */}
+      {/* Invitation Category Switcher */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
-          Wedding Templates
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">
+          Invitation Category
         </h3>
+        <div
+          role="group"
+          aria-label="Invitation Category"
+          className="grid grid-cols-2 gap-1.5"
+        >
+          {INVITATION_DOMAINS.map((domain) => {
+            const active = domain.id === currentDomain;
+            return (
+              <button
+                key={domain.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() =>
+                  switchEventCategory(domain.subCategories[0].id, templates)
+                }
+                className={`rounded-xl border px-2.5 py-2 text-left transition cursor-pointer ${
+                  active
+                    ? "border-stone-900 bg-stone-900 text-white shadow-2xs"
+                    : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                }`}
+              >
+                <p className="text-[11px] font-semibold leading-tight">
+                  {domain.label}
+                </p>
+                <p
+                  className={`text-[9.5px] mt-0.5 line-clamp-1 ${
+                    active ? "text-amber-200/90" : "text-stone-400"
+                  }`}
+                >
+                  {domain.subLabel}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+
+        {domainConfig.subCategories.length > 1 && (
+          <div className="mt-2.5">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400 mb-1.5">
+              Event Focus
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {domainConfig.subCategories.map((sub) => {
+                const subActive =
+                  (eventType ?? "wedding").trim().toLowerCase() === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => switchEventCategory(sub.id, templates)}
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition cursor-pointer ${
+                      subActive
+                        ? "bg-amber-600 text-white shadow-2xs"
+                        : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-white"
+                    }`}
+                  >
+                    {sub.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Category-Isolated Template Switcher */}
+      <div className="border-t border-stone-200 pt-5">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            {domainConfig.templateLabel} Templates
+          </h3>
+          <span className="text-[10px] text-stone-400 font-medium">
+            {domainTemplates.length} styles
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
-          {weddingTemplates.map((tpl) => {
+          {domainTemplates.map((tpl) => {
             const active = templateId === tpl.id;
             const p = tpl.default_config.theme.palette;
             const bgImg = resolveCardBackdropUrl(
@@ -95,7 +186,7 @@ export const ThemePanel = memo(function ThemePanel({
                     className="relative z-10 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-white/85"
                     style={{ color: p.primary }}
                   >
-                    {tpl.category}
+                    {formatCategoryBadge(tpl.category)}
                   </span>
                 </div>
                 <p className="text-xs font-medium text-stone-900 line-clamp-1">
@@ -107,24 +198,33 @@ export const ThemePanel = memo(function ThemePanel({
         </div>
       </div>
 
-      {/* Marriage Scenes & Card Background */}
+      {/* Category Scenes & Card Background */}
       <div className="border-t border-stone-200 pt-5 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-            <ImagePlus className="w-3.5 h-3.5 text-amber-700" />
-            <span>Marriage Scenes &amp; Background</span>
+            <ImagePlus className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+            <span>{domainConfig.sceneSectionHeading}</span>
           </h3>
-          <button
-            type="button"
-            onClick={() => setPreviewStage("opened")}
-            className="text-[11px] font-medium text-amber-700 hover:underline cursor-pointer"
-          >
-            Preview Card
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowAllScenes((prev) => !prev)}
+              className="text-[10px] font-medium text-stone-500 hover:text-stone-900 cursor-pointer"
+            >
+              {showAllScenes ? "Category only" : "Show all"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewStage("opened")}
+              className="text-[11px] font-medium text-amber-700 hover:underline cursor-pointer"
+            >
+              Preview
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {CARD_BACKDROP_PRESETS.map((scene) => {
+          {domainScenes.map((scene) => {
             const active = cardArt.backdropPreset === scene.id;
             return (
               <button

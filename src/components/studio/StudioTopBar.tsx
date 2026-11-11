@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
+import { formatCategoryBadge } from "@/lib/templates/categories";
 import { ShareDialog } from "./ShareDialog";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
@@ -27,6 +28,7 @@ export const StudioTopBar = memo(function StudioTopBar({
   const eventId = useStudioStore((s) => s.eventMeta.id);
   const eventTitle = useStudioStore((s) => s.eventMeta.title);
   const eventSlug = useStudioStore((s) => s.eventMeta.slug);
+  const eventType = useStudioStore((s) => s.eventMeta.event_type);
   const isPublished = useStudioStore((s) => s.eventMeta.is_published);
   const isDirty = useStudioStore((s) => s.isDirty);
   const isSaving = useStudioStore((s) => s.isSaving);
@@ -70,6 +72,13 @@ export const StudioTopBar = memo(function StudioTopBar({
           className="text-sm font-serif font-semibold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-stone-900 focus:outline-none px-1 py-0.5 truncate max-w-[180px] sm:max-w-xs"
           aria-label="Invitation Title"
         />
+
+        <span
+          data-testid="studio-category-badge"
+          className="hidden lg:inline-flex items-center rounded-full border border-amber-300/70 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-800 shrink-0"
+        >
+          {formatCategoryBadge(eventType)}
+        </span>
 
         <span
           className={`hidden md:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${

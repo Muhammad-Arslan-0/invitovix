@@ -170,6 +170,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
                 eventId={eventMeta.id}
                 slug={eventMeta.slug}
                 title={eventMeta.title}
+                eventType={eventMeta.event_type}
                 eventDate={eventMeta.event_date}
                 venueName={eventMeta.venue_name}
                 venueAddress={eventMeta.venue_address}

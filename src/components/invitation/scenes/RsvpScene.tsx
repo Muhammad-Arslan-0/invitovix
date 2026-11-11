@@ -16,12 +16,14 @@ import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { LottieAccent } from "../LottieAccent";
 
 interface RsvpSceneProps {
   id?: string;
   eventId: string;
   designData: EventDesignData;
+  eventType?: string;
   isStudioPreview?: boolean;
   scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
@@ -30,10 +32,12 @@ export function RsvpScene({
   id = "invite-rsvp",
   eventId,
   designData,
+  eventType = "wedding",
   isStudioPreview = false,
   scrollRootRef,
 }: RsvpSceneProps) {
   const { theme, content, sections } = designData;
+  const typeMeta = getInvitationTypeMeta(eventType);
 
   const [guestName, setGuestName] = useState("");
   const [email, setEmail] = useState("");
@@ -246,7 +250,7 @@ export function RsvpScene({
                 required
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                placeholder="e.g., Zara & Bilal Ahmed"
+                placeholder={typeMeta.rsvpNamePlaceholder}
                 style={{
                   borderColor: `${theme.palette.accent}44`,
                   backgroundColor: theme.palette.background,

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
 import { getContrastTextColor } from "@/lib/utils/colors";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 
 export type InvitationSectionId =
   | "invite-hero"
@@ -37,6 +38,7 @@ interface NavItem {
 
 interface InvitationBottomNavProps {
   designData: EventDesignData;
+  eventType?: string;
   isStudioPreview?: boolean;
   bounded?: boolean;
   scrollContainerRef?: RefObject<HTMLDivElement | null>;
@@ -46,15 +48,21 @@ interface InvitationBottomNavProps {
 
 export function getVisibleInvitationSections(
   designData: EventDesignData,
-  isStudioPreview = false
+  isStudioPreview = false,
+  eventType = "wedding"
 ): NavItem[] {
   const { sections, content } = designData;
+  const typeMeta = getInvitationTypeMeta(eventType);
   const items: NavItem[] = [
     { id: "invite-hero", label: "Cover", icon: Sparkles },
   ];
 
   if (sections.showCouple) {
-    items.push({ id: "invite-couple", label: "Couple", icon: UsersRound });
+    items.push({
+      id: "invite-couple",
+      label: typeMeta.bottomNavSpotlightLabel,
+      icon: UsersRound,
+    });
   }
   if (sections.showCountdown || content.storyQuote) {
     items.push({ id: "invite-story", label: "Story", icon: Heart });
@@ -77,6 +85,7 @@ export function getVisibleInvitationSections(
 
 export function InvitationBottomNav({
   designData,
+  eventType = "wedding",
   isStudioPreview = false,
   bounded = false,
   scrollContainerRef,
@@ -85,8 +94,8 @@ export function InvitationBottomNav({
 }: InvitationBottomNavProps) {
   const { theme } = designData;
   const items = useMemo(
-    () => getVisibleInvitationSections(designData, isStudioPreview),
-    [designData, isStudioPreview]
+    () => getVisibleInvitationSections(designData, isStudioPreview, eventType),
+    [designData, isStudioPreview, eventType]
   );
 
   const [activeId, setActiveId] = useState<InvitationSectionId>("invite-hero");
@@ -271,7 +280,7 @@ export function InvitationBottomNav({
               style={{
                 color: active ? activeTextColor : theme.palette.mutedText,
               }}
-              className="relative z-10 flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-[9.5px] sm:text-[10px] font-medium leading-tight tracking-tight transition-colors duration-150 cursor-pointer select-none"
+              className="relative z-10 flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-[9px] sm:text-[10px] font-medium leading-tight tracking-tight transition-colors duration-150 cursor-pointer select-none"
               aria-current={active ? "location" : undefined}
             >
               <Icon className="w-3.5 h-3.5 shrink-0" />

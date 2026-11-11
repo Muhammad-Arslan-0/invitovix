@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -47,11 +47,12 @@ class MockObserver {
   disconnect() {}
 }
 
-describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
+describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => {
   beforeEach(() => {
     pushMock.mockClear();
     refreshMock.mockClear();
     prefetchMock.mockClear();
+    useStudioStore.setState({ activeTab: "theme" });
     globalThis.IntersectionObserver =
       MockObserver as unknown as typeof IntersectionObserver;
     globalThis.ResizeObserver =
@@ -71,7 +72,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     });
   });
 
-  it("renders DashboardClient cleanly on SSR and navigates to Studio on Open Studio click", () => {
+  it("renders DashboardClient and strictly separates categories inside CreateEventModal", () => {
     const sampleEvents = [
       {
         ...DEMO_EVENT,
@@ -90,29 +91,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
       />
     );
     expect(ssrHtml).toContain("Host Dashboard");
-    expect(ssrHtml).toContain("Royal Nikah");
-
-    const mixedWithLegacy = [
-      ...STARTER_TEMPLATES,
-      {
-        id: "11111111-1111-4111-8111-111111111103",
-        title: "Confetti Atelier (Editorial Birthday)",
-        category: "birthday",
-        thumbnail_url: null,
-        is_active: true,
-        created_at: "2026-01-01T00:00:00.000Z",
-        default_config: STARTER_TEMPLATES[0].default_config,
-      },
-      {
-        id: "11111111-1111-4111-8111-111111111104",
-        title: "Noir & Champagne (Black-Tie Gala)",
-        category: "gala",
-        thumbnail_url: null,
-        is_active: true,
-        created_at: "2026-01-01T00:00:00.000Z",
-        default_config: STARTER_TEMPLATES[0].default_config,
-      },
-    ];
+    expect(ssrHtml).toContain("Amina &amp; Zayan");
 
     render(
       <DashboardClient
@@ -120,16 +99,38 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
         userEmail="host@invitovix.test"
         userName="Amina"
         initialEvents={sampleEvents}
-        templates={mixedWithLegacy}
+        templates={STARTER_TEMPLATES}
       />
     );
 
     fireEvent.click(screen.getByRole("button", { name: /new invitation/i }));
-    expect(screen.getByText("Create Wedding Invitation")).toBeTruthy();
+    expect(screen.getByText("Create Digital Invitation")).toBeTruthy();
+
+    // Default category is Weddings: only wedding designs show
+    expect(screen.getByText("2. Choose Wedding Template")).toBeTruthy();
     expect(screen.getByText("Shahi Baraat (Crimson & Zari)")).toBeTruthy();
     expect(screen.getByText("Ivory Magnolia & Rose Engagement")).toBeTruthy();
     expect(screen.queryByText(/Confetti Atelier/i)).toBeNull();
     expect(screen.queryByText(/Black-Tie Gala/i)).toBeNull();
+    expect(screen.queryByText(/Little Cloud Meadow/i)).toBeNull();
+
+    // Switch to Birthdays inside CreateEventModal: only Birthday designs show
+    const categoryTabs = screen.getByRole("tablist", {
+      name: /choose invitation category/i,
+    });
+    fireEvent.click(within(categoryTabs).getByRole("tab", { name: /birthdays/i }));
+    expect(screen.getByText("2. Choose Birthday Template")).toBeTruthy();
+    expect(screen.getByText("Confetti Atelier (Editorial Birthday)")).toBeTruthy();
+    expect(screen.getByText("Sunburst Soiree (Modern Birthday)")).toBeTruthy();
+    expect(screen.queryByText("Shahi Baraat (Crimson & Zari)")).toBeNull();
+    expect(screen.queryByText(/Black-Tie Gala/i)).toBeNull();
+
+    // Switch to Galas & Corporate: only Gala / Corporate designs show
+    fireEvent.click(within(categoryTabs).getByRole("tab", { name: /galas/i }));
+    expect(screen.getByText("Noir & Champagne (Black-Tie Gala)")).toBeTruthy();
+    expect(screen.getByText("Atelier Crest (Executive Summit)")).toBeTruthy();
+    expect(screen.queryByText("Confetti Atelier (Editorial Birthday)")).toBeNull();
+
     fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
 
     const openStudioBtn = screen.getByRole("button", { name: /open studio/i });
@@ -137,8 +138,9 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(pushMock).toHaveBeenCalledWith(`/studio/${DEMO_EVENT.id}`);
   });
 
-  it("hydrates and renders StudioShell, inspector tabs, and live preview canvas without errors", async () => {
+  it("hydrates and renders StudioShell and dynamically adapts inspector + preview when switching categories", async () => {
     useStudioStore.setState({
+      activeTab: "theme",
       eventMeta: {
         ...useStudioStore.getState().eventMeta,
         id: "",
@@ -157,33 +159,14 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     render(
       <StudioShell
         initialEvent={DEMO_EVENT}
-        templates={[
-          ...STARTER_TEMPLATES,
-          {
-            id: "11111111-1111-4111-8111-111111111103",
-            title: "Confetti Atelier (Editorial Birthday)",
-            category: "birthday",
-            thumbnail_url: null,
-            is_active: true,
-            created_at: "2026-01-01T00:00:00.000Z",
-            default_config: STARTER_TEMPLATES[0].default_config,
-          },
-          {
-            id: "11111111-1111-4111-8111-111111111104",
-            title: "Noir & Champagne (Black-Tie Gala)",
-            category: "gala",
-            thumbnail_url: null,
-            is_active: true,
-            created_at: "2026-01-01T00:00:00.000Z",
-            default_config: STARTER_TEMPLATES[0].default_config,
-          },
-        ]}
+        templates={STARTER_TEMPLATES}
         userId={DEMO_EVENT.user_id}
       />
     );
 
     const titleInput = screen.getByLabelText("Invitation Title") as HTMLInputElement;
     expect(titleInput.value).toBe(DEMO_EVENT.title);
+    expect(screen.getByTestId("studio-category-badge").textContent).toBe("Wedding");
     expect(screen.getByText("Wedding Templates")).toBeTruthy();
     expect(screen.getByText("Shahi Baraat (Crimson & Zari)")).toBeTruthy();
     expect(screen.getByText("Ivory Magnolia & Rose Engagement")).toBeTruthy();
@@ -204,7 +187,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     fireEvent.click(sealTab);
     expect(screen.getByText("Embossed Wax Seal")).toBeTruthy();
 
-    // Switch through Content and Audio, then back to Seal; visited panels remain cached (hidden, not destroyed)
+    // Switch through Content and Audio, then back to Seal; visited panels remain cached
     const contentTab = screen.getByRole("tab", { name: /content/i });
     fireEvent.mouseDown(contentTab, { button: 0, ctrlKey: false });
     fireEvent.click(contentTab);
@@ -235,13 +218,34 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
       "RSVP",
     ]);
 
-    // Verify new Studio art & Bride/Groom controls update live store cleanly
+    // Verify art & Bride/Groom controls update live store cleanly
     fireEvent.click(screen.getByRole("button", { name: /floral bouquet/i }));
     expect(useStudioStore.getState().designData.theme.cardArt.motif).toBe(
       "floral-bouquet"
     );
     expect(screen.getByText("Upload Bride Photo")).toBeTruthy();
     expect(screen.getByText("Upload Groom Photo")).toBeTruthy();
+
+    // Switch category from Wedding to Birthdays in Studio ThemePanel
+    const themeTab = screen.getByRole("tab", { name: /theme/i });
+    fireEvent.mouseDown(themeTab, { button: 0, ctrlKey: false });
+    fireEvent.click(themeTab);
+
+    const catGroup = screen.getByRole("group", { name: /invitation category/i });
+    fireEvent.click(within(catGroup).getByRole("button", { name: /birthdays/i }));
+
+    expect(screen.getByTestId("studio-category-badge").textContent).toBe("Birthday");
+    expect(screen.getByText("Birthday Templates")).toBeTruthy();
+    expect(screen.getByText("Confetti Atelier (Editorial Birthday)")).toBeTruthy();
+    expect(screen.queryByText("Shahi Baraat (Crimson & Zari)")).toBeNull();
+    expect(screen.getByText("Upload Honoree Photo")).toBeTruthy();
+    expect(screen.getByText("+ Add Co-Host")).toBeTruthy();
+
+    const updatedDockLabels = Array.from(dock.querySelectorAll("button")).map(
+      (b) => b.textContent?.trim()
+    );
+    expect(updatedDockLabels).toContain("Honoree");
+    expect(updatedDockLabels).not.toContain("Couple");
 
     // Toggle Tablet & Desktop device frames cleanly
     fireEvent.click(screen.getByRole("button", { name: /tablet/i }));
@@ -296,7 +300,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(normalized.sections.showCouple).toBe(false);
   });
 
-  it("merges Supabase templates with new trendy starter templates and preserves uploaded couple portraits on template switch", () => {
+  it("merges Supabase templates across all categories and preserves portraits on switch", () => {
     const mergedCatalog = mergeTemplateCatalog(
       [
         {
@@ -315,17 +319,8 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
           },
         },
         {
-          id: "11111111-1111-4111-8111-111111111103",
-          title: "Confetti Atelier (Editorial Birthday)",
-          category: "birthday",
-          thumbnail_url: null,
-          is_active: true,
-          created_at: "2026-01-01T00:00:00.000Z",
-          default_config: STARTER_TEMPLATES[0].default_config,
-        },
-        {
-          id: "11111111-1111-4111-8111-111111111104",
-          title: "Noir & Champagne (Black-Tie Gala)",
+          id: "22222222-2222-4222-8222-222222222210",
+          title: "Custom Studio Gala",
           category: "gala",
           thumbnail_url: null,
           is_active: true,
@@ -336,9 +331,10 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
       STARTER_TEMPLATES
     );
 
-    expect(mergedCatalog.length).toBe(STARTER_TEMPLATES.length);
-    expect(mergedCatalog.some((t) => t.category === "birthday")).toBe(false);
-    expect(mergedCatalog.some((t) => t.category === "gala")).toBe(false);
+    expect(mergedCatalog.length).toBe(STARTER_TEMPLATES.length + 1);
+    expect(mergedCatalog.some((t) => t.category === "birthday")).toBe(true);
+    expect(mergedCatalog.some((t) => t.category === "gala")).toBe(true);
+    expect(mergedCatalog.some((t) => t.category === "baby-shower")).toBe(true);
     expect(mergedCatalog.some((t) => t.category === "baraat")).toBe(true);
     expect(mergedCatalog.some((t) => t.category === "engagement")).toBe(true);
     expect(mergedCatalog[0].title).toBe("Custom DB Title");

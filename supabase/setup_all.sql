@@ -205,7 +205,7 @@ create policy "Hosts can delete RSVPs for their events"
     )
   );
 
--- Seed 7 Curated Wedding Starter Templates
+-- Seed 15 Multi-Category Starter Templates (Weddings, Birthdays, Galas & Corporate, Parties & Showers)
 insert into public.templates (id, title, category, thumbnail_url, is_active, default_config)
 values
 (
@@ -272,9 +272,24 @@ values
       },
       "dressCode": "Formal Traditional / Emerald & Champagne",
       "itinerary": [
-        { "id": "it-1", "title": "Guest Arrival & Rose Sherbet", "time": "6:30 PM", "description": "Courtyard lantern reception and acoustic strings" },
-        { "id": "it-2", "title": "Nikah Ceremony", "time": "7:30 PM", "description": "Sacred vows beneath the floral pavilion" },
-        { "id": "it-3", "title": "Royal Banquet Dinner", "time": "8:45 PM", "description": "Candlelit feast and family toasts" }
+        {
+          "id": "it-1",
+          "title": "Guest Arrival & Rose Sherbet",
+          "time": "6:30 PM",
+          "description": "Courtyard lantern reception and acoustic strings"
+        },
+        {
+          "id": "it-2",
+          "title": "Nikah Ceremony",
+          "time": "7:30 PM",
+          "description": "Sacred vows beneath the floral pavilion"
+        },
+        {
+          "id": "it-3",
+          "title": "Royal Banquet Dinner",
+          "time": "8:45 PM",
+          "description": "Candlelit feast and family toasts"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Kindly Reply",
@@ -367,9 +382,24 @@ values
       },
       "dressCode": "Garden Couture / Rose, Ivory & Champagne",
       "itinerary": [
-        { "id": "it-1", "title": "Botanical Welcome Tea", "time": "5:00 PM", "description": "Rosewater spritz & acoustic strings under the pergola" },
-        { "id": "it-2", "title": "Vows Beneath the Floral Arch", "time": "6:15 PM", "description": "Intimate ceremony framed by blush peonies" },
-        { "id": "it-3", "title": "Conservatory Candlelight Dinner", "time": "7:45 PM", "description": "Shared tables, speeches, and dessert bar" }
+        {
+          "id": "it-1",
+          "title": "Botanical Welcome Tea",
+          "time": "5:00 PM",
+          "description": "Rosewater spritz & acoustic strings under the pergola"
+        },
+        {
+          "id": "it-2",
+          "title": "Vows Beneath the Floral Arch",
+          "time": "6:15 PM",
+          "description": "Intimate ceremony framed by blush peonies"
+        },
+        {
+          "id": "it-3",
+          "title": "Conservatory Candlelight Dinner",
+          "time": "7:45 PM",
+          "description": "Shared tables, speeches, and dessert bar"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Celebrate With Us",
@@ -462,9 +492,24 @@ values
       },
       "dressCode": "Festive Desi / Mustard, Sage, Coral & Emerald",
       "itinerary": [
-        { "id": "it-1", "title": "Mogra Welcome & Bangles Bar", "time": "7:00 PM", "description": "Fresh jasmine bracelets & artisan henna corner" },
-        { "id": "it-2", "title": "Rasm-e-Heena & Dhol Entrance", "time": "8:30 PM", "description": "Choreographed family dances beneath the fairy lights" },
-        { "id": "it-3", "title": "Late Night Street Feast", "time": "10:00 PM", "description": "Chai cart, kulfi & live qawwali" }
+        {
+          "id": "it-1",
+          "title": "Mogra Welcome & Bangles Bar",
+          "time": "7:00 PM",
+          "description": "Fresh jasmine bracelets & artisan henna corner"
+        },
+        {
+          "id": "it-2",
+          "title": "Rasm-e-Heena & Dhol Entrance",
+          "time": "8:30 PM",
+          "description": "Choreographed family dances beneath the fairy lights"
+        },
+        {
+          "id": "it-3",
+          "title": "Late Night Street Feast",
+          "time": "10:00 PM",
+          "description": "Chai cart, kulfi & live qawwali"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Join the Festivities",
@@ -557,9 +602,24 @@ values
       },
       "dressCode": "Modern Black & Earth Tones",
       "itinerary": [
-        { "id": "it-1", "title": "Atelier Cocktail Hour", "time": "6:00 PM", "description": "Warm espresso tonics & ambient vinyl set" },
-        { "id": "it-2", "title": "Candlelit Signing & Toasts", "time": "7:30 PM", "description": "Minimalist glasshouse vows" },
-        { "id": "it-3", "title": "Tasting Dinner", "time": "8:45 PM", "description": "Four-course contemporary supper" }
+        {
+          "id": "it-1",
+          "title": "Atelier Cocktail Hour",
+          "time": "6:00 PM",
+          "description": "Warm espresso tonics & ambient vinyl set"
+        },
+        {
+          "id": "it-2",
+          "title": "Candlelit Signing & Toasts",
+          "time": "7:30 PM",
+          "description": "Minimalist glasshouse vows"
+        },
+        {
+          "id": "it-3",
+          "title": "Tasting Dinner",
+          "time": "8:45 PM",
+          "description": "Four-course contemporary supper"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Your Presence Matters",
@@ -652,9 +712,24 @@ values
       },
       "dressCode": "Evening Formal / Midnight, Ivory & Pearl",
       "itinerary": [
-        { "id": "it-1", "title": "Red Carpet & Portraits", "time": "7:30 PM", "description": "Welcome mocktails and family photographs" },
-        { "id": "it-2", "title": "Grand Entrance", "time": "8:30 PM", "description": "Candlelit walkway and live instrumental tribute" },
-        { "id": "it-3", "title": "Valima Dinner & Chai Salon", "time": "9:15 PM", "description": "Artisanal culinary showcase and dessert bar" }
+        {
+          "id": "it-1",
+          "title": "Red Carpet & Portraits",
+          "time": "7:30 PM",
+          "description": "Welcome mocktails and family photographs"
+        },
+        {
+          "id": "it-2",
+          "title": "Grand Entrance",
+          "time": "8:30 PM",
+          "description": "Candlelit walkway and live instrumental tribute"
+        },
+        {
+          "id": "it-3",
+          "title": "Valima Dinner & Chai Salon",
+          "time": "9:15 PM",
+          "description": "Artisanal culinary showcase and dessert bar"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Reserve Your Seat",
@@ -747,9 +822,24 @@ values
       },
       "dressCode": "Royal Heritage / Crimson, Ivory & Antique Gold",
       "itinerary": [
-        { "id": "it-1", "title": "Istiqbal-e-Baraat", "time": "7:00 PM", "description": "Grand floral welcome and traditional dhol procession" },
-        { "id": "it-2", "title": "Nikah & Garland Exchange", "time": "8:00 PM", "description": "Sacred vows beneath the crimson jharokha pavilion" },
-        { "id": "it-3", "title": "Shahi Dastarkhwan", "time": "9:15 PM", "description": "Heritage multi-course dinner and family blessings" }
+        {
+          "id": "it-1",
+          "title": "Istiqbal-e-Baraat",
+          "time": "7:00 PM",
+          "description": "Grand floral welcome and traditional dhol procession"
+        },
+        {
+          "id": "it-2",
+          "title": "Nikah & Garland Exchange",
+          "time": "8:00 PM",
+          "description": "Sacred vows beneath the crimson jharokha pavilion"
+        },
+        {
+          "id": "it-3",
+          "title": "Shahi Dastarkhwan",
+          "time": "9:15 PM",
+          "description": "Heritage multi-course dinner and family blessings"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Grace Us With Your Presence",
@@ -842,9 +932,24 @@ values
       },
       "dressCode": "Pastel Sage, Champagne & Pearl",
       "itinerary": [
-        { "id": "it-1", "title": "Garden Aperitifs & Portraits", "time": "5:00 PM", "description": "Welcome tea & magnolia courtyard photos" },
-        { "id": "it-2", "title": "Rasm-e-Nisbat & Ring Exchange", "time": "6:15 PM", "description": "Formal exchange of rings & sweet traditions" },
-        { "id": "it-3", "title": "Sunset Conservatory Dinner", "time": "7:30 PM", "description": "Acoustic violin & intimate celebration feast" }
+        {
+          "id": "it-1",
+          "title": "Garden Aperitifs & Portraits",
+          "time": "5:00 PM",
+          "description": "Welcome tea & magnolia courtyard photos"
+        },
+        {
+          "id": "it-2",
+          "title": "Rasm-e-Nisbat & Ring Exchange",
+          "time": "6:15 PM",
+          "description": "Formal exchange of rings & sweet traditions"
+        },
+        {
+          "id": "it-3",
+          "title": "Sunset Conservatory Dinner",
+          "time": "7:30 PM",
+          "description": "Acoustic violin & intimate celebration feast"
+        }
       ],
       "gallery": [],
       "rsvpHeadline": "Join Our Celebration",
@@ -872,6 +977,880 @@ values
       "volume": 0.55
     }
   }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111103',
+  'Confetti Atelier (Editorial Birthday)',
+  'birthday',
+  '/art/birthday-confetti.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "confetti-atelier",
+      "palette": {
+        "background": "#FFF7F2",
+        "surface": "#FFFFFF",
+        "primary": "#C94B38",
+        "secondary": "#F29E74",
+        "accent": "#E8B931",
+        "text": "#231917",
+        "mutedText": "#755F59"
+      },
+      "typography": {
+        "displayFont": "syne",
+        "bodyFont": "dm-sans",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "vellum",
+      "cardArt": {
+        "motif": "celestial-stars",
+        "borderStyle": "editorial-double",
+        "backdropPreset": "birthday-confetti",
+        "backdropUrl": null,
+        "backdropOpacity": 0.52,
+        "heroFrame": "polaroid"
+      }
+    },
+    "envelope": {
+      "style": "minimal-folio",
+      "envelopeColor": "#C94B38",
+      "linerColor": "#F9DFD5",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#E8B931",
+        "monogram": "30",
+        "emblem": "star"
+      },
+      "promptText": "Tap the golden star seal to pop the celebration"
+    },
+    "content": {
+      "hostLine": "Raise a glass & celebrate the milestone birthday of",
+      "headline": "Maya Turns 30",
+      "subtitle": "Golden hour rooftops, vinyl beats, and unforgettable memories",
+      "storyQuote": "Three decades of adventures — come celebrate the next chapter together!",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "featured-solo",
+        "frameShape": "polaroid",
+        "crestText": "★",
+        "brideName": "Maya Siddiqui",
+        "brideRole": "Turning 30 · Dreamer & Traveler",
+        "brideImageUrl": null,
+        "groomName": "",
+        "groomRole": "",
+        "groomImageUrl": null
+      },
+      "dressCode": "Cocktail Chic / Sunset & Champagne Hues",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Sunset Spritz & Polaroids",
+          "time": "6:00 PM",
+          "description": "Rooftop terrace welcome drinks"
+        },
+        {
+          "id": "it-2",
+          "title": "Candlelight Toasts & Cake",
+          "time": "8:00 PM",
+          "description": "Speeches, sparklers, and artisan cake cutting"
+        },
+        {
+          "id": "it-3",
+          "title": "Late Night Vinyl Set",
+          "time": "9:30 PM",
+          "description": "Dance floor under the string lights"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Are You In?",
+      "rsvpDeadline": "Let us know so we save your spot at the table",
+      "maxGuestsPerParty": 4
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "playful-pop",
+      "particles": "confetti",
+      "lottieAccent": "confetti-burst"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "festive-strings",
+      "trackTitle": "Golden Hour Chimes",
+      "customUrl": null,
+      "volume": 0.65
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111110',
+  'Sunburst Soiree (Modern Birthday)',
+  'birthday',
+  '/art/birthday-candles.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "sunburst-birthday",
+      "palette": {
+        "background": "#FDF8F2",
+        "surface": "#FFFFFF",
+        "primary": "#1D3C6A",
+        "secondary": "#E07A5F",
+        "accent": "#E39B35",
+        "text": "#1B2331",
+        "mutedText": "#616C7D"
+      },
+      "typography": {
+        "displayFont": "syne",
+        "bodyFont": "jakarta",
+        "scriptFont": "cormorant"
+      },
+      "paperTexture": "clean",
+      "cardArt": {
+        "motif": "abstract-organic",
+        "borderStyle": "none",
+        "backdropPreset": "birthday-candles",
+        "backdropUrl": null,
+        "backdropOpacity": 0.56,
+        "heroFrame": "rounded"
+      }
+    },
+    "envelope": {
+      "style": "arch-pocket",
+      "envelopeColor": "#1D3C6A",
+      "linerColor": "#F2C57C",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#E39B35",
+        "monogram": "25",
+        "emblem": "star"
+      },
+      "promptText": "Unseal the art-house invite for a quarter-century toast"
+    },
+    "content": {
+      "hostLine": "Join friends & family for the 25th Birthday Studio Night of",
+      "headline": "Daniyal''s 25th",
+      "subtitle": "Artisan supper club, acoustic jazz & birthday midnight cake",
+      "storyQuote": "Twenty-five years bright — come for dinner, stay for the vinyl afterparty.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "featured-solo",
+        "frameShape": "oval",
+        "crestText": "★",
+        "brideName": "Daniyal Karim",
+        "brideRole": "Quarter-Century Honoree",
+        "brideImageUrl": null,
+        "groomName": "",
+        "groomRole": "",
+        "groomImageUrl": null
+      },
+      "dressCode": "Modern Studio Smart / Cobalt, Terracotta & Cream",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Gallery Welcome Mocktails",
+          "time": "7:00 PM",
+          "description": "Signature citrus spritzes & espresso bar"
+        },
+        {
+          "id": "it-2",
+          "title": "Family-Style Long Table Supper",
+          "time": "8:15 PM",
+          "description": "Shared plates & birthday toasts"
+        },
+        {
+          "id": "it-3",
+          "title": "Cake & Late Night DJ",
+          "time": "9:45 PM",
+          "description": "25 candles & open dance set"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Save Your Seat",
+      "rsvpDeadline": "Confirm headcount below",
+      "maxGuestsPerParty": 4
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "playful-pop",
+      "particles": "confetti",
+      "lottieAccent": "confetti-burst"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "festive-strings",
+      "trackTitle": "Golden Hour Chimes",
+      "customUrl": null,
+      "volume": 0.6
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111111',
+  'Midnight Velvet (Birthday Dinner)',
+  'birthday',
+  '/art/moonlit-garden.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "midnight-birthday",
+      "palette": {
+        "background": "#0E1324",
+        "surface": "#161D35",
+        "primary": "#E5C185",
+        "secondary": "#3A497A",
+        "accent": "#F3D9B1",
+        "text": "#F7F3EA",
+        "mutedText": "#A8B2CE"
+      },
+      "typography": {
+        "displayFont": "playfair",
+        "bodyFont": "jakarta",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "silk",
+      "cardArt": {
+        "motif": "celestial-stars",
+        "borderStyle": "gold-filigree",
+        "backdropPreset": "moonlit-garden",
+        "backdropUrl": null,
+        "backdropOpacity": 0.48,
+        "heroFrame": "oval"
+      }
+    },
+    "envelope": {
+      "style": "royal-flap",
+      "envelopeColor": "#161D35",
+      "linerColor": "#E5C185",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#C99A4E",
+        "monogram": "BD",
+        "emblem": "star"
+      },
+      "promptText": "Tap the starlight crest for Alina''s birthday dinner"
+    },
+    "content": {
+      "hostLine": "An Intimate Candlelit Birthday Supper Honoring",
+      "headline": "Alina Under Starlight",
+      "subtitle": "Four courses, acoustic piano & wishes under midnight skies",
+      "storyQuote": "Good friends, timeless music, and a warm table make every year golden.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "featured-solo",
+        "frameShape": "arch",
+        "crestText": "✦",
+        "brideName": "Alina Tariq",
+        "brideRole": "Birthday Celebrant",
+        "brideImageUrl": null,
+        "groomName": "",
+        "groomRole": "",
+        "groomImageUrl": null
+      },
+      "dressCode": "Midnight Cocktail / Navy, Pearl & Champagne",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Terrace Aperitif Hour",
+          "time": "7:30 PM",
+          "description": "Welcome mocktails & ambient strings"
+        },
+        {
+          "id": "it-2",
+          "title": "Candlelight Birthday Supper",
+          "time": "8:30 PM",
+          "description": "Chef''s tasting menu & toasts"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Join The Table",
+      "rsvpDeadline": "Please confirm attendance",
+      "maxGuestsPerParty": 3
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "cinematic-silk",
+      "particles": "starlight",
+      "lottieAccent": "sparkle-ring"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "ambient-piano",
+      "trackTitle": "Velvet Nocturne",
+      "customUrl": null,
+      "volume": 0.55
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111104',
+  'Noir & Champagne (Black-Tie Gala)',
+  'gala',
+  '/art/gala-noir.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "noir-gala",
+      "palette": {
+        "background": "#0B0B0D",
+        "surface": "#151519",
+        "primary": "#D4AF37",
+        "secondary": "#2A251B",
+        "accent": "#F3E5AB",
+        "text": "#F5F2EB",
+        "mutedText": "#9E978B"
+      },
+      "typography": {
+        "displayFont": "cinzel",
+        "bodyFont": "jakarta",
+        "scriptFont": "cormorant"
+      },
+      "paperTexture": "obsidian",
+      "cardArt": {
+        "motif": "celestial-stars",
+        "borderStyle": "editorial-double",
+        "backdropPreset": "gala-noir",
+        "backdropUrl": null,
+        "backdropOpacity": 0.55,
+        "heroFrame": "arch"
+      }
+    },
+    "envelope": {
+      "style": "art-deco",
+      "envelopeColor": "#151519",
+      "linerColor": "#D4AF37",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#D4AF37",
+        "monogram": "VIP",
+        "emblem": "crown"
+      },
+      "promptText": "Tap the crest to enter the annual gala"
+    },
+    "content": {
+      "hostLine": "An Exclusive Evening Benefiting Creative Arts",
+      "headline": "The Lumiere Gala",
+      "subtitle": "Black-tie dinner, live auction, and symphony showcase",
+      "storyQuote": "Elegance in every detail — celebrating visionaries, patronage, and timeless craft.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "editorial-split",
+        "frameShape": "oval",
+        "crestText": "◆",
+        "brideName": "Dr. Tariq Mahmood",
+        "brideRole": "Keynote Patron · Creative Arts",
+        "brideImageUrl": null,
+        "groomName": "Zara Mansoor",
+        "groomRole": "Evening Gala Chair",
+        "groomImageUrl": null
+      },
+      "dressCode": "Strict Black Tie",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Champagne Reception",
+          "time": "7:00 PM",
+          "description": "Gallery atrium preview & string quartet"
+        },
+        {
+          "id": "it-2",
+          "title": "Keynote & Honors",
+          "time": "8:15 PM",
+          "description": "Three-course gala dinner and awards"
+        },
+        {
+          "id": "it-3",
+          "title": "Midnight Encore",
+          "time": "10:00 PM",
+          "description": "Jazz lounge and curated dessert tasting"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Confirm Attendance",
+      "rsvpDeadline": "Kindly RSVP for seating assignment",
+      "maxGuestsPerParty": 4
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "editorial-fade",
+      "particles": "gold-dust",
+      "lottieAccent": "sparkle-ring"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "ambient-piano",
+      "trackTitle": "Velvet Nocturne",
+      "customUrl": null,
+      "volume": 0.5
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111112',
+  'Atelier Crest (Executive Summit)',
+  'corporate',
+  '/art/abstract-silk.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "executive-summit",
+      "palette": {
+        "background": "#F7F5F0",
+        "surface": "#FFFFFF",
+        "primary": "#1C2430",
+        "secondary": "#4D5E78",
+        "accent": "#B5825E",
+        "text": "#181C23",
+        "mutedText": "#636B78"
+      },
+      "typography": {
+        "displayFont": "syne",
+        "bodyFont": "jakarta",
+        "scriptFont": "cormorant"
+      },
+      "paperTexture": "clean",
+      "cardArt": {
+        "motif": "abstract-organic",
+        "borderStyle": "editorial-double",
+        "backdropPreset": "abstract-silk",
+        "backdropUrl": null,
+        "backdropOpacity": 0.44,
+        "heroFrame": "rounded"
+      }
+    },
+    "envelope": {
+      "style": "minimal-folio",
+      "envelopeColor": "#1C2430",
+      "linerColor": "#DFC3AC",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#B5825E",
+        "monogram": "HDS",
+        "emblem": "monogram"
+      },
+      "promptText": "Unseal your executive delegate folio"
+    },
+    "content": {
+      "hostLine": "Leadership Roundtable & Founders Dinner",
+      "headline": "Horizon Summit",
+      "subtitle": "Founders keynote, private investor dinner & networking salon",
+      "storyQuote": "Gathering architects of technology, craft, and resilient design.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "editorial-split",
+        "frameShape": "rounded",
+        "crestText": "×",
+        "brideName": "Nadia Qureshi",
+        "brideRole": "Keynote Speaker · Managing Partner",
+        "brideImageUrl": null,
+        "groomName": "Omar Aziz",
+        "groomRole": "Summit Program Lead",
+        "groomImageUrl": null
+      },
+      "dressCode": "Executive Business Formal",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Executive Arrival & Coffee Bar",
+          "time": "5:30 PM",
+          "description": "Badge check-in & architectural exhibition"
+        },
+        {
+          "id": "it-2",
+          "title": "Opening Keynote Conversation",
+          "time": "6:30 PM",
+          "description": "Fireside dialogue in the Main Pavilion"
+        },
+        {
+          "id": "it-3",
+          "title": "Private Tasting Dinner",
+          "time": "8:00 PM",
+          "description": "Curated table seating & partner toasts"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Register Your Seat",
+      "rsvpDeadline": "Please confirm delegate attendance",
+      "maxGuestsPerParty": 2
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "editorial-fade",
+      "particles": "none",
+      "lottieAccent": "sparkle-ring"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "ambient-piano",
+      "trackTitle": "Velvet Nocturne",
+      "customUrl": null,
+      "volume": 0.45
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111113',
+  'Little Cloud Meadow (Baby Shower)',
+  'baby-shower',
+  '/art/baby-shower.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "baby-shower-cloud",
+      "palette": {
+        "background": "#F8FAF8",
+        "surface": "#FFFFFF",
+        "primary": "#3D6257",
+        "secondary": "#7FA393",
+        "accent": "#D3A468",
+        "text": "#22312C",
+        "mutedText": "#667871"
+      },
+      "typography": {
+        "displayFont": "cormorant",
+        "bodyFont": "jakarta",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "vellum",
+      "cardArt": {
+        "motif": "floral-bouquet",
+        "borderStyle": "botanical-vine",
+        "backdropPreset": "baby-shower",
+        "backdropUrl": null,
+        "backdropOpacity": 0.54,
+        "heroFrame": "oval"
+      }
+    },
+    "envelope": {
+      "style": "arch-pocket",
+      "envelopeColor": "#4B7065",
+      "linerColor": "#E4D3B6",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#D3A468",
+        "monogram": "B",
+        "emblem": "floral"
+      },
+      "promptText": "Tap the meadow seal to welcome our little miracle"
+    },
+    "content": {
+      "hostLine": "With Love & Joy, Join Us For A Baby Shower Honoring",
+      "headline": "Oh Baby! Celebrating Sara",
+      "subtitle": "Garden high-tea, sweet wishes & a warm welcome before baby arrives",
+      "storyQuote": "Ten tiny fingers and a lifetime of love — come shower Sara with warmth and blessings.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "featured-solo",
+        "frameShape": "oval",
+        "crestText": "♥",
+        "brideName": "Sara Bilal",
+        "brideRole": "Mom-to-Be · Expecting Spring 2027",
+        "brideImageUrl": null,
+        "groomName": "",
+        "groomRole": "",
+        "groomImageUrl": null
+      },
+      "dressCode": "Pastel Botanicals / Sage, Chamomile & Soft Blue",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Garden Tea & Pastry Bar",
+          "time": "3:00 PM",
+          "description": "Welcome mocktails & keepsake polaroids"
+        },
+        {
+          "id": "it-2",
+          "title": "Shower Games & Story Wishes",
+          "time": "4:15 PM",
+          "description": "Handwritten advice cards for baby''s library"
+        },
+        {
+          "id": "it-3",
+          "title": "Afternoon Brunch Table",
+          "time": "5:00 PM",
+          "description": "Savory bites & floral celebration cake"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Share In The Joy",
+      "rsvpDeadline": "Please confirm so we prepare your keepsake seat",
+      "maxGuestsPerParty": 4
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "cinematic-silk",
+      "particles": "petals",
+      "lottieAccent": "floral-flourish"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "celestial-harp",
+      "trackTitle": "Moonlight Harp",
+      "customUrl": null,
+      "volume": 0.5
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111114',
+  'Silver Jubilee (25th Anniversary)',
+  'anniversary',
+  '/art/peony-arch.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "silver-anniversary",
+      "palette": {
+        "background": "#FDF8F5",
+        "surface": "#FFFFFF",
+        "primary": "#5B293C",
+        "secondary": "#8C6270",
+        "accent": "#B8955A",
+        "text": "#251A1E",
+        "mutedText": "#725E65"
+      },
+      "typography": {
+        "displayFont": "playfair",
+        "bodyFont": "cormorant",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "linen",
+      "cardArt": {
+        "motif": "floral-bouquet",
+        "borderStyle": "gold-filigree",
+        "backdropPreset": "peony-arch",
+        "backdropUrl": null,
+        "backdropOpacity": 0.45,
+        "heroFrame": "arch"
+      }
+    },
+    "envelope": {
+      "style": "royal-flap",
+      "envelopeColor": "#5B293C",
+      "linerColor": "#DFC394",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#B8955A",
+        "monogram": "25",
+        "emblem": "floral"
+      },
+      "promptText": "Unseal 25 years of love, laughter & family memories"
+    },
+    "content": {
+      "hostLine": "Hosted With Love By Their Children To Celebrate 25 Years Of",
+      "headline": "Samina & Waqar",
+      "subtitle": "Silver Jubilee Vow Renewal & Candlelit Family Dinner",
+      "storyQuote": "Twenty-five radiant years side by side — honoring every milestone with the people we cherish.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "arch",
+        "crestText": "25",
+        "brideName": "Samina Waqar",
+        "brideRole": "25 Years of Grace",
+        "brideImageUrl": null,
+        "groomName": "Waqar Ahmed",
+        "groomRole": "Forever & Always",
+        "groomImageUrl": null
+      },
+      "dressCode": "Classic Evening / Plum, Silver & Champagne",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Family Archive & Aperitifs",
+          "time": "6:30 PM",
+          "description": "25-year memory gallery walk"
+        },
+        {
+          "id": "it-2",
+          "title": "Silver Jubilee Tribute",
+          "time": "7:30 PM",
+          "description": "Toast & renewal of blessings"
+        },
+        {
+          "id": "it-3",
+          "title": "Candlelight Supper",
+          "time": "8:30 PM",
+          "description": "Three-course celebration feast"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Celebrate With Us",
+      "rsvpDeadline": "Kindly confirm below",
+      "maxGuestsPerParty": 6
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "royal-unfold",
+      "particles": "gold-dust",
+      "lottieAccent": "floral-flourish"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "ambient-piano",
+      "trackTitle": "Velvet Nocturne",
+      "customUrl": null,
+      "volume": 0.55
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111115',
+  'Honor Laurel (Graduation Celebration)',
+  'graduation',
+  '/art/graduation-laurel.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "graduation-laurel",
+      "palette": {
+        "background": "#FAF6EE",
+        "surface": "#FFFFFF",
+        "primary": "#1E3A5F",
+        "secondary": "#4D698E",
+        "accent": "#C5963E",
+        "text": "#182230",
+        "mutedText": "#637082"
+      },
+      "typography": {
+        "displayFont": "cinzel",
+        "bodyFont": "jakarta",
+        "scriptFont": "cormorant"
+      },
+      "paperTexture": "linen",
+      "cardArt": {
+        "motif": "floral-bouquet",
+        "borderStyle": "editorial-double",
+        "backdropPreset": "graduation-laurel",
+        "backdropUrl": null,
+        "backdropOpacity": 0.54,
+        "heroFrame": "oval"
+      }
+    },
+    "envelope": {
+      "style": "arch-pocket",
+      "envelopeColor": "#1E3A5F",
+      "linerColor": "#DFBF7E",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#C5963E",
+        "monogram": "27",
+        "emblem": "crown"
+      },
+      "promptText": "Unseal to celebrate the Class of 2027 milestone"
+    },
+    "content": {
+      "hostLine": "Proudly Inviting You To Celebrate The Graduation Of",
+      "headline": "Ayaan Karim",
+      "subtitle": "B.S. Architecture Honours · Reception Dinner & Toasts",
+      "storyQuote": "Years of curiosity, late studio nights, and unwavering support — come raise a toast to what comes next.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "featured-solo",
+        "frameShape": "oval",
+        "crestText": "27",
+        "brideName": "Ayaan Karim",
+        "brideRole": "Class of 2027 · Magna Cum Laude",
+        "brideImageUrl": null,
+        "groomName": "",
+        "groomRole": "",
+        "groomImageUrl": null
+      },
+      "dressCode": "Smart Conservatory / Navy, Ivory & Olive",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "title": "Garden Reception & Photos",
+          "time": "5:30 PM",
+          "description": "Welcome refreshments & thesis portfolio display"
+        },
+        {
+          "id": "it-2",
+          "title": "Toast To The Graduate",
+          "time": "6:45 PM",
+          "description": "Family reflections & celebratory cake"
+        },
+        {
+          "id": "it-3",
+          "title": "Dinner On The Lawn",
+          "time": "7:30 PM",
+          "description": "Evening feast under olive strings"
+        }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Join The Celebration",
+      "rsvpDeadline": "Please confirm attendance",
+      "maxGuestsPerParty": 5
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "editorial-fade",
+      "particles": "gold-dust",
+      "lottieAccent": "sparkle-ring"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "festive-strings",
+      "trackTitle": "Golden Hour Chimes",
+      "customUrl": null,
+      "volume": 0.55
+    }
+  }'::jsonb
 )
 on conflict (id) do update
   set title = excluded.title,
@@ -879,14 +1858,6 @@ on conflict (id) do update
       thumbnail_url = excluded.thumbnail_url,
       default_config = excluded.default_config,
       is_active = excluded.is_active;
-
-update public.templates
-set is_active = false
-where id in (
-  '11111111-1111-4111-8111-111111111103',
-  '11111111-1111-4111-8111-111111111104'
-)
-or lower(category) in ('birthday', 'gala');
 
 -- Storage Buckets & Access Policies
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

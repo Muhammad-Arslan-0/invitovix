@@ -6,25 +6,47 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Award,
+  Cake,
   CalendarCheck,
+  Heart,
   Loader2,
   Music,
   Palette,
+  PartyPopper,
   QrCode,
   Sparkles,
   Users,
   Wand2,
 } from "lucide-react";
-import { resolveCardBackdropUrl, STARTER_TEMPLATES } from "@/lib/templates/presets";
+import { InvitationDomainId } from "@/types/invitation";
+import {
+  INVITATION_DOMAINS,
+  formatCategoryBadge,
+  getDomainConfig,
+} from "@/lib/templates/categories";
+import {
+  STARTER_TEMPLATES,
+  WEDDING_STARTER_TEMPLATES,
+  getTemplatesByDomain,
+  resolveCardBackdropUrl,
+} from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MiniEnvelopeDemo } from "./MiniEnvelopeDemo";
 import { startNavigation } from "@/components/ui/NavigationProgress";
+
+const DOMAIN_ICONS: Record<InvitationDomainId, typeof Heart> = {
+  wedding: Heart,
+  birthday: Cake,
+  gala: Award,
+  party: PartyPopper,
+};
 
 const FEATURES = [
   {
     icon: Palette,
     title: "Live WYSIWYG Studio",
-    desc: "Customize palettes, paper textures, scalloped wax-seal emblems, and scene copy with instant mobile preview.",
+    desc: "Customize palettes, paper textures, scalloped wax-seal emblems, and scene copy tailored to each celebration category.",
   },
   {
     icon: Music,
@@ -34,7 +56,7 @@ const FEATURES = [
   {
     icon: CalendarCheck,
     title: "Calendar & Maps Sync",
-    desc: "One-tap Google Calendar, Apple .ics download, and direct Google Maps venue directions.",
+    desc: "One-tap Google Calendar, Apple .ics download, interactive map pin selection, and direct Google Maps venue directions.",
   },
   {
     icon: Users,
@@ -47,8 +69,8 @@ const WORKFLOW_STEPS = [
   {
     step: "01",
     icon: Wand2,
-    title: "Choose & Customize",
-    desc: "Start with a curated Nikah, Mehndi, Baraat, Engagement, or Valima template and tune florals, couple portraits, and music.",
+    title: "Pick Your Category & Style",
+    desc: "Choose a dedicated Wedding, Birthday, Gala, or Party & Shower template, then tune portraits, scenes, and music in Studio.",
   },
   {
     step: "02",
@@ -67,6 +89,8 @@ const WORKFLOW_STEPS = [
 export function LandingShowcase() {
   const router = useRouter();
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [activeDomain, setActiveDomain] =
+    useState<InvitationDomainId>("wedding");
   const [navTarget, setNavTarget] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -77,6 +101,9 @@ export function LandingShowcase() {
       router.push(href);
     });
   }
+
+  const activeDomainConfig = getDomainConfig(activeDomain);
+  const visibleTemplates = getTemplatesByDomain(STARTER_TEMPLATES, activeDomain);
 
   return (
     <div className="min-h-screen bg-[#fcfaf7] luxury-editorial-bg text-stone-900">
@@ -136,7 +163,7 @@ export function LandingShowcase() {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-700/20 bg-amber-50/90 px-3.5 py-1 text-xs font-medium text-amber-900 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-            <span>Interactive Wax-Seal Wedding Invitations</span>
+            <span>Interactive Wax-Seal Digital Invitations</span>
           </div>
 
           <h1
@@ -147,10 +174,10 @@ export function LandingShowcase() {
           </h1>
 
           <p className="text-base sm:text-lg text-stone-600 max-w-xl leading-relaxed">
-            Design bespoke animated Nikah, Mehndi, Baraat, Engagement, and
-            Valima wedding invitations in our live visual studio. Guests tap an
-            embossed wax seal to unlock music, multi-scene storytelling, calendar
-            sync, and instant RSVPs.
+            Design bespoke animated invitations across strictly curated categories
+            — Weddings (Nikah, Mehndi, Baraat, Valima), Birthdays, Black-Tie
+            Galas, Baby Showers, and Graduations — each with its own tailored
+            Creator Studio workflow.
           </p>
 
           <div className="flex flex-wrap items-center gap-3.5 pt-2">
@@ -195,9 +222,11 @@ export function LandingShowcase() {
           </div>
 
           <div className="pt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-stone-500">
-            <span>{STARTER_TEMPLATES.length} Starter Aesthetics</span>
+            <span>
+              {WEDDING_STARTER_TEMPLATES.length} Weddings Starter Aesthetics
+            </span>
             <span className="text-amber-600">•</span>
-            <span>Mobile-First Reveal</span>
+            <span>Birthdays, Galas &amp; Showers</span>
             <span className="text-amber-600">•</span>
             <span>Real-Time RSVP Analytics</span>
           </div>
@@ -296,54 +325,96 @@ export function LandingShowcase() {
         </div>
       </section>
 
-      {/* Curated Templates Showcase */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      {/* Strictly Separated Category Collections Showcase */}
+      <section id="templates" className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-amber-700 font-semibold">
-              Wedding Collection
+              {activeDomainConfig.collectionEyebrow}
             </p>
             <h2
               className="mt-1 text-2xl sm:text-3xl font-semibold text-stone-900"
               style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
             >
-              Wedding cards for every ceremony
+              {activeDomainConfig.collectionTitle}
             </h2>
+            <p className="mt-1.5 text-sm text-stone-600 max-w-2xl">
+              {activeDomainConfig.collectionSubtitle}
+            </p>
           </div>
           <Link
             href="/login"
-            className="text-xs font-semibold text-stone-900 underline underline-offset-4 hover:text-amber-800 transition"
+            className="text-xs font-semibold text-stone-900 underline underline-offset-4 hover:text-amber-800 transition shrink-0"
           >
             Customize any template in Studio →
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {STARTER_TEMPLATES.map((tpl, idx) => {
+        {/* Separated Domain Collection Switcher */}
+        <div
+          role="tablist"
+          aria-label="Browse invitation collections by category"
+          className="flex flex-wrap items-center gap-2 mb-8"
+        >
+          {INVITATION_DOMAINS.map((domain) => {
+            const active = domain.id === activeDomain;
+            const Icon = DOMAIN_ICONS[domain.id];
+            const count = getTemplatesByDomain(
+              STARTER_TEMPLATES,
+              domain.id
+            ).length;
+            return (
+              <button
+                key={domain.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveDomain(domain.id)}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition cursor-pointer ${
+                  active
+                    ? "border-stone-900 bg-stone-900 text-white shadow-sm"
+                    : "border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50"
+                }`}
+              >
+                <Icon
+                  className={`w-3.5 h-3.5 ${
+                    active ? "text-amber-300" : "text-amber-700"
+                  }`}
+                />
+                <span>{domain.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                    active
+                      ? "bg-white/15 text-amber-200"
+                      : "bg-stone-100 text-stone-500"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          data-testid="landing-collection-grid"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
+          {visibleTemplates.map((tpl, idx) => {
             const p = tpl.default_config.theme.palette;
             const sceneUrl = resolveCardBackdropUrl(
               tpl.default_config.theme.cardArt
             );
-            const isActiveInHero = selectedIdx === idx;
-            return (
-              <motion.button
-                key={tpl.id}
-                type="button"
-                onClick={() => {
-                  setSelectedIdx(idx);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.45, delay: idx * 0.06 }}
-                whileHover={{ y: -4 }}
-                className={`text-left rounded-3xl border bg-white overflow-hidden shadow-2xs hover:shadow-xl transition-all flex flex-col cursor-pointer ${
-                  isActiveInHero
-                    ? "border-stone-900 ring-2 ring-amber-400/40"
-                    : "border-stone-200"
-                }`}
-              >
+            const weddingIdx = WEDDING_STARTER_TEMPLATES.findIndex(
+              (w) => w.id === tpl.id
+            );
+            const isActiveInHero =
+              activeDomain === "wedding" &&
+              weddingIdx >= 0 &&
+              selectedIdx === weddingIdx;
+
+            const cardBody = (
+              <>
                 <div
                   className="h-44 w-full p-5 flex flex-col items-center justify-center text-center relative overflow-hidden"
                   style={{ backgroundColor: p.background }}
@@ -374,7 +445,7 @@ export function LandingShowcase() {
                     {tpl.default_config.envelope.waxSeal.monogram}
                   </span>
                   <p
-                    className="relative z-10 mt-3 text-base font-semibold"
+                    className="relative z-10 mt-3 text-base font-semibold line-clamp-1"
                     style={{ color: p.primary }}
                   >
                     {tpl.default_config.content.headline}
@@ -383,7 +454,7 @@ export function LandingShowcase() {
                     className="relative z-10 text-[11px] uppercase tracking-widest mt-1"
                     style={{ color: p.mutedText }}
                   >
-                    {tpl.category}
+                    {formatCategoryBadge(tpl.category)}
                   </p>
                 </div>
                 <div className="p-4 w-full border-t border-stone-100 flex items-center justify-between gap-2">
@@ -391,14 +462,56 @@ export function LandingShowcase() {
                     {tpl.title}
                   </span>
                   <span className="text-[10px] font-semibold text-amber-700 shrink-0">
-                    Preview ↑
+                    {activeDomain === "wedding" ? "Preview ↑" : "Live Demo →"}
                   </span>
                 </div>
-              </motion.button>
+              </>
+            );
+
+            if (activeDomain === "wedding") {
+              return (
+                <motion.button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedIdx(weddingIdx >= 0 ? weddingIdx : idx);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: idx * 0.04 }}
+                  whileHover={{ y: -4 }}
+                  className={`text-left rounded-3xl border bg-white overflow-hidden shadow-2xs hover:shadow-xl transition-all flex flex-col cursor-pointer ${
+                    isActiveInHero
+                      ? "border-stone-900 ring-2 ring-amber-400/40"
+                      : "border-stone-200"
+                  }`}
+                >
+                  {cardBody}
+                </motion.button>
+              );
+            }
+
+            return (
+              <motion.div
+                key={tpl.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: idx * 0.04 }}
+                whileHover={{ y: -4 }}
+                className="rounded-3xl border border-stone-200 bg-white overflow-hidden shadow-2xs hover:shadow-xl transition-all flex flex-col"
+              >
+                <Link
+                  href={`/e/demo?template=${encodeURIComponent(tpl.default_config.theme.presetId)}`}
+                  className="flex flex-col flex-1 text-left"
+                >
+                  {cardBody}
+                </Link>
+              </motion.div>
             );
           })}
 
-          {/* Symmetrical 8th Studio Tile */}
+          {/* Symmetrical Custom Studio Tile */}
           <Link
             href="/login"
             className="text-left rounded-3xl border border-dashed border-amber-400/70 bg-gradient-to-br from-[#FAF6EE] to-amber-50/60 overflow-hidden shadow-2xs hover:shadow-xl hover:border-stone-900 transition-all flex flex-col justify-between group"
@@ -411,7 +524,7 @@ export function LandingShowcase() {
                 Design Your Own
               </p>
               <p className="text-[11px] uppercase tracking-widest mt-1 text-amber-800">
-                Custom Scenes &amp; Portraits
+                Custom {activeDomainConfig.templateLabel} Scenes
               </p>
             </div>
             <div className="p-4 w-full border-t border-amber-200/60 bg-white/80 flex items-center justify-between gap-2">
@@ -427,9 +540,9 @@ export function LandingShowcase() {
       </section>
 
       <footer className="border-t border-stone-200/80 py-8 text-center text-xs text-stone-500">
-        Invitovix · Luxury Digital Wedding Invitation Platform
+        Invitovix · Luxury Digital Invitations for Weddings, Birthdays, Galas
+        &amp; Celebrations
       </footer>
     </div>
   );
 }
-

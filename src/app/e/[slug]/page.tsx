@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
-  DEMO_EVENT,
-  STARTER_TEMPLATES,
   mergeDesignData,
+  resolveDemoEventForPreset,
 } from "@/lib/templates/presets";
 import { EventRecord } from "@/types/invitation";
 import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
@@ -24,25 +23,10 @@ async function resolveEventBySlug(
   isOwnerDraft: boolean;
 }> {
   if (slug === "demo") {
-    if (templateParam) {
-      const matched = STARTER_TEMPLATES.find(
-        (t) =>
-          t.default_config.theme.presetId === templateParam ||
-          t.id === templateParam
-      );
-      if (matched) {
-        return {
-          event: {
-            ...DEMO_EVENT,
-            template_id: matched.id,
-            title: matched.default_config.content.headline,
-            design_data: mergeDesignData(matched.default_config),
-          },
-          isOwnerDraft: false,
-        };
-      }
-    }
-    return { event: DEMO_EVENT, isOwnerDraft: false };
+    return {
+      event: resolveDemoEventForPreset(templateParam),
+      isOwnerDraft: false,
+    };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -173,6 +157,7 @@ export default async function GuestInvitePage({
       eventId={event.id}
       slug={event.slug}
       title={event.title}
+      eventType={event.event_type}
       eventDate={event.event_date}
       venueName={event.venue_name}
       venueAddress={event.venue_address}

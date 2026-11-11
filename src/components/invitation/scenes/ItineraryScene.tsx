@@ -8,19 +8,23 @@ import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 
 interface ItinerarySceneProps {
   id?: string;
   designData: EventDesignData;
+  eventType?: string;
   scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function ItineraryScene({
   id = "invite-schedule",
   designData,
+  eventType = "wedding",
   scrollRootRef,
 }: ItinerarySceneProps) {
   const { theme, content, sections } = designData;
+  const typeMeta = getInvitationTypeMeta(eventType);
 
   if (!sections.showItinerary || content.itinerary.length === 0) {
     return null;
@@ -33,7 +37,7 @@ export function ItineraryScene({
           className="text-[11px] uppercase tracking-[0.25em]"
           style={{ color: theme.palette.accent }}
         >
-          Order of Events
+          {typeMeta.itineraryEyebrow}
         </p>
         <h2
           className="mt-1.5 text-2xl sm:text-3xl font-semibold"
@@ -42,7 +46,7 @@ export function ItineraryScene({
             fontFamily: getDisplayFontFamily(theme.typography.displayFont),
           }}
         >
-          Evening Schedule
+          {typeMeta.itineraryHeading}
         </h2>
       </div>
 

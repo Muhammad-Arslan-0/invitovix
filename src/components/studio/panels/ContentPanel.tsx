@@ -5,6 +5,7 @@ import * as Switch from "@radix-ui/react-switch";
 import { Plus, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
+import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { toSlug } from "@/lib/utils/slug";
 import { MediaUploader } from "../MediaUploader";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -17,6 +18,7 @@ export const ContentPanel = memo(function ContentPanel({
   userId,
 }: ContentPanelProps) {
   const eventId = useStudioStore((s) => s.eventMeta.id);
+  const eventType = useStudioStore((s) => s.eventMeta.event_type);
   const eventSlug = useStudioStore((s) => s.eventMeta.slug);
   const eventDate = useStudioStore((s) => s.eventMeta.event_date);
   const venueName = useStudioStore((s) => s.eventMeta.venue_name);
@@ -24,6 +26,8 @@ export const ContentPanel = memo(function ContentPanel({
   const venueMapUrl = useStudioStore((s) => s.eventMeta.venue_map_url);
   const content = useStudioStore((s) => s.designData.content);
   const sections = useStudioStore((s) => s.designData.sections);
+
+  const typeMeta = getInvitationTypeMeta(eventType);
 
   const updateMeta = useStudioStore((s) => s.updateMeta);
   const updateContent = useStudioStore((s) => s.updateContent);
@@ -89,7 +93,7 @@ export const ContentPanel = memo(function ContentPanel({
             type="text"
             value={venueName}
             onChange={(e) => updateMeta({ venue_name: e.target.value })}
-            placeholder="e.g., Royal Palm Conservatory"
+            placeholder={typeMeta.createVenuePlaceholder}
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
           />
         </div>
@@ -203,16 +207,16 @@ export const ContentPanel = memo(function ContentPanel({
         </div>
       </div>
 
-      {/* Bride & Groom Spotlight Portraits */}
+      {/* Dynamic Person / Couple Spotlight Portraits */}
       <div className="space-y-3 border-t border-stone-200 pt-5">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
             <UsersRound className="w-3.5 h-3.5 text-amber-700" />
-            <span>Bride &amp; Groom Portraits</span>
+            <span>{typeMeta.spotlightSectionLabel}</span>
           </h3>
           <Switch.Root
             checked={sections.showCouple}
-            aria-label="Show Bride and Groom Section"
+            aria-label={`Show ${typeMeta.spotlightToggleLabel}`}
             onCheckedChange={(checked) => {
               setPreviewStage("opened");
               updateSections({ showCouple: checked });
@@ -225,14 +229,15 @@ export const ContentPanel = memo(function ContentPanel({
 
         {sections.showCouple && (
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2.5">
               <div>
                 <label className="block text-[11px] text-stone-600 mb-1">
                   Showcase Layout
                 </label>
-                <div className="grid grid-cols-2 gap-1 rounded-xl border border-stone-200 p-1 bg-stone-50">
+                <div className="grid grid-cols-3 gap-1 rounded-xl border border-stone-200 p-1 bg-stone-50">
                   {(
                     [
+                      { id: "featured-solo", label: "Solo" },
                       { id: "side-by-side", label: "Twin" },
                       { id: "editorial-split", label: "Split" },
                     ] as const
@@ -256,21 +261,23 @@ export const ContentPanel = memo(function ContentPanel({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] text-stone-600 mb-1">
-                  Center Crest
-                </label>
-                <input
-                  type="text"
-                  maxLength={8}
-                  value={content.couple.crestText}
-                  onChange={(e) =>
-                    updateCouple({ crestText: e.target.value })
-                  }
-                  placeholder="&"
-                  className="w-full rounded-xl border border-stone-200 px-3 py-1.5 text-xs text-center focus:border-stone-900 focus:outline-none"
-                />
-              </div>
+              {content.couple.layout !== "featured-solo" && (
+                <div>
+                  <label className="block text-[11px] text-stone-600 mb-1">
+                    Center Crest
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={8}
+                    value={content.couple.crestText}
+                    onChange={(e) =>
+                      updateCouple({ crestText: e.target.value })
+                    }
+                    placeholder="&"
+                    className="w-full rounded-xl border border-stone-200 px-3 py-1.5 text-xs text-center focus:border-stone-900 focus:outline-none"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -298,11 +305,11 @@ export const ContentPanel = memo(function ContentPanel({
               </div>
             </div>
 
-            {/* Bride Card */}
+            {/* Person 1 Card */}
             <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-700">
-                  Bride Details &amp; Picture
+                  {typeMeta.person1CardTitle}
                 </span>
                 {content.couple.brideImageUrl && (
                   <button
@@ -320,7 +327,7 @@ export const ContentPanel = memo(function ContentPanel({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={content.couple.brideImageUrl}
-                    alt={content.couple.brideName || "Bride"}
+                    alt={content.couple.brideName || typeMeta.person1ShortLabel}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -332,8 +339,8 @@ export const ContentPanel = memo(function ContentPanel({
                 accept="image/png,image/jpeg,image/webp"
                 label={
                   content.couple.brideImageUrl
-                    ? "Replace Bride Photo"
-                    : "Upload Bride Photo"
+                    ? typeMeta.person1ReplaceLabel
+                    : typeMeta.person1UploadLabel
                 }
                 folder="images"
                 onUploaded={(url) => {
@@ -346,77 +353,92 @@ export const ContentPanel = memo(function ContentPanel({
                 type="text"
                 value={content.couple.brideName}
                 onChange={(e) => updateCouple({ brideName: e.target.value })}
-                placeholder="Bride Name"
+                placeholder={typeMeta.person1NamePlaceholder}
                 className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs focus:border-stone-900 focus:outline-none"
               />
               <input
                 type="text"
                 value={content.couple.brideRole}
                 onChange={(e) => updateCouple({ brideRole: e.target.value })}
-                placeholder="Daughter of..."
+                placeholder={typeMeta.person1RolePlaceholder}
                 className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 focus:border-stone-900 focus:outline-none"
               />
             </div>
 
-            {/* Groom Card */}
-            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-700">
-                  Groom Details &amp; Picture
-                </span>
-                {content.couple.groomImageUrl && (
-                  <button
-                    type="button"
-                    onClick={() => updateCouple({ groomImageUrl: null })}
-                    className="text-[10px] font-medium text-rose-600 hover:underline cursor-pointer"
-                  >
-                    Remove Photo
-                  </button>
-                )}
-              </div>
-
-              {content.couple.groomImageUrl && (
-                <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={content.couple.groomImageUrl}
-                    alt={content.couple.groomName || "Groom"}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              <MediaUploader
-                userId={userId}
-                eventId={eventId}
-                accept="image/png,image/jpeg,image/webp"
-                label={
-                  content.couple.groomImageUrl
-                    ? "Replace Groom Photo"
-                    : "Upload Groom Photo"
-                }
-                folder="images"
-                onUploaded={(url) => {
+            {/* Person 2 Card (or optional toggle button when Featured Solo) */}
+            {content.couple.layout === "featured-solo" ? (
+              <button
+                type="button"
+                onClick={() => {
                   setPreviewStage("opened");
-                  updateCouple({ groomImageUrl: url });
+                  updateCouple({ layout: "side-by-side" });
                 }}
-              />
+                className="w-full rounded-2xl border border-dashed border-stone-300 bg-stone-50/50 py-2.5 px-3 text-xs font-medium text-stone-600 hover:border-stone-900 hover:text-stone-900 transition cursor-pointer"
+              >
+                {typeMeta.addPerson2Label}
+              </button>
+            ) : (
+              <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-700">
+                    {typeMeta.person2CardTitle}
+                  </span>
+                  {content.couple.groomImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => updateCouple({ groomImageUrl: null })}
+                      className="text-[10px] font-medium text-rose-600 hover:underline cursor-pointer"
+                    >
+                      Remove Photo
+                    </button>
+                  )}
+                </div>
 
-              <input
-                type="text"
-                value={content.couple.groomName}
-                onChange={(e) => updateCouple({ groomName: e.target.value })}
-                placeholder="Groom Name"
-                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs focus:border-stone-900 focus:outline-none"
-              />
-              <input
-                type="text"
-                value={content.couple.groomRole}
-                onChange={(e) => updateCouple({ groomRole: e.target.value })}
-                placeholder="Son of..."
-                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 focus:border-stone-900 focus:outline-none"
-              />
-            </div>
+                {content.couple.groomImageUrl && (
+                  <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={content.couple.groomImageUrl}
+                      alt={
+                        content.couple.groomName || typeMeta.person2ShortLabel
+                      }
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                <MediaUploader
+                  userId={userId}
+                  eventId={eventId}
+                  accept="image/png,image/jpeg,image/webp"
+                  label={
+                    content.couple.groomImageUrl
+                      ? typeMeta.person2ReplaceLabel
+                      : typeMeta.person2UploadLabel
+                  }
+                  folder="images"
+                  onUploaded={(url) => {
+                    setPreviewStage("opened");
+                    updateCouple({ groomImageUrl: url });
+                  }}
+                />
+
+                <input
+                  type="text"
+                  value={content.couple.groomName}
+                  onChange={(e) => updateCouple({ groomName: e.target.value })}
+                  placeholder={typeMeta.person2NamePlaceholder}
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs focus:border-stone-900 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={content.couple.groomRole}
+                  onChange={(e) => updateCouple({ groomRole: e.target.value })}
+                  placeholder={typeMeta.person2RolePlaceholder}
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 focus:border-stone-900 focus:outline-none"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -424,7 +446,9 @@ export const ContentPanel = memo(function ContentPanel({
       {/* Hero Cover Image */}
       <div className="space-y-2.5 border-t border-stone-200 pt-5">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-          Hero Couple / Event Photo
+          {typeMeta.domain === "wedding"
+            ? "Hero Couple / Event Photo"
+            : "Hero Portrait / Cover Photo"}
         </h3>
 
         {content.heroImageUrl && (
@@ -588,9 +612,9 @@ export const ContentPanel = memo(function ContentPanel({
 
         {(
           [
-            { key: "showCouple", label: "Bride & Groom Spotlight" },
+            { key: "showCouple", label: typeMeta.spotlightToggleLabel },
             { key: "showCountdown", label: "Live Countdown Timer" },
-            { key: "showItinerary", label: "Evening Schedule" },
+            { key: "showItinerary", label: typeMeta.itineraryHeading },
             { key: "showVenue", label: "Venue, Maps & Calendar Sync" },
             { key: "showGallery", label: "Photo Gallery" },
             { key: "showRsvp", label: "Interactive RSVP Card" },

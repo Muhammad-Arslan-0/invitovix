@@ -45,6 +45,7 @@ interface InvitationPlayerProps {
   eventId: string;
   slug: string;
   title: string;
+  eventType?: string;
   eventDate: string;
   venueName: string;
   venueAddress?: string | null;
@@ -67,6 +68,7 @@ export const InvitationPlayer = forwardRef<
     eventId,
     slug,
     title,
+    eventType = "wedding",
     eventDate,
     venueName,
     venueAddress,
@@ -327,6 +329,7 @@ export const InvitationPlayer = forwardRef<
                 <HeroScene
                   id="invite-hero"
                   designData={designData}
+                  eventType={eventType}
                   eventDate={eventDate}
                   venueName={venueName}
                 />
@@ -335,6 +338,7 @@ export const InvitationPlayer = forwardRef<
               <CoupleScene
                 id="invite-couple"
                 designData={designData}
+                eventType={eventType}
                 isStudioPreview={isStudioPreview}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
@@ -349,6 +353,7 @@ export const InvitationPlayer = forwardRef<
               <ItineraryScene
                 id="invite-schedule"
                 designData={designData}
+                eventType={eventType}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
 
@@ -367,6 +372,7 @@ export const InvitationPlayer = forwardRef<
               <GalleryScene
                 id="invite-gallery"
                 designData={designData}
+                eventType={eventType}
                 isStudioPreview={isStudioPreview}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
@@ -375,6 +381,7 @@ export const InvitationPlayer = forwardRef<
                 id="invite-rsvp"
                 eventId={eventId}
                 designData={designData}
+                eventType={eventType}
                 isStudioPreview={isStudioPreview}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
@@ -390,6 +397,7 @@ export const InvitationPlayer = forwardRef<
             {/* Sticky Bottom Navigation Dock Anchored Inside Card Frame */}
             <InvitationBottomNav
               designData={designData}
+              eventType={eventType}
               isStudioPreview={isStudioPreview}
               bounded={bounded}
               scrollContainerRef={scrollContainerRef}

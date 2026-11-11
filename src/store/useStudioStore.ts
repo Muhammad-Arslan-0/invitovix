@@ -6,7 +6,19 @@ import {
   ItineraryItem,
   TemplateRecord,
 } from "@/types/invitation";
-import { DEFAULT_DESIGN_DATA, mergeDesignData } from "@/lib/templates/presets";
+import {
+  DEFAULT_DESIGN_DATA,
+  STARTER_TEMPLATES,
+  mergeDesignData,
+} from "@/lib/templates/presets";
+import {
+  getDomainForCategory,
+  getInvitationTypeMeta,
+} from "@/lib/templates/categories";
+
+const STARTER_HEADLINES = new Set(
+  STARTER_TEMPLATES.map((t) => t.default_config.content.headline.trim())
+);
 
 export type StudioTab = "theme" | "envelope" | "content" | "motion";
 export type PreviewDevice = "mobile" | "tablet" | "desktop";
@@ -45,6 +57,10 @@ interface StudioState {
 
   updateMeta: (patch: Partial<StudioEventMeta>) => void;
   applyTemplate: (template: TemplateRecord) => void;
+  switchEventCategory: (
+    nextCategory: string,
+    availableTemplates?: TemplateRecord[]
+  ) => void;
   updatePalette: (
     patch: Partial<EventDesignData["theme"]["palette"]>
   ) => void;
@@ -95,6 +111,76 @@ const initialMeta: StudioEventMeta = {
   is_published: false,
 };
 
+function buildAppliedTemplateDesign(
+  s: StudioState,
+  template: TemplateRecord
+): EventDesignData {
+  const merged = mergeDesignData(template.default_config);
+  const prevCouple = s.designData.content.couple;
+  const prevCardArt = s.designData.theme.cardArt;
+  const hasCustomBackdrop =
+    prevCardArt.backdropPreset === "custom" && Boolean(prevCardArt.backdropUrl);
+
+  const prevDomain = getDomainForCategory(s.eventMeta.event_type);
+  const nextDomain = getDomainForCategory(template.category);
+  const sameDomain = prevDomain === nextDomain;
+
+  const trimmedHeadline = s.designData.content.headline.trim();
+  const hasCustomHeadline =
+    Boolean(trimmedHeadline) && !STARTER_HEADLINES.has(trimmedHeadline);
+
+  return {
+    ...merged,
+    theme: {
+      ...merged.theme,
+      cardArt: hasCustomBackdrop
+        ? {
+            ...merged.theme.cardArt,
+            backdropPreset: "custom",
+            backdropUrl: prevCardArt.backdropUrl,
+          }
+        : {
+            ...merged.theme.cardArt,
+            backdropUrl:
+              prevCardArt.backdropUrl ?? merged.theme.cardArt.backdropUrl,
+          },
+    },
+    content: {
+      ...merged.content,
+      headline: sameDomain
+        ? s.designData.content.headline || merged.content.headline
+        : hasCustomHeadline
+          ? s.designData.content.headline
+          : merged.content.headline,
+      hostLine: sameDomain
+        ? s.designData.content.hostLine || merged.content.hostLine
+        : merged.content.hostLine,
+      heroImageUrl: s.designData.content.heroImageUrl,
+      gallery: s.designData.content.gallery,
+      couple: sameDomain
+        ? {
+            ...merged.content.couple,
+            brideName: prevCouple.brideName || merged.content.couple.brideName,
+            brideRole: prevCouple.brideRole || merged.content.couple.brideRole,
+            brideImageUrl:
+              prevCouple.brideImageUrl ?? merged.content.couple.brideImageUrl,
+            groomName: prevCouple.groomName || merged.content.couple.groomName,
+            groomRole: prevCouple.groomRole || merged.content.couple.groomRole,
+            groomImageUrl:
+              prevCouple.groomImageUrl ?? merged.content.couple.groomImageUrl,
+            crestText: prevCouple.crestText || merged.content.couple.crestText,
+          }
+        : {
+            ...merged.content.couple,
+            brideImageUrl:
+              prevCouple.brideImageUrl ?? merged.content.couple.brideImageUrl,
+            groomImageUrl:
+              prevCouple.groomImageUrl ?? merged.content.couple.groomImageUrl,
+          },
+    },
+  };
+}
+
 export const useStudioStore = create<StudioState>((set) => ({
   eventMeta: initialMeta,
   designData: DEFAULT_DESIGN_DATA,
@@ -143,51 +229,65 @@ export const useStudioStore = create<StudioState>((set) => ({
     })),
 
   applyTemplate: (template) =>
+    set((s) => ({
+      eventMeta: {
+        ...s.eventMeta,
+        template_id: template.id,
+        event_type: template.category,
+      },
+      designData: buildAppliedTemplateDesign(s, template),
+      isDirty: true,
+    })),
+
+  switchEventCategory: (nextCategory, availableTemplates = STARTER_TEMPLATES) =>
     set((s) => {
-      const merged = mergeDesignData(template.default_config);
-      const prevCouple = s.designData.content.couple;
-      const prevCardArt = s.designData.theme.cardArt;
-      const hasCustomBackdrop =
-        prevCardArt.backdropPreset === "custom" && Boolean(prevCardArt.backdropUrl);
+      const normalizedNext = nextCategory.trim().toLowerCase();
+      const prevDomain = getDomainForCategory(s.eventMeta.event_type);
+      const nextDomain = getDomainForCategory(normalizedNext);
+
+      if (prevDomain !== nextDomain) {
+        const pool =
+          availableTemplates.length > 0 ? availableTemplates : STARTER_TEMPLATES;
+        const targetTemplate =
+          pool.find((t) => t.category.toLowerCase() === normalizedNext) ??
+          pool.find((t) => getDomainForCategory(t.category) === nextDomain) ??
+          STARTER_TEMPLATES.find(
+            (t) => getDomainForCategory(t.category) === nextDomain
+          );
+
+        if (targetTemplate) {
+          return {
+            eventMeta: {
+              ...s.eventMeta,
+              template_id: targetTemplate.id,
+              event_type: nextCategory,
+            },
+            designData: buildAppliedTemplateDesign(s, targetTemplate),
+            isDirty: true,
+          };
+        }
+      }
+
+      const nextMeta = getInvitationTypeMeta(nextCategory);
+      const currentLayout = s.designData.content.couple.layout;
+      const nextLayout = nextMeta.isSoloDefault
+        ? "featured-solo"
+        : currentLayout === "featured-solo"
+          ? "side-by-side"
+          : currentLayout;
 
       return {
         eventMeta: {
           ...s.eventMeta,
-          template_id: template.id,
-          event_type: template.category,
+          event_type: nextCategory,
         },
         designData: {
-          ...merged,
-          theme: {
-            ...merged.theme,
-            cardArt: hasCustomBackdrop
-              ? {
-                  ...merged.theme.cardArt,
-                  backdropPreset: "custom",
-                  backdropUrl: prevCardArt.backdropUrl,
-                }
-              : {
-                  ...merged.theme.cardArt,
-                  backdropUrl: prevCardArt.backdropUrl ?? merged.theme.cardArt.backdropUrl,
-                },
-          },
+          ...s.designData,
           content: {
-            ...merged.content,
-            headline: s.designData.content.headline || merged.content.headline,
-            hostLine: s.designData.content.hostLine || merged.content.hostLine,
-            heroImageUrl: s.designData.content.heroImageUrl,
-            gallery: s.designData.content.gallery,
+            ...s.designData.content,
             couple: {
-              ...merged.content.couple,
-              brideName: prevCouple.brideName || merged.content.couple.brideName,
-              brideRole: prevCouple.brideRole || merged.content.couple.brideRole,
-              brideImageUrl:
-                prevCouple.brideImageUrl ?? merged.content.couple.brideImageUrl,
-              groomName: prevCouple.groomName || merged.content.couple.groomName,
-              groomRole: prevCouple.groomRole || merged.content.couple.groomRole,
-              groomImageUrl:
-                prevCouple.groomImageUrl ?? merged.content.couple.groomImageUrl,
-              crestText: prevCouple.crestText || merged.content.couple.crestText,
+              ...s.designData.content.couple,
+              layout: nextLayout,
             },
           },
         },

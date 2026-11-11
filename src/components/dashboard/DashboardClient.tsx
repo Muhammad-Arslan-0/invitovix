@@ -18,8 +18,17 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { EventRecord, TemplateRecord } from "@/types/invitation";
+import {
+  EventRecord,
+  InvitationDomainId,
+  TemplateRecord,
+} from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  INVITATION_DOMAINS,
+  formatCategoryBadge,
+  getDomainForCategory,
+} from "@/lib/templates/categories";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
 import { CreateEventModal } from "./CreateEventModal";
@@ -47,6 +56,9 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const router = useRouter();
   const [events, setEvents] = useState<EventWithCount[]>(initialEvents);
+  const [activeFilter, setActiveFilter] = useState<"all" | InvitationDomainId>(
+    "all"
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [navTarget, setNavTarget] = useState<string | null>(null);
@@ -56,6 +68,13 @@ export function DashboardClient({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const filteredEvents =
+    activeFilter === "all"
+      ? events
+      : events.filter(
+          (e) => getDomainForCategory(e.event_type) === activeFilter
+        );
 
   const totalPublished = events.filter((e) => e.is_published).length;
   const totalRsvps = events.reduce((sum, e) => sum + e.rsvp_count, 0);
@@ -194,7 +213,11 @@ export function DashboardClient({
               guest RSVPs.
             </p>
           </div>
-          <CreateEventModal templates={templates} userId={userId} />
+          <CreateEventModal
+            templates={templates}
+            userId={userId}
+            defaultDomain={activeFilter === "all" ? "wedding" : activeFilter}
+          />
         </motion.div>
 
         {/* KPI Cards */}
@@ -222,9 +245,53 @@ export function DashboardClient({
 
         {/* Events Grid */}
         <section className="mt-9">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 mb-4">
-            Your Invitations
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+              Your Invitations
+            </h2>
+
+            <div
+              role="tablist"
+              aria-label="Filter invitations by category"
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeFilter === "all"}
+                onClick={() => setActiveFilter("all")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer ${
+                  activeFilter === "all"
+                    ? "bg-stone-900 text-white shadow-2xs"
+                    : "border border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                }`}
+              >
+                All ({events.length})
+              </button>
+              {INVITATION_DOMAINS.map((domain) => {
+                const count = events.filter(
+                  (e) => getDomainForCategory(e.event_type) === domain.id
+                ).length;
+                const active = activeFilter === domain.id;
+                return (
+                  <button
+                    key={domain.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveFilter(domain.id)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer ${
+                      active
+                        ? "bg-stone-900 text-white shadow-2xs"
+                        : "border border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    {domain.shortLabel} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {events.length === 0 ? (
             <motion.div
@@ -239,13 +306,27 @@ export function DashboardClient({
                 No invitations created yet
               </h3>
               <p className="mt-1.5 text-sm text-stone-500 max-w-md mx-auto">
-                Click &ldquo;New Invitation&rdquo; above to pick a curated
-                template and customize your interactive wax-seal invitation.
+                Click &ldquo;New Invitation&rdquo; above to pick a Wedding,
+                Birthday, Gala, or Party template and customize your interactive
+                wax-seal invitation.
               </p>
             </motion.div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-stone-300 bg-white/90 p-10 text-center">
+              <p className="text-sm font-medium text-stone-700">
+                No invitations in this category yet.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveFilter("all")}
+                className="mt-3 rounded-xl border border-stone-300 px-3.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 cursor-pointer"
+              >
+                Show All Invitations
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {events.map((event, idx) => {
+              {filteredEvents.map((event, idx) => {
                 const palette = event.design_data.theme.palette;
                 const waxSeal = event.design_data.envelope.waxSeal;
                 const sceneUrl =
@@ -326,7 +407,7 @@ export function DashboardClient({
                               color: palette.primary,
                             }}
                           >
-                            {event.event_type}
+                            {formatCategoryBadge(event.event_type)}
                           </span>
                         </div>
 

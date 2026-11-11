@@ -5,11 +5,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Invitovix — Interactive Animated Wedding Invitations",
+    default:
+      "Invitovix — Interactive Wax-Seal Digital Invitations for Weddings, Birthdays, Galas & Parties",
     template: "%s | Invitovix",
   },
   description:
-    "Design and share interactive wax-seal Nikah, Mehndi, Baraat, Engagement, and Valima wedding invitations with custom music, choreographed animations, calendar sync, and live RSVP tracking.",
+    "Design and share interactive wax-seal invitations across strictly curated categories — Weddings (Nikah, Mehndi, Baraat, Valima), Birthdays, Black-Tie Galas, Baby Showers, Anniversaries, and Graduations — with music, calendar sync, map pin selection, and live RSVP tracking.",
 };
 
 const GOOGLE_FONTS_URL =
