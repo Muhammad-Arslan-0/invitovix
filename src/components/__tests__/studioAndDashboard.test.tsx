@@ -9,12 +9,17 @@ import {
   DEMO_EVENT,
   STARTER_TEMPLATES,
   mergeDesignData,
+  mergeTemplateCatalog,
 } from "@/lib/templates/presets";
 import { useStudioStore } from "@/store/useStudioStore";
 
 const pushMock = vi.fn();
 const refreshMock = vi.fn();
 const prefetchMock = vi.fn();
+
+vi.mock("@lottiefiles/dotlottie-react", () => ({
+  DotLottieReact: () => null,
+}));
 
 vi.mock("next/dynamic", () => ({
   default: () => {
@@ -161,12 +166,28 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(screen.getByText("Embossed Wax Seal")).toBeTruthy();
     expect(screen.getByText("Venue Name (Manual)")).toBeTruthy();
 
-    // Confirm all 6 bottom dock items render inside Studio Inside Card view
+    // Confirm all 7 bottom dock items render inside Studio Inside Card view for wedding presets
     const dock = screen.getByRole("navigation", { name: /invitation sections/i });
     const dockLabels = Array.from(dock.querySelectorAll("button")).map((b) =>
       b.textContent?.trim()
     );
-    expect(dockLabels).toEqual(["Cover", "Story", "Events", "Venue", "Gallery", "RSVP"]);
+    expect(dockLabels).toEqual([
+      "Cover",
+      "Couple",
+      "Story",
+      "Events",
+      "Venue",
+      "Gallery",
+      "RSVP",
+    ]);
+
+    // Verify new Studio art & Bride/Groom controls update live store cleanly
+    fireEvent.click(screen.getByRole("button", { name: /floral bouquet/i }));
+    expect(useStudioStore.getState().designData.theme.cardArt.motif).toBe(
+      "floral-bouquet"
+    );
+    expect(screen.getByText("Upload Bride Photo")).toBeTruthy();
+    expect(screen.getByText("Upload Groom Photo")).toBeTruthy();
 
     // Toggle Tablet & Desktop device frames cleanly
     fireEvent.click(screen.getByRole("button", { name: /tablet/i }));
@@ -176,7 +197,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /dashboard/i }));
     expect(pushMock).toHaveBeenCalledWith("/dashboard");
-  }, 10000);
+  }, 15000);
 
   it("renders RsvpTable and navigates to Studio from Edit Invite", () => {
     render(
@@ -205,7 +226,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(pushMock).toHaveBeenCalledWith(`/studio/${DEMO_EVENT.id}`);
   });
 
-  it("safely normalizes nullish JSONB fields in mergeDesignData", () => {
+  it("safely normalizes nullish JSONB fields in mergeDesignData and preserves legacy showCouple", () => {
     const normalized = mergeDesignData({
       theme: { palette: { primary: null, accent: "#C99A3B" } },
       envelope: { waxSeal: { color: null, monogram: null } },
@@ -216,5 +237,53 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(normalized.theme.palette.accent).toBe("#C99A3B");
     expect(normalized.envelope.waxSeal.color).toBe("#B3842B");
     expect(normalized.envelope.waxSeal.monogram).toBe("A&Z");
+    expect(normalized.theme.cardArt.motif).toBe("none");
+    expect(normalized.theme.cardArt.backdropPreset).toBe("none");
+    expect(normalized.sections.showCouple).toBe(false);
+  });
+
+  it("merges Supabase templates with new trendy starter templates and preserves uploaded couple portraits on template switch", () => {
+    const mergedCatalog = mergeTemplateCatalog(
+      [
+        {
+          id: STARTER_TEMPLATES[0].id,
+          title: "Custom DB Title",
+          category: "wedding",
+          thumbnail_url: null,
+          is_active: true,
+          created_at: "2026-01-01T00:00:00.000Z",
+          default_config: {
+            ...STARTER_TEMPLATES[0].default_config,
+            theme: {
+              ...STARTER_TEMPLATES[0].default_config.theme,
+              cardArt: undefined,
+            },
+          },
+        },
+      ],
+      STARTER_TEMPLATES
+    );
+
+    expect(mergedCatalog.length).toBe(STARTER_TEMPLATES.length);
+    expect(mergedCatalog[0].title).toBe("Custom DB Title");
+    expect(mergedCatalog[0].default_config.theme.cardArt.backdropPreset).toBe(
+      "nikah-courtyard"
+    );
+
+    useStudioStore.getState().hydrateEvent(DEMO_EVENT);
+    useStudioStore.getState().updateCouple({
+      brideImageUrl: "https://example.com/custom-bride.jpg",
+      groomImageUrl: "https://example.com/custom-groom.jpg",
+    });
+    useStudioStore.getState().applyTemplate(STARTER_TEMPLATES[1]);
+
+    const next = useStudioStore.getState().designData;
+    expect(next.theme.cardArt.backdropPreset).toBe("peony-arch");
+    expect(next.content.couple.brideImageUrl).toBe(
+      "https://example.com/custom-bride.jpg"
+    );
+    expect(next.content.couple.groomImageUrl).toBe(
+      "https://example.com/custom-groom.jpg"
+    );
   });
 });

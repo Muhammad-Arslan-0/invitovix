@@ -80,12 +80,12 @@ export function VenueScene({
         ...(scrollRootRef ? { root: scrollRootRef } : {}),
       }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto"
+      className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto"
     >
       <div
-        className="rounded-3xl border p-6 text-center shadow-sm"
+        className="rounded-3xl border p-6 text-center shadow-sm backdrop-blur-xs"
         style={{
-          backgroundColor: theme.palette.surface,
+          backgroundColor: `${theme.palette.surface}ED`,
           borderColor: `${theme.palette.accent}44`,
         }}
       >

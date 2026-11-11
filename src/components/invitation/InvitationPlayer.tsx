@@ -15,11 +15,14 @@ import { getPaperTextureClass } from "@/lib/utils/fonts";
 import { EnvelopeStage } from "./EnvelopeStage";
 import { ParticleLayer } from "./ParticleLayer";
 import { FloatingAudioDisc } from "./FloatingAudioDisc";
+import { CardArtBackdrop } from "./CardArtBackdrop";
+import { CardHeaderCrown, CardOrnamentFrame } from "./CardOrnamentFrame";
 import {
   InvitationBottomNav,
   InvitationSectionId,
 } from "./InvitationBottomNav";
 import { HeroScene } from "./scenes/HeroScene";
+import { CoupleScene } from "./scenes/CoupleScene";
 import { StoryCountdownScene } from "./scenes/StoryCountdownScene";
 import { ItineraryScene } from "./scenes/ItineraryScene";
 import { VenueScene } from "./scenes/VenueScene";
@@ -135,7 +138,7 @@ export const InvitationPlayer = forwardRef<
           targetEl.getBoundingClientRect().top -
           scroller.getBoundingClientRect().top +
           scroller.scrollTop -
-          12;
+          52;
         scroller.scrollTo({ top: Math.max(0, offsetTop), behavior: "smooth" });
       } else {
         targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -275,6 +278,10 @@ export const InvitationPlayer = forwardRef<
               bounded ? "h-full overflow-hidden" : "min-h-screen md:min-h-0 md:h-full md:overflow-hidden"
             }`}
           >
+            <CardArtBackdrop theme={theme} bounded={isBoundedScroll} />
+
+            <CardOrnamentFrame theme={theme} bounded={isBoundedScroll} />
+
             <ParticleLayer
               kind={motionCfg.particles}
               accentColor={theme.palette.accent}
@@ -315,11 +322,21 @@ export const InvitationPlayer = forwardRef<
                 }}
               />
 
-              <HeroScene
-                id="invite-hero"
+              <div className="relative">
+                <CardHeaderCrown theme={theme} />
+                <HeroScene
+                  id="invite-hero"
+                  designData={designData}
+                  eventDate={eventDate}
+                  venueName={venueName}
+                />
+              </div>
+
+              <CoupleScene
+                id="invite-couple"
                 designData={designData}
-                eventDate={eventDate}
-                venueName={venueName}
+                isStudioPreview={isStudioPreview}
+                scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
 
               <StoryCountdownScene

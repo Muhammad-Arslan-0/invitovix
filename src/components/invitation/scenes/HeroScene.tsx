@@ -9,6 +9,7 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { PortraitFrame } from "../PortraitFrame";
 
 interface HeroSceneProps {
   id?: string;
@@ -83,19 +84,26 @@ export function HeroScene({
       })
     : "";
 
+  const hasTopMotif =
+    theme.cardArt.motif === "royal-arch" ||
+    theme.cardArt.motif === "marigold-garland" ||
+    theme.cardArt.motif === "celestial-stars";
+
   return (
     <section
       id={id}
       ref={containerRef}
-      className="scroll-mt-4 relative px-6 pt-12 pb-10 text-center flex flex-col items-center"
+      className={`scroll-mt-4 relative z-20 px-7 sm:px-8 ${
+        hasTopMotif ? "pt-16 sm:pt-18" : "pt-12"
+      } pb-8 text-center flex flex-col items-center`}
     >
       {/* Ornate header crest */}
       <div
-        className="hero-stagger inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-[11px] uppercase tracking-[0.24em]"
+        className="hero-stagger inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-[11px] uppercase tracking-[0.24em] backdrop-blur-xs"
         style={{
           borderColor: `${theme.palette.accent}55`,
           color: theme.palette.accent,
-          backgroundColor: `${theme.palette.surface}BB`,
+          backgroundColor: `${theme.palette.surface}D8`,
           fontFamily: getBodyFontFamily(theme.typography.bodyFont),
         }}
       >
@@ -105,7 +113,7 @@ export function HeroScene({
 
       {/* Host Line */}
       <p
-        className="hero-stagger mt-7 text-xs sm:text-sm uppercase tracking-[0.22em] max-w-md leading-relaxed"
+        className="hero-stagger mt-7 text-[11px] sm:text-xs uppercase tracking-[0.2em] max-w-[290px] sm:max-w-sm leading-relaxed"
         style={{
           color: theme.palette.mutedText,
           fontFamily: getBodyFontFamily(theme.typography.bodyFont),
@@ -148,33 +156,29 @@ export function HeroScene({
 
       {/* Optional Hero Portrait / Cover Image */}
       {content.heroImageUrl && (
-        <div
-          className="hero-stagger mt-8 relative w-full max-w-sm aspect-[4/5] rounded-[28px] overflow-hidden border shadow-xl"
-          style={{
-            borderColor: `${theme.palette.accent}66`,
-            backgroundColor: theme.palette.surface,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={content.heroImageUrl}
+        <div className="hero-stagger mt-8 w-full flex justify-center">
+          <PortraitFrame
+            imageUrl={content.heroImageUrl}
             alt={content.headline}
-            className="w-full h-full object-cover"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-2.5 rounded-[20px] border"
-            style={{ borderColor: `${theme.palette.accent}55` }}
+            caption={content.headline}
+            shape={theme.cardArt.heroFrame}
+            primaryColor={theme.palette.primary}
+            accentColor={theme.palette.accent}
+            surfaceColor={theme.palette.surface}
+            textColor={theme.palette.text}
+            displayFont={theme.typography.displayFont}
+            scriptFont={theme.typography.scriptFont}
+            size="hero"
           />
         </div>
       )}
 
       {/* Key Event Pill Summary */}
       <div
-        className="hero-stagger mt-8 w-full max-w-md rounded-2xl border p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left"
+        className="hero-stagger mt-8 w-full max-w-md rounded-2xl border p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left backdrop-blur-xs shadow-sm"
         style={{
-          backgroundColor: theme.palette.surface,
-          borderColor: `${theme.palette.accent}40`,
+          backgroundColor: `${theme.palette.surface}E6`,
+          borderColor: `${theme.palette.accent}44`,
         }}
       >
         <div className="flex items-start gap-3">

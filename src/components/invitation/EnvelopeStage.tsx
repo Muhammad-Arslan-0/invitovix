@@ -9,6 +9,7 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { WaxSeal } from "./WaxSeal";
 import { LottieAccent } from "./LottieAccent";
 
@@ -34,7 +35,12 @@ export function EnvelopeStage({
   const { theme, envelope, content, motion: motionCfg, audio } = designData;
   const isOpening = stage === "opening";
   const [mounted, setMounted] = useState(false);
-  const coverBackdropUrl = content.heroImageUrl || content.gallery[0]?.url || null;
+  const coverBackdropUrl =
+    content.heroImageUrl ||
+    content.couple.brideImageUrl ||
+    content.gallery[0]?.url ||
+    resolveCardBackdropUrl(theme.cardArt) ||
+    null;
 
   useEffect(() => {
     setMounted(true);

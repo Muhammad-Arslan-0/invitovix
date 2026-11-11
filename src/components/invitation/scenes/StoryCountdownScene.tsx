@@ -37,14 +37,14 @@ export function StoryCountdownScene({
         ...(scrollRootRef ? { root: scrollRootRef } : {}),
       }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto text-center"
+      className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto text-center"
     >
       {/* Quote Card */}
       {content.storyQuote && (
         <div
-          className="rounded-3xl border px-6 py-7 shadow-sm"
+          className="rounded-3xl border px-6 py-7 shadow-sm backdrop-blur-xs"
           style={{
-            backgroundColor: theme.palette.surface,
+            backgroundColor: `${theme.palette.surface}EA`,
             borderColor: `${theme.palette.accent}35`,
           }}
         >

@@ -29,11 +29,27 @@ describe("useStudioStore", () => {
     const store = useStudioStore.getState();
     store.hydrateEvent(DEMO_EVENT);
     store.updateContent({ headline: "Custom Event Title" });
-    store.applyTemplate(STARTER_TEMPLATES[1]);
+    store.updateCouple({
+      brideImageUrl: "https://example.com/bride.jpg",
+      groomImageUrl: "https://example.com/groom.jpg",
+    });
+
+    const moonlit = STARTER_TEMPLATES.find(
+      (t) => t.default_config.theme.presetId === "moonlit-valima"
+    );
+    expect(moonlit).toBeDefined();
+    store.applyTemplate(moonlit!);
 
     const next = useStudioStore.getState();
     expect(next.designData.theme.presetId).toBe("moonlit-valima");
+    expect(next.designData.theme.cardArt.motif).toBe("celestial-stars");
     expect(next.designData.content.headline).toBe("Custom Event Title");
+    expect(next.designData.content.couple.brideImageUrl).toBe(
+      "https://example.com/bride.jpg"
+    );
+    expect(next.designData.content.couple.groomImageUrl).toBe(
+      "https://example.com/groom.jpg"
+    );
   });
 });
 

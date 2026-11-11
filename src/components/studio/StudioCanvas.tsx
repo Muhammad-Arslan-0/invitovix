@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
+import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { InvitationPlayer } from "@/components/invitation/InvitationPlayer";
 
 export const StudioCanvas = memo(function StudioCanvas() {
@@ -17,7 +18,11 @@ export const StudioCanvas = memo(function StudioCanvas() {
 
   const isPresentationMode = previewDevice !== "mobile";
   const ambientPhotoUrl =
-    designData.content.heroImageUrl || designData.content.gallery[0]?.url || null;
+    designData.content.heroImageUrl ||
+    designData.content.couple.brideImageUrl ||
+    designData.content.gallery[0]?.url ||
+    resolveCardBackdropUrl(designData.theme.cardArt) ||
+    null;
 
   const frameClasses =
     previewDevice === "mobile"

@@ -33,7 +33,7 @@ export function GalleryScene({
   if (content.gallery.length === 0) {
     if (!isStudioPreview) return null;
     return (
-      <section id={id} className="scroll-mt-4 px-6 py-6 max-w-lg mx-auto">
+      <section id={id} className="scroll-mt-14 px-6 sm:px-7 py-6 max-w-lg mx-auto">
         <div
           className="rounded-2xl border border-dashed p-6 text-center"
           style={{ borderColor: `${theme.palette.accent}55` }}
@@ -52,7 +52,7 @@ export function GalleryScene({
   }
 
   return (
-    <section id={id} className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto">
+    <section id={id} className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto">
       <div className="text-center mb-6">
         <p
           className="text-[11px] uppercase tracking-[0.25em]"

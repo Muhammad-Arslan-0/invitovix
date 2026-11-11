@@ -51,6 +51,9 @@ interface StudioState {
   updateTypography: (
     patch: Partial<EventDesignData["theme"]["typography"]>
   ) => void;
+  updateCardArt: (
+    patch: Partial<EventDesignData["theme"]["cardArt"]>
+  ) => void;
   setPaperTexture: (
     texture: EventDesignData["theme"]["paperTexture"]
   ) => void;
@@ -61,6 +64,9 @@ interface StudioState {
   ) => void;
 
   updateContent: (patch: Partial<EventDesignData["content"]>) => void;
+  updateCouple: (
+    patch: Partial<EventDesignData["content"]["couple"]>
+  ) => void;
   updateSections: (patch: Partial<EventDesignData["sections"]>) => void;
   addItineraryItem: (item: ItineraryItem) => void;
   updateItineraryItem: (id: string, patch: Partial<ItineraryItem>) => void;
@@ -139,6 +145,11 @@ export const useStudioStore = create<StudioState>((set) => ({
   applyTemplate: (template) =>
     set((s) => {
       const merged = mergeDesignData(template.default_config);
+      const prevCouple = s.designData.content.couple;
+      const prevCardArt = s.designData.theme.cardArt;
+      const hasCustomBackdrop =
+        prevCardArt.backdropPreset === "custom" && Boolean(prevCardArt.backdropUrl);
+
       return {
         eventMeta: {
           ...s.eventMeta,
@@ -147,12 +158,37 @@ export const useStudioStore = create<StudioState>((set) => ({
         },
         designData: {
           ...merged,
+          theme: {
+            ...merged.theme,
+            cardArt: hasCustomBackdrop
+              ? {
+                  ...merged.theme.cardArt,
+                  backdropPreset: "custom",
+                  backdropUrl: prevCardArt.backdropUrl,
+                }
+              : {
+                  ...merged.theme.cardArt,
+                  backdropUrl: prevCardArt.backdropUrl ?? merged.theme.cardArt.backdropUrl,
+                },
+          },
           content: {
             ...merged.content,
             headline: s.designData.content.headline || merged.content.headline,
             hostLine: s.designData.content.hostLine || merged.content.hostLine,
             heroImageUrl: s.designData.content.heroImageUrl,
             gallery: s.designData.content.gallery,
+            couple: {
+              ...merged.content.couple,
+              brideName: prevCouple.brideName || merged.content.couple.brideName,
+              brideRole: prevCouple.brideRole || merged.content.couple.brideRole,
+              brideImageUrl:
+                prevCouple.brideImageUrl ?? merged.content.couple.brideImageUrl,
+              groomName: prevCouple.groomName || merged.content.couple.groomName,
+              groomRole: prevCouple.groomRole || merged.content.couple.groomRole,
+              groomImageUrl:
+                prevCouple.groomImageUrl ?? merged.content.couple.groomImageUrl,
+              crestText: prevCouple.crestText || merged.content.couple.crestText,
+            },
           },
         },
         isDirty: true,
@@ -178,6 +214,18 @@ export const useStudioStore = create<StudioState>((set) => ({
         theme: {
           ...s.designData.theme,
           typography: { ...s.designData.theme.typography, ...patch },
+        },
+      },
+      isDirty: true,
+    })),
+
+  updateCardArt: (patch) =>
+    set((s) => ({
+      designData: {
+        ...s.designData,
+        theme: {
+          ...s.designData.theme,
+          cardArt: { ...s.designData.theme.cardArt, ...patch },
         },
       },
       isDirty: true,
@@ -218,6 +266,18 @@ export const useStudioStore = create<StudioState>((set) => ({
       designData: {
         ...s.designData,
         content: { ...s.designData.content, ...patch },
+      },
+      isDirty: true,
+    })),
+
+  updateCouple: (patch) =>
+    set((s) => ({
+      designData: {
+        ...s.designData,
+        content: {
+          ...s.designData.content,
+          couple: { ...s.designData.content.couple, ...patch },
+        },
       },
       isDirty: true,
     })),

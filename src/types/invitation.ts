@@ -16,6 +16,68 @@ export const typographySchema = z.object({
   scriptFont: z.enum(["great-vibes", "cormorant"]),
 });
 
+export const cardArtMotifSchema = z.enum([
+  "none",
+  "floral-bouquet",
+  "marigold-garland",
+  "royal-arch",
+  "abstract-organic",
+  "celestial-stars",
+]);
+
+export const cardBorderStyleSchema = z.enum([
+  "none",
+  "gold-filigree",
+  "arch-frame",
+  "editorial-double",
+  "botanical-vine",
+]);
+
+export const cardBackdropPresetSchema = z.enum([
+  "none",
+  "nikah-courtyard",
+  "peony-arch",
+  "marigold-mehndi",
+  "abstract-silk",
+  "moonlit-garden",
+  "custom",
+]);
+
+export const heroFrameStyleSchema = z.enum([
+  "arch",
+  "oval",
+  "polaroid",
+  "rounded",
+]);
+
+export const coupleFrameShapeSchema = z.enum([
+  "arch",
+  "oval",
+  "scallop",
+  "polaroid",
+]);
+
+export const cardArtSchema = z.object({
+  motif: cardArtMotifSchema,
+  borderStyle: cardBorderStyleSchema,
+  backdropPreset: cardBackdropPresetSchema,
+  backdropUrl: z.string().nullable(),
+  backdropOpacity: z.number().min(0.08).max(0.65),
+  heroFrame: heroFrameStyleSchema,
+});
+
+export const coupleProfileSchema = z.object({
+  layout: z.enum(["side-by-side", "editorial-split"]),
+  frameShape: coupleFrameShapeSchema,
+  crestText: z.string().max(16),
+  brideName: z.string(),
+  brideRole: z.string(),
+  brideImageUrl: z.string().nullable(),
+  groomName: z.string(),
+  groomRole: z.string(),
+  groomImageUrl: z.string().nullable(),
+});
+
 export const itineraryItemSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -35,6 +97,7 @@ export const eventDesignDataSchema = z.object({
     palette: paletteSchema,
     typography: typographySchema,
     paperTexture: z.enum(["linen", "vellum", "silk", "obsidian", "clean"]),
+    cardArt: cardArtSchema,
   }),
   envelope: z.object({
     style: z.enum(["royal-flap", "arch-pocket", "minimal-folio", "art-deco"]),
@@ -54,6 +117,7 @@ export const eventDesignDataSchema = z.object({
     subtitle: z.string(),
     storyQuote: z.string(),
     heroImageUrl: z.string().nullable(),
+    couple: coupleProfileSchema,
     dressCode: z.string(),
     itinerary: z.array(itineraryItemSchema),
     gallery: z.array(galleryPhotoSchema),
@@ -62,6 +126,7 @@ export const eventDesignDataSchema = z.object({
     maxGuestsPerParty: z.number().int().min(1).max(20),
   }),
   sections: z.object({
+    showCouple: z.boolean(),
     showCountdown: z.boolean(),
     showItinerary: z.boolean(),
     showVenue: z.boolean(),
@@ -98,6 +163,13 @@ export const eventDesignDataSchema = z.object({
 });
 
 export type EventDesignData = z.infer<typeof eventDesignDataSchema>;
+export type CardArtConfig = z.infer<typeof cardArtSchema>;
+export type CardArtMotif = z.infer<typeof cardArtMotifSchema>;
+export type CardBorderStyle = z.infer<typeof cardBorderStyleSchema>;
+export type CardBackdropPreset = z.infer<typeof cardBackdropPresetSchema>;
+export type HeroFrameStyle = z.infer<typeof heroFrameStyleSchema>;
+export type CoupleFrameShape = z.infer<typeof coupleFrameShapeSchema>;
+export type CoupleProfile = z.infer<typeof coupleProfileSchema>;
 export type ItineraryItem = z.infer<typeof itineraryItemSchema>;
 export type GalleryPhoto = z.infer<typeof galleryPhotoSchema>;
 export type EventCategory = "wedding" | "valima" | "birthday" | "gala";

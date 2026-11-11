@@ -15,12 +15,14 @@ import {
   MailCheck,
   MapPin,
   Sparkles,
+  UsersRound,
 } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
 import { getContrastTextColor } from "@/lib/utils/colors";
 
 export type InvitationSectionId =
   | "invite-hero"
+  | "invite-couple"
   | "invite-story"
   | "invite-schedule"
   | "invite-venue"
@@ -51,6 +53,9 @@ export function getVisibleInvitationSections(
     { id: "invite-hero", label: "Cover", icon: Sparkles },
   ];
 
+  if (sections.showCouple) {
+    items.push({ id: "invite-couple", label: "Couple", icon: UsersRound });
+  }
   if (sections.showCountdown || content.storyQuote) {
     items.push({ id: "invite-story", label: "Story", icon: Heart });
   }
@@ -266,7 +271,7 @@ export function InvitationBottomNav({
               style={{
                 color: active ? activeTextColor : theme.palette.mutedText,
               }}
-              className="relative z-10 flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium leading-tight tracking-tight transition-colors duration-150 cursor-pointer select-none"
+              className="relative z-10 flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-[9.5px] sm:text-[10px] font-medium leading-tight tracking-tight transition-colors duration-150 cursor-pointer select-none"
               aria-current={active ? "location" : undefined}
             >
               <Icon className="w-3.5 h-3.5 shrink-0" />

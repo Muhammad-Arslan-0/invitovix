@@ -27,7 +27,7 @@ export function ItineraryScene({
   }
 
   return (
-    <section id={id} className="scroll-mt-4 px-6 py-8 max-w-lg mx-auto">
+    <section id={id} className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto">
       <div className="text-center mb-7">
         <p
           className="text-[11px] uppercase tracking-[0.25em]"
@@ -69,9 +69,9 @@ export function ItineraryScene({
               delay: idx * 0.08,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="relative rounded-2xl border p-4 shadow-sm"
+            className="relative rounded-2xl border p-4 shadow-sm backdrop-blur-xs"
             style={{
-              backgroundColor: theme.palette.surface,
+              backgroundColor: `${theme.palette.surface}EA`,
               borderColor: `${theme.palette.accent}35`,
             }}
           >

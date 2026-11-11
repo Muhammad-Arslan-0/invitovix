@@ -23,6 +23,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("@lottiefiles/dotlottie-react", () => ({
+  DotLottieReact: () => null,
+}));
+
 vi.mock("@/lib/audio/audioEngine", () => ({
   audioEngine: {
     resolveSource: () => "/audio/ambient-piano.wav",
@@ -77,6 +81,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
     const base = mergeDesignData(DEMO_EVENT.design_data);
     expect(getVisibleInvitationSections(base).map((i) => i.id)).toEqual([
       "invite-hero",
+      "invite-couple",
       "invite-story",
       "invite-schedule",
       "invite-venue",
@@ -87,6 +92,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
       ...base,
       sections: {
         ...base.sections,
+        showCouple: false,
         showItinerary: false,
         showVenue: false,
       },
@@ -95,6 +101,66 @@ describe("Dual-Viewport Invitation Architecture", () => {
       getVisibleInvitationSections(studioWithGallery, true).map((i) => i.id)
     ).toEqual(["invite-hero", "invite-story", "invite-gallery", "invite-rsvp"]);
   });
+
+  it("renders CoupleScene, floral/abstract art backdrop, and Bride/Groom portrait URLs cleanly", async () => {
+    const customCoupleDesign = mergeDesignData({
+      ...DEMO_EVENT.design_data,
+      theme: {
+        ...DEMO_EVENT.design_data.theme,
+        cardArt: {
+          motif: "floral-bouquet",
+          borderStyle: "arch-frame",
+          backdropPreset: "peony-arch",
+          backdropUrl: null,
+          backdropOpacity: 0.45,
+          heroFrame: "polaroid",
+        },
+      },
+      content: {
+        ...DEMO_EVENT.design_data.content,
+        couple: {
+          layout: "side-by-side",
+          frameShape: "polaroid",
+          crestText: "&",
+          brideName: "Zoya Khan",
+          brideRole: "Daughter of Tariq",
+          brideImageUrl: "https://example.com/bride.jpg",
+          groomName: "Omar Ali",
+          groomRole: "Son of Mansoor",
+          groomImageUrl: "https://example.com/groom.jpg",
+        },
+      },
+    });
+
+    render(
+      <GuestInviteShell
+        eventId={DEMO_EVENT.id}
+        slug={DEMO_EVENT.slug}
+        title="Zoya & Omar"
+        eventDate={DEMO_EVENT.event_date}
+        venueName={DEMO_EVENT.venue_name}
+        designData={customCoupleDesign}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open & rsvp/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("card-art-backdrop")).toBeTruthy();
+        expect(screen.getByTestId("card-ornament-frame")).toBeTruthy();
+        expect(screen.getByTestId("card-header-crown")).toBeTruthy();
+        expect(screen.getByTestId("couple-scene")).toBeTruthy();
+        expect(screen.getByAltText("Zoya Khan").getAttribute("src")).toBe(
+          "https://example.com/bride.jpg"
+        );
+        expect(screen.getByAltText("Omar Ali").getAttribute("src")).toBe(
+          "https://example.com/groom.jpg"
+        );
+      },
+      { timeout: 3000 }
+    );
+  }, 10000);
 
   it("renders GuestInviteShell on SSR with companion wings, centered card frame, and draft banner", () => {
     const html = renderToString(

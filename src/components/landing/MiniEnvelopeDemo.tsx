@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Sparkles, Volume2 } from "lucide-react";
-import { STARTER_TEMPLATES } from "@/lib/templates/presets";
+import { resolveCardBackdropUrl, STARTER_TEMPLATES } from "@/lib/templates/presets";
+import { hexToRgba } from "@/lib/utils/colors";
 import {
   getDisplayFontFamily,
   getScriptFontFamily,
@@ -32,20 +33,22 @@ export function MiniEnvelopeDemo({
 
   const templateRecord = STARTER_TEMPLATES[activeIdx] ?? STARTER_TEMPLATES[0];
   const cfg = templateRecord.default_config;
-  const { palette, typography } = cfg.theme;
+  const { palette, typography, cardArt } = cfg.theme;
+  const backdropUrl = resolveCardBackdropUrl(cardArt);
 
   return (
-    <div className="relative mx-auto w-full max-w-[376px]">
+    <div className="relative mx-auto w-full max-w-[390px]">
       {/* Theme Swatch Switcher */}
-      <div className="mb-4 flex items-center justify-center gap-1.5 rounded-full border border-stone-200/80 bg-white/85 backdrop-blur-md p-1 shadow-xs">
+      <div className="mb-4 flex flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
         {STARTER_TEMPLATES.map((tpl, idx) => {
           const active = idx === activeIdx;
+          const shortName = tpl.title.split("(")[0].trim().split(" ")[0] ?? tpl.category;
           return (
             <button
               key={tpl.id}
               type="button"
               onClick={() => setActiveIdx(idx)}
-              className={`relative rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition cursor-pointer ${
+              className={`relative rounded-xl px-2 py-1 text-[10px] font-medium capitalize transition cursor-pointer ${
                 active ? "text-white" : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -53,17 +56,17 @@ export function MiniEnvelopeDemo({
                 <motion.span
                   layoutId="hero-theme-pill"
                   transition={{ type: "spring", bounce: 0.25, duration: 0.4 }}
-                  className="absolute inset-0 rounded-full bg-stone-900 shadow-xs"
+                  className="absolute inset-0 rounded-xl bg-stone-900 shadow-xs"
                 />
               )}
-              <span className="relative z-10 flex items-center gap-1.5">
+              <span className="relative z-10 flex items-center gap-1">
                 <span
-                  className="w-2 h-2 rounded-full inline-block"
+                  className="w-2 h-2 rounded-full inline-block shrink-0"
                   style={{
                     backgroundColor: tpl.default_config.envelope.waxSeal.color,
                   }}
                 />
-                <span>{tpl.category}</span>
+                <span>{shortName}</span>
               </span>
             </button>
           );
@@ -106,16 +109,33 @@ export function MiniEnvelopeDemo({
               color: palette.text,
               borderColor: `${palette.accent}44`,
             }}
-            className="relative z-10 rounded-2xl border px-5 py-6 shadow-inner"
+            className="relative z-10 rounded-2xl border px-5 py-6 shadow-inner overflow-hidden"
           >
+            {backdropUrl && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={backdropUrl}
+                  alt=""
+                  className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-35"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background: `radial-gradient(circle at 50% 45%, ${hexToRgba(palette.surface, 0.72)}, ${hexToRgba(palette.surface, 0.35)})`,
+                  }}
+                />
+              </>
+            )}
             <p
-              className="text-[10px] uppercase tracking-[0.22em]"
+              className="relative z-10 text-[10px] uppercase tracking-[0.22em]"
               style={{ color: palette.mutedText }}
             >
               {cfg.content.hostLine}
             </p>
             <h3
-              className="mt-2 text-2xl font-semibold leading-tight"
+              className="relative z-10 mt-2 text-2xl font-semibold leading-tight"
               style={{
                 color: palette.primary,
                 fontFamily: getDisplayFontFamily(typography.displayFont),
@@ -124,7 +144,7 @@ export function MiniEnvelopeDemo({
               {cfg.content.headline}
             </h3>
             <p
-              className="mt-1 text-base"
+              className="relative z-10 mt-1 text-base"
               style={{
                 color: palette.accent,
                 fontFamily: getScriptFontFamily(typography.scriptFont),
@@ -137,7 +157,7 @@ export function MiniEnvelopeDemo({
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-4 pt-3 border-t space-y-2.5"
+                className="relative z-10 mt-4 pt-3 border-t space-y-2.5"
                 style={{ borderColor: `${palette.accent}33` }}
               >
                 <p
@@ -147,13 +167,13 @@ export function MiniEnvelopeDemo({
                   {cfg.content.subtitle}
                 </p>
                 <Link
-                  href="/e/demo"
+                  href={`/e/demo?template=${encodeURIComponent(cfg.theme.presetId)}`}
                   style={{
                     backgroundColor: cfg.envelope.envelopeColor,
                     color: "#FAF6EE",
                     borderColor: `${cfg.envelope.linerColor}55`,
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-[11px] font-medium hover:opacity-90 transition"
+                  className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-[11px] font-medium shadow-xs hover:opacity-90 transition"
                 >
                   <span>Open Full Experience</span>
                   <ArrowRight className="w-3 h-3" />

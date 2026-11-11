@@ -31,6 +31,7 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { useCountdown } from "@/hooks/useCountdown";
 import { VenuePreviewMap } from "@/components/maps/VenuePreviewMap";
 import {
@@ -96,7 +97,11 @@ export function GuestInviteShell({
 
   const { theme, content, sections, audio } = designData;
   const ambientPhotoUrl =
-    content.heroImageUrl || content.gallery[0]?.url || null;
+    content.heroImageUrl ||
+    content.couple.brideImageUrl ||
+    content.gallery[0]?.url ||
+    resolveCardBackdropUrl(theme.cardArt) ||
+    null;
   const coords = parseCoordinatesFromMapUrl(venueMapUrl);
   const mapsUrl = buildMapsUrl(venueName, venueAddress, venueMapUrl);
   const osmUrl = coords ? buildOsmLinkUrl(coords.lat, coords.lng) : null;

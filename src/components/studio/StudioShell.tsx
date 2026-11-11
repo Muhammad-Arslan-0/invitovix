@@ -69,22 +69,35 @@ export function StudioShell({
             ? overridePublished
             : eventMeta.is_published;
 
-        const { error } = await supabase
+        const payload = {
+          title: eventMeta.title,
+          slug: eventMeta.slug,
+          event_type: eventMeta.event_type,
+          event_date: eventMeta.event_date,
+          venue_name: eventMeta.venue_name,
+          venue_address: eventMeta.venue_address || null,
+          venue_map_url: eventMeta.venue_map_url || null,
+          template_id: eventMeta.template_id,
+          audio_url: eventMeta.audio_url,
+          design_data: designData,
+          is_published: nextPublished,
+        };
+
+        let { error } = await supabase
           .from("events")
-          .update({
-            title: eventMeta.title,
-            slug: eventMeta.slug,
-            event_type: eventMeta.event_type,
-            event_date: eventMeta.event_date,
-            venue_name: eventMeta.venue_name,
-            venue_address: eventMeta.venue_address || null,
-            venue_map_url: eventMeta.venue_map_url || null,
-            template_id: eventMeta.template_id,
-            audio_url: eventMeta.audio_url,
-            design_data: designData,
-            is_published: nextPublished,
-          })
+          .update(payload)
           .eq("id", eventMeta.id);
+
+        if (error?.code === "23503" && error.message.includes("template")) {
+          const retryRes = await supabase
+            .from("events")
+            .update({ ...payload, template_id: null })
+            .eq("id", eventMeta.id);
+          error = retryRes.error;
+          if (!error) {
+            updateMeta({ template_id: null });
+          }
+        }
 
         if (error) {
           setSaveError(error.message);
@@ -170,7 +183,7 @@ export function StudioShell({
                   forceMount
                   className="data-[state=inactive]:hidden outline-none"
                 >
-                  <ThemePanel templates={templates} />
+                  <ThemePanel templates={templates} userId={userId} />
                 </Tabs.Content>
               )}
               {visitedTabs.includes("envelope") && (

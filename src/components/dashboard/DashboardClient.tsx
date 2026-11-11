@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { EventRecord, TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
+import { resolveCardBackdropUrl } from "@/lib/templates/presets";
+import { hexToRgba } from "@/lib/utils/colors";
 import { CreateEventModal } from "./CreateEventModal";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
@@ -246,6 +248,9 @@ export function DashboardClient({
               {events.map((event, idx) => {
                 const palette = event.design_data.theme.palette;
                 const waxSeal = event.design_data.envelope.waxSeal;
+                const sceneUrl =
+                  event.design_data.content.heroImageUrl ||
+                  resolveCardBackdropUrl(event.design_data.theme.cardArt);
                 const formattedDate = new Date(
                   event.event_date
                 ).toLocaleDateString("en-US", {
@@ -281,6 +286,23 @@ export function DashboardClient({
                         borderBottom: `1px solid ${palette.accent}33`,
                       }}
                     >
+                      {sceneUrl && (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={sceneUrl}
+                            alt=""
+                            className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-40"
+                          />
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0"
+                            style={{
+                              background: `linear-gradient(180deg, ${hexToRgba(palette.background, 0.3)} 0%, ${hexToRgba(palette.background, 0.78)} 100%)`,
+                            }}
+                          />
+                        </>
+                      )}
                       <div
                         aria-hidden="true"
                         className="pointer-events-none absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-20"

@@ -2,8 +2,9 @@
 
 import { memo } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
+import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import { toSlug } from "@/lib/utils/slug";
 import { MediaUploader } from "../MediaUploader";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -26,6 +27,7 @@ export const ContentPanel = memo(function ContentPanel({
 
   const updateMeta = useStudioStore((s) => s.updateMeta);
   const updateContent = useStudioStore((s) => s.updateContent);
+  const updateCouple = useStudioStore((s) => s.updateCouple);
   const updateSections = useStudioStore((s) => s.updateSections);
   const addItineraryItem = useStudioStore((s) => s.addItineraryItem);
   const updateItineraryItem = useStudioStore((s) => s.updateItineraryItem);
@@ -201,6 +203,224 @@ export const ContentPanel = memo(function ContentPanel({
         </div>
       </div>
 
+      {/* Bride & Groom Spotlight Portraits */}
+      <div className="space-y-3 border-t border-stone-200 pt-5">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+            <UsersRound className="w-3.5 h-3.5 text-amber-700" />
+            <span>Bride &amp; Groom Portraits</span>
+          </h3>
+          <Switch.Root
+            checked={sections.showCouple}
+            aria-label="Show Bride and Groom Section"
+            onCheckedChange={(checked) => {
+              setPreviewStage("opened");
+              updateSections({ showCouple: checked });
+            }}
+            className="w-9 h-5 rounded-full bg-stone-300 data-[state=checked]:bg-stone-900 relative transition cursor-pointer shrink-0"
+          >
+            <Switch.Thumb className="block w-3.5 h-3.5 rounded-full bg-white translate-x-0.5 transition-transform data-[state=checked]:translate-x-4.5" />
+          </Switch.Root>
+        </div>
+
+        {sections.showCouple && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] text-stone-600 mb-1">
+                  Showcase Layout
+                </label>
+                <div className="grid grid-cols-2 gap-1 rounded-xl border border-stone-200 p-1 bg-stone-50">
+                  {(
+                    [
+                      { id: "side-by-side", label: "Twin" },
+                      { id: "editorial-split", label: "Split" },
+                    ] as const
+                  ).map((lay) => (
+                    <button
+                      key={lay.id}
+                      type="button"
+                      onClick={() => {
+                        setPreviewStage("opened");
+                        updateCouple({ layout: lay.id });
+                      }}
+                      className={`rounded-lg py-1 text-[11px] font-medium cursor-pointer transition ${
+                        content.couple.layout === lay.id
+                          ? "bg-stone-900 text-white"
+                          : "text-stone-600 hover:text-stone-900"
+                      }`}
+                    >
+                      {lay.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-stone-600 mb-1">
+                  Center Crest
+                </label>
+                <input
+                  type="text"
+                  maxLength={8}
+                  value={content.couple.crestText}
+                  onChange={(e) =>
+                    updateCouple({ crestText: e.target.value })
+                  }
+                  placeholder="&"
+                  className="w-full rounded-xl border border-stone-200 px-3 py-1.5 text-xs text-center focus:border-stone-900 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-stone-600 mb-1">
+                Portrait Frame Shape
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {COUPLE_FRAME_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setPreviewStage("opened");
+                      updateCouple({ frameShape: opt.id });
+                    }}
+                    className={`rounded-xl border py-1.5 text-[11px] font-medium transition cursor-pointer ${
+                      content.couple.frameShape === opt.id
+                        ? "border-stone-900 bg-stone-900 text-white"
+                        : "border-stone-200 text-stone-700 hover:bg-stone-50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bride Card */}
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-700">
+                  Bride Details &amp; Picture
+                </span>
+                {content.couple.brideImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => updateCouple({ brideImageUrl: null })}
+                    className="text-[10px] font-medium text-rose-600 hover:underline cursor-pointer"
+                  >
+                    Remove Photo
+                  </button>
+                )}
+              </div>
+
+              {content.couple.brideImageUrl && (
+                <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={content.couple.brideImageUrl}
+                    alt={content.couple.brideName || "Bride"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <MediaUploader
+                userId={userId}
+                eventId={eventId}
+                accept="image/png,image/jpeg,image/webp"
+                label={
+                  content.couple.brideImageUrl
+                    ? "Replace Bride Photo"
+                    : "Upload Bride Photo"
+                }
+                folder="images"
+                onUploaded={(url) => {
+                  setPreviewStage("opened");
+                  updateCouple({ brideImageUrl: url });
+                }}
+              />
+
+              <input
+                type="text"
+                value={content.couple.brideName}
+                onChange={(e) => updateCouple({ brideName: e.target.value })}
+                placeholder="Bride Name"
+                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs focus:border-stone-900 focus:outline-none"
+              />
+              <input
+                type="text"
+                value={content.couple.brideRole}
+                onChange={(e) => updateCouple({ brideRole: e.target.value })}
+                placeholder="Daughter of..."
+                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 focus:border-stone-900 focus:outline-none"
+              />
+            </div>
+
+            {/* Groom Card */}
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-700">
+                  Groom Details &amp; Picture
+                </span>
+                {content.couple.groomImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => updateCouple({ groomImageUrl: null })}
+                    className="text-[10px] font-medium text-rose-600 hover:underline cursor-pointer"
+                  >
+                    Remove Photo
+                  </button>
+                )}
+              </div>
+
+              {content.couple.groomImageUrl && (
+                <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={content.couple.groomImageUrl}
+                    alt={content.couple.groomName || "Groom"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <MediaUploader
+                userId={userId}
+                eventId={eventId}
+                accept="image/png,image/jpeg,image/webp"
+                label={
+                  content.couple.groomImageUrl
+                    ? "Replace Groom Photo"
+                    : "Upload Groom Photo"
+                }
+                folder="images"
+                onUploaded={(url) => {
+                  setPreviewStage("opened");
+                  updateCouple({ groomImageUrl: url });
+                }}
+              />
+
+              <input
+                type="text"
+                value={content.couple.groomName}
+                onChange={(e) => updateCouple({ groomName: e.target.value })}
+                placeholder="Groom Name"
+                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs focus:border-stone-900 focus:outline-none"
+              />
+              <input
+                type="text"
+                value={content.couple.groomRole}
+                onChange={(e) => updateCouple({ groomRole: e.target.value })}
+                placeholder="Son of..."
+                className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 focus:border-stone-900 focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Hero Cover Image */}
       <div className="space-y-2.5 border-t border-stone-200 pt-5">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
@@ -368,6 +588,7 @@ export const ContentPanel = memo(function ContentPanel({
 
         {(
           [
+            { key: "showCouple", label: "Bride & Groom Spotlight" },
             { key: "showCountdown", label: "Live Countdown Timer" },
             { key: "showItinerary", label: "Evening Schedule" },
             { key: "showVenue", label: "Venue, Maps & Calendar Sync" },

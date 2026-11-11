@@ -15,7 +15,8 @@ import {
   Users,
   Wand2,
 } from "lucide-react";
-import { STARTER_TEMPLATES } from "@/lib/templates/presets";
+import { resolveCardBackdropUrl, STARTER_TEMPLATES } from "@/lib/templates/presets";
+import { hexToRgba } from "@/lib/utils/colors";
 import { MiniEnvelopeDemo } from "./MiniEnvelopeDemo";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
@@ -194,7 +195,7 @@ export function LandingShowcase() {
           </div>
 
           <div className="pt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-stone-500">
-            <span>4 Starter Aesthetics</span>
+            <span>{STARTER_TEMPLATES.length} Starter Aesthetics</span>
             <span className="text-amber-600">•</span>
             <span>Mobile-First Reveal</span>
             <span className="text-amber-600">•</span>
@@ -320,6 +321,9 @@ export function LandingShowcase() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {STARTER_TEMPLATES.map((tpl, idx) => {
             const p = tpl.default_config.theme.palette;
+            const sceneUrl = resolveCardBackdropUrl(
+              tpl.default_config.theme.cardArt
+            );
             const isActiveInHero = selectedIdx === idx;
             return (
               <motion.button
@@ -341,11 +345,28 @@ export function LandingShowcase() {
                 }`}
               >
                 <div
-                  className="h-44 w-full p-5 flex flex-col items-center justify-center text-center relative"
+                  className="h-44 w-full p-5 flex flex-col items-center justify-center text-center relative overflow-hidden"
                   style={{ backgroundColor: p.background }}
                 >
+                  {sceneUrl && (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={sceneUrl}
+                        alt=""
+                        className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-55"
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                          background: `radial-gradient(circle at 50% 48%, ${hexToRgba(p.background, 0.7)}, ${hexToRgba(p.background, 0.24)})`,
+                        }}
+                      />
+                    </>
+                  )}
                   <span
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white/35"
+                    className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white/35"
                     style={{
                       backgroundColor: tpl.default_config.envelope.waxSeal.color,
                     }}
@@ -353,13 +374,13 @@ export function LandingShowcase() {
                     {tpl.default_config.envelope.waxSeal.monogram}
                   </span>
                   <p
-                    className="mt-3 text-base font-semibold"
+                    className="relative z-10 mt-3 text-base font-semibold"
                     style={{ color: p.primary }}
                   >
                     {tpl.default_config.content.headline}
                   </p>
                   <p
-                    className="text-[11px] uppercase tracking-widest mt-1"
+                    className="relative z-10 text-[11px] uppercase tracking-widest mt-1"
                     style={{ color: p.mutedText }}
                   >
                     {tpl.category}
@@ -376,6 +397,32 @@ export function LandingShowcase() {
               </motion.button>
             );
           })}
+
+          {/* Symmetrical 8th Studio Tile */}
+          <Link
+            href="/login"
+            className="text-left rounded-3xl border border-dashed border-amber-400/70 bg-gradient-to-br from-[#FAF6EE] to-amber-50/60 overflow-hidden shadow-2xs hover:shadow-xl hover:border-stone-900 transition-all flex flex-col justify-between group"
+          >
+            <div className="h-44 w-full p-5 flex flex-col items-center justify-center text-center">
+              <span className="w-12 h-12 rounded-full bg-stone-900 text-amber-300 flex items-center justify-center shadow-md group-hover:scale-105 transition">
+                <Wand2 className="w-5 h-5" />
+              </span>
+              <p className="mt-3 text-base font-serif font-semibold text-stone-900">
+                Design Your Own
+              </p>
+              <p className="text-[11px] uppercase tracking-widest mt-1 text-amber-800">
+                Custom Scenes &amp; Portraits
+              </p>
+            </div>
+            <div className="p-4 w-full border-t border-amber-200/60 bg-white/80 flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-stone-800">
+                Upload Backdrop &amp; Photos
+              </span>
+              <span className="text-[10px] font-semibold text-amber-700 shrink-0">
+                Studio →
+              </span>
+            </div>
+          </Link>
         </div>
       </section>
 

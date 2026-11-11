@@ -119,12 +119,12 @@ export function RsvpScene({
         ...(scrollRootRef ? { root: scrollRootRef } : {}),
       }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="scroll-mt-4 px-6 pt-8 pb-24 max-w-lg mx-auto"
+      className="scroll-mt-14 px-6 sm:px-7 pt-8 pb-24 max-w-lg mx-auto"
     >
       <div
-        className="relative rounded-3xl border p-6 sm:p-7 shadow-md overflow-hidden"
+        className="relative rounded-3xl border p-6 sm:p-7 shadow-md overflow-hidden backdrop-blur-xs"
         style={{
-          backgroundColor: theme.palette.surface,
+          backgroundColor: `${theme.palette.surface}EF`,
           borderColor: `${theme.palette.accent}55`,
         }}
       >

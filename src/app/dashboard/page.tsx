@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { mergeDesignData, STARTER_TEMPLATES } from "@/lib/templates/presets";
-import { EventRecord, TemplateRecord } from "@/types/invitation";
+import {
+  mergeDesignData,
+  mergeTemplateCatalog,
+  STARTER_TEMPLATES,
+} from "@/lib/templates/presets";
+import { EventRecord } from "@/types/invitation";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 
 export const dynamic = "force-dynamic";
@@ -37,13 +41,7 @@ export default async function DashboardPage() {
         .select("event_id, attending_status, guests_count"),
     ]);
 
-  const templates: TemplateRecord[] =
-    templatesRaw && templatesRaw.length > 0
-      ? templatesRaw.map((t) => ({
-          ...t,
-          default_config: mergeDesignData(t.default_config),
-        }))
-      : STARTER_TEMPLATES;
+  const templates = mergeTemplateCatalog(templatesRaw, STARTER_TEMPLATES);
 
   const rsvpStats = new Map<string, { count: number; attending: number }>();
   for (const r of rsvpsRaw ?? []) {

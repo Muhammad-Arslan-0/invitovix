@@ -8,7 +8,7 @@ import { Calendar, Check, Loader2, MapPin, Plus, Sparkles, X } from "lucide-reac
 import { TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
 import { generateUniqueSlug, toSlug } from "@/lib/utils/slug";
-import { mergeDesignData } from "@/lib/templates/presets";
+import { mergeDesignData, resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 import { LuxLoader } from "@/components/ui/LuxLoader";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -53,7 +53,8 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
 
   async function insertEventRecord(
     supabase: ReturnType<typeof createClient>,
-    targetSlug: string
+    targetSlug: string,
+    templateIdOverride?: string | null
   ) {
     const baseDesign = mergeDesignData(selectedTemplate!.default_config);
     baseDesign.content.headline = title.trim();
@@ -62,7 +63,10 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
       .from("events")
       .insert({
         user_id: userId,
-        template_id: selectedTemplate!.id,
+        template_id:
+          templateIdOverride !== undefined
+            ? templateIdOverride
+            : selectedTemplate!.id,
         slug: targetSlug,
         title: title.trim(),
         event_type: selectedTemplate!.category,
@@ -114,14 +118,28 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
       const supabase = createClient();
       const finalSlug = toSlug(slug || title) || generateUniqueSlug(title);
 
+      let usedTemplateNullFallback = false;
       let { data, error: insertError } = await insertEventRecord(supabase, finalSlug);
 
-      // Rare edge case: if user has no profiles row yet (FK 23503), backfill profile and retry once
+      // Handle FK 23503: missing profile row OR local template not yet seeded in Supabase
       if (insertError?.code === "23503") {
-        await ensureProfileFallback(supabase);
-        const retryProfileRes = await insertEventRecord(supabase, finalSlug);
-        data = retryProfileRes.data;
-        insertError = retryProfileRes.error;
+        if (insertError.message.includes("template")) {
+          usedTemplateNullFallback = true;
+          const retryTplRes = await insertEventRecord(supabase, finalSlug, null);
+          data = retryTplRes.data;
+          insertError = retryTplRes.error;
+        } else {
+          await ensureProfileFallback(supabase);
+          const retryProfileRes = await insertEventRecord(supabase, finalSlug);
+          data = retryProfileRes.data;
+          insertError = retryProfileRes.error;
+          if (insertError?.code === "23503" && insertError.message.includes("template")) {
+            usedTemplateNullFallback = true;
+            const retryTplRes = await insertEventRecord(supabase, finalSlug, null);
+            data = retryTplRes.data;
+            insertError = retryTplRes.error;
+          }
+        }
       }
 
       if (insertError) {
@@ -129,7 +147,8 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
           const retrySlug = generateUniqueSlug(finalSlug);
           const { data: retryData, error: retryErr } = await insertEventRecord(
             supabase,
-            retrySlug
+            retrySlug,
+            usedTemplateNullFallback ? null : undefined
           );
 
           if (retryErr || !retryData) {
@@ -232,10 +251,13 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
                     1. Choose Template
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
                     {templates.map((tpl) => {
                       const active = tpl.id === selectedTemplateId;
                       const palette = tpl.default_config.theme.palette;
+                      const sceneUrl = resolveCardBackdropUrl(
+                        tpl.default_config.theme.cardArt
+                      );
                       return (
                         <motion.button
                           key={tpl.id}
@@ -243,7 +265,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                           whileHover={{ y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedTemplateId(tpl.id)}
-                          className={`relative rounded-2xl border p-2.5 text-left transition cursor-pointer ${
+                          className={`relative rounded-2xl border p-2 text-left transition cursor-pointer ${
                             active
                               ? "border-stone-900 ring-2 ring-amber-500/35 bg-amber-50/40 shadow-sm"
                               : "border-stone-200 hover:border-stone-300 bg-white"
@@ -256,14 +278,22 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                               borderColor: `${palette.accent}66`,
                             }}
                           >
+                            {sceneUrl && (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img
+                                src={sceneUrl}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover opacity-55"
+                              />
+                            )}
                             <span
-                              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ring-2 ring-white/40"
+                              className="relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ring-2 ring-white/40"
                               style={{ backgroundColor: palette.accent }}
                             >
                               {tpl.default_config.envelope.waxSeal.monogram}
                             </span>
                             <span
-                              className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                              className="relative z-10 mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-1.5 rounded-full bg-white/75"
                               style={{ color: palette.primary }}
                             >
                               {tpl.category}

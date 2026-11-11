@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { DEMO_EVENT, mergeDesignData } from "@/lib/templates/presets";
+import {
+  DEMO_EVENT,
+  STARTER_TEMPLATES,
+  mergeDesignData,
+} from "@/lib/templates/presets";
 import { EventRecord } from "@/types/invitation";
 import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
 
@@ -9,13 +13,35 @@ export const dynamic = "force-dynamic";
 
 interface GuestInvitePageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ template?: string }>;
 }
 
-async function resolveEventBySlug(slug: string): Promise<{
+async function resolveEventBySlug(
+  slug: string,
+  templateParam?: string
+): Promise<{
   event: EventRecord | null;
   isOwnerDraft: boolean;
 }> {
   if (slug === "demo") {
+    if (templateParam) {
+      const matched = STARTER_TEMPLATES.find(
+        (t) =>
+          t.default_config.theme.presetId === templateParam ||
+          t.id === templateParam
+      );
+      if (matched) {
+        return {
+          event: {
+            ...DEMO_EVENT,
+            template_id: matched.id,
+            title: matched.default_config.content.headline,
+            design_data: mergeDesignData(matched.default_config),
+          },
+          isOwnerDraft: false,
+        };
+      }
+    }
     return { event: DEMO_EVENT, isOwnerDraft: false };
   }
 
@@ -54,9 +80,11 @@ async function resolveEventBySlug(slug: string): Promise<{
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: GuestInvitePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const { event } = await resolveEventBySlug(slug);
+  const sp = searchParams ? await searchParams : undefined;
+  const { event } = await resolveEventBySlug(slug, sp?.template);
 
   if (!event) {
     return {
@@ -81,9 +109,15 @@ export async function generateMetadata({
       title: `${design.content.headline || event.title} — Invitation`,
       description,
       type: "website",
-      images: design.content.heroImageUrl
-        ? [{ url: design.content.heroImageUrl }]
-        : undefined,
+      images:
+        design.content.heroImageUrl || design.content.couple.brideImageUrl
+          ? [
+              {
+                url: (design.content.heroImageUrl ||
+                  design.content.couple.brideImageUrl)!,
+              },
+            ]
+          : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -95,9 +129,11 @@ export async function generateMetadata({
 
 export default async function GuestInvitePage({
   params,
+  searchParams,
 }: GuestInvitePageProps) {
   const { slug } = await params;
-  const { event, isOwnerDraft } = await resolveEventBySlug(slug);
+  const sp = searchParams ? await searchParams : undefined;
+  const { event, isOwnerDraft } = await resolveEventBySlug(slug, sp?.template);
 
   if (!event) {
     return (
