@@ -7,6 +7,7 @@ import {
 } from "@/lib/templates/presets";
 import { EventRecord } from "@/types/invitation";
 import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +102,14 @@ export async function generateMetadata({
                   design.content.couple.brideImageUrl)!,
               },
             ]
-          : undefined,
+          : [
+              {
+                url: "/brand/invitovix-icon.png",
+                width: 512,
+                height: 512,
+                alt: "Invitovix Crest",
+              },
+            ],
     },
     twitter: {
       card: "summary_large_image",
@@ -123,6 +131,11 @@ export default async function GuestInvitePage({
     return (
       <main className="min-h-screen flex flex-col items-center justify-center bg-[#fcfaf7] px-6 text-center">
         <div className="max-w-md rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
+          <BrandMark
+            size="lg"
+            decorative
+            className="mx-auto mb-3"
+          />
           <p className="text-xs uppercase tracking-[0.24em] text-amber-700 font-medium">
             Invitovix
           </p>

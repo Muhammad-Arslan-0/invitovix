@@ -10,12 +10,12 @@ import {
   CheckCircle2,
   Loader2,
   Mail,
-  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 import { LuxLoader } from "@/components/ui/LuxLoader";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 function LoginForm() {
   const router = useRouter();
@@ -136,8 +136,8 @@ function LoginForm() {
         className="max-w-md w-full mx-auto my-8"
       >
         <div className="rounded-3xl border border-stone-200/90 bg-white/95 backdrop-blur-sm p-7 sm:p-8 shadow-xl shadow-stone-900/5">
-          <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold uppercase tracking-[0.22em]">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2.5 text-amber-700 text-xs font-semibold uppercase tracking-[0.22em]">
+            <BrandMark size="sm" rounded="xl" decorative />
             <span>Invitovix Studio</span>
           </div>
 

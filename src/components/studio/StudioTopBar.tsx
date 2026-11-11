@@ -13,6 +13,7 @@ import {
 import { useStudioStore } from "@/store/useStudioStore";
 import { formatCategoryBadge } from "@/lib/templates/categories";
 import { ShareDialog } from "./ShareDialog";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
 interface StudioTopBarProps {
@@ -64,6 +65,13 @@ export const StudioTopBar = memo(function StudioTopBar({
             {isPending && navTarget === "dashboard" ? "Loading..." : "Dashboard"}
           </span>
         </button>
+
+        <BrandMark
+          size="sm"
+          rounded="xl"
+          decorative
+          className="hidden sm:inline-flex w-7 h-7"
+        />
 
         <input
           type="text"

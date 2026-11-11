@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { EventDesignData } from "@/types/invitation";
 import { audioEngine } from "@/lib/audio/audioEngine";
 import { getPaperTextureClass } from "@/lib/utils/fonts";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { EnvelopeStage } from "./EnvelopeStage";
 import { ParticleLayer } from "./ParticleLayer";
 import { FloatingAudioDisc } from "./FloatingAudioDisc";
@@ -390,7 +391,10 @@ export const InvitationPlayer = forwardRef<
                 className="pb-24 pt-2 text-center text-[11px] uppercase tracking-[0.22em] opacity-65"
                 style={{ color: theme.palette.mutedText }}
               >
-                Powered by Invitovix
+                <span className="inline-flex items-center justify-center gap-1.5">
+                  <BrandMark size="2xs" rounded="md" decorative />
+                  <span>Powered by Invitovix</span>
+                </span>
               </footer>
             </div>
 

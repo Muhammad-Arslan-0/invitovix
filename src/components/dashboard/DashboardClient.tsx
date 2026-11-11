@@ -14,7 +14,6 @@ import {
   LogOut,
   MapPin,
   Palette,
-  Sparkles,
   Trash2,
   Users,
 } from "lucide-react";
@@ -32,6 +31,7 @@ import {
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
 import { CreateEventModal } from "./CreateEventModal";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
 interface EventWithCount extends EventRecord {
@@ -161,9 +161,12 @@ export function DashboardClient({
       <header className="border-b border-stone-200/90 bg-white/85 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="w-8 h-8 rounded-xl bg-stone-900 text-amber-300 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
-              <Sparkles className="w-4 h-4" />
-            </span>
+            <BrandMark
+              size="sm"
+              rounded="xl"
+              decorative
+              className="group-hover:scale-105 transition"
+            />
             <span className="font-serif text-lg font-semibold tracking-wide text-stone-900">
               Invitovix
             </span>
@@ -299,9 +302,11 @@ export function DashboardClient({
               animate={{ opacity: 1, scale: 1 }}
               className="rounded-3xl border border-dashed border-stone-300 bg-white/90 p-12 text-center shadow-2xs"
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto">
-                <Sparkles className="w-6 h-6" />
-              </div>
+              <BrandMark
+                size="lg"
+                decorative
+                className="mx-auto"
+              />
               <h3 className="mt-4 text-lg font-serif font-semibold text-stone-900">
                 No invitations created yet
               </h3>

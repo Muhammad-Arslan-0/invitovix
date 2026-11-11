@@ -3,7 +3,22 @@ import { Suspense } from "react";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import "./globals.css";
 
+function resolveMetadataBase(): URL {
+  const raw =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "") ||
+    "http://localhost:3000";
+  try {
+    return new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+  } catch {
+    return new URL("http://localhost:3000");
+  }
+}
+
 export const metadata: Metadata = {
+  metadataBase: resolveMetadataBase(),
   title: {
     default:
       "Invitovix — Interactive Wax-Seal Digital Invitations for Weddings, Birthdays, Galas & Parties",
@@ -11,6 +26,19 @@ export const metadata: Metadata = {
   },
   description:
     "Design and share interactive wax-seal invitations across strictly curated categories — Weddings (Nikah, Mehndi, Baraat, Valima), Birthdays, Black-Tie Galas, Baby Showers, Anniversaries, and Graduations — with music, calendar sync, map pin selection, and live RSVP tracking.",
+  openGraph: {
+    title: "Invitovix — Interactive Wax-Seal Digital Invitations",
+    description:
+      "Design bespoke animated invitations across strictly curated categories with custom music, map pin selection, and live RSVPs.",
+    images: [
+      {
+        url: "/brand/invitovix-icon.png",
+        width: 512,
+        height: 512,
+        alt: "Invitovix Brand Crest",
+      },
+    ],
+  },
 };
 
 const GOOGLE_FONTS_URL =

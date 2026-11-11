@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 interface ErrorBoundaryProps {
   error: Error & { digest?: string };
@@ -20,8 +21,9 @@ export default function AppError({ error, reset }: ErrorBoundaryProps) {
         <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-center mx-auto">
           <AlertTriangle className="w-5 h-5" />
         </div>
-        <p className="mt-4 text-[11px] uppercase tracking-[0.24em] text-amber-700 font-semibold">
-          Invitovix · Recovery
+        <p className="mt-4 inline-flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.24em] text-amber-700 font-semibold">
+          <BrandMark size="2xs" rounded="md" decorative />
+          <span>Invitovix · Recovery</span>
         </p>
         <h1
           className="mt-1.5 text-2xl font-semibold text-stone-900"

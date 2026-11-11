@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -16,6 +17,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
     <html lang="en">
       <body className="min-h-screen bg-[#fcfaf7] text-stone-900 flex items-center justify-center p-6 font-sans">
         <div className="max-w-md w-full rounded-3xl border border-stone-200 bg-white p-8 text-center shadow-xl">
+          <BrandMark
+            size="lg"
+            decorative
+            className="mx-auto mb-3"
+          />
           <p className="text-[11px] uppercase tracking-[0.24em] text-amber-700 font-semibold">
             Invitovix
           </p>

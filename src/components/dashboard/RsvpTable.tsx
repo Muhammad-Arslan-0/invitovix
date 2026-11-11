@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { AttendingStatus, RsvpRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
 interface RsvpTableProps {
@@ -147,9 +148,12 @@ export function RsvpTable({
                   : "Back to Dashboard"}
               </span>
             </button>
-            <h1 className="mt-2 text-2xl sm:text-3xl font-serif font-semibold text-stone-900">
-              {eventTitle} — Guest RSVPs
-            </h1>
+            <div className="mt-2 flex items-center gap-3">
+              <BrandMark size="sm" rounded="xl" decorative />
+              <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-stone-900">
+                {eventTitle} — Guest RSVPs
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5">

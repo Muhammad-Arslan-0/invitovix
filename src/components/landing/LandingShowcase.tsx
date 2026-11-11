@@ -33,6 +33,7 @@ import {
 } from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MiniEnvelopeDemo } from "./MiniEnvelopeDemo";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 
 const DOMAIN_ICONS: Record<InvitationDomainId, typeof Heart> = {
@@ -111,9 +112,12 @@ export function LandingShowcase() {
       <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-[#fcfaf7]/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="w-8 h-8 rounded-xl bg-stone-900 text-amber-300 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
-              <Sparkles className="w-4 h-4" />
-            </span>
+            <BrandMark
+              size="sm"
+              rounded="xl"
+              decorative
+              className="group-hover:scale-105 transition"
+            />
             <span className="font-serif text-xl font-semibold tracking-wide">
               Invitovix
             </span>
@@ -540,8 +544,13 @@ export function LandingShowcase() {
       </section>
 
       <footer className="border-t border-stone-200/80 py-8 text-center text-xs text-stone-500">
-        Invitovix · Luxury Digital Invitations for Weddings, Birthdays, Galas
-        &amp; Celebrations
+        <span className="inline-flex items-center justify-center gap-2">
+          <BrandMark size="2xs" rounded="md" decorative />
+          <span>
+            Invitovix · Luxury Digital Invitations for Weddings, Birthdays, Galas
+            &amp; Celebrations
+          </span>
+        </span>
       </footer>
     </div>
   );

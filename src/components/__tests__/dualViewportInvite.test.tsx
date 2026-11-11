@@ -203,7 +203,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
   });
 
   it("unseals from Right Wing Quick RSVP, opens card view, and renders bottom navigation dock", async () => {
-    render(
+    const { container } = render(
       <GuestInviteShell
         eventId={DEMO_EVENT.id}
         slug={DEMO_EVENT.slug}
@@ -228,6 +228,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
         expect(screen.getByRole("button", { name: /^quick rsvp$/i })).toBeTruthy();
         expect(screen.getByRole("button", { name: /mute music/i })).toBeTruthy();
         expect(screen.getByText("Confirm RSVP")).toBeTruthy();
+        expect(container.innerHTML).toContain("/brand/invitovix-icon.png");
       },
       { timeout: 3000 }
     );

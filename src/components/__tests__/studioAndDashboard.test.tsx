@@ -92,6 +92,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
     );
     expect(ssrHtml).toContain("Host Dashboard");
     expect(ssrHtml).toContain("Amina &amp; Zayan");
+    expect(ssrHtml).toContain("/brand/invitovix-icon.png");
 
     render(
       <DashboardClient
@@ -155,14 +156,16 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
       />
     );
     expect(ssrHtml).toContain("Opening Creator Studio");
+    expect(ssrHtml).toContain("/brand/invitovix-icon.png");
 
-    render(
+    const { container } = render(
       <StudioShell
         initialEvent={DEMO_EVENT}
         templates={STARTER_TEMPLATES}
         userId={DEMO_EVENT.user_id}
       />
     );
+    expect(container.innerHTML).toContain("/brand/invitovix-icon.png");
 
     const titleInput = screen.getByLabelText("Invitation Title") as HTMLInputElement;
     expect(titleInput.value).toBe(DEMO_EVENT.title);
@@ -258,7 +261,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
   }, 15000);
 
   it("renders RsvpTable and navigates to Studio from Edit Invite", () => {
-    render(
+    const { container } = render(
       <RsvpTable
         eventId={DEMO_EVENT.id}
         eventTitle={DEMO_EVENT.title}
@@ -279,6 +282,7 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
       />
     );
 
+    expect(container.innerHTML).toContain("/brand/invitovix-icon.png");
     expect(screen.getByText("Bilal Ahmed")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /edit invite/i }));
     expect(pushMock).toHaveBeenCalledWith(`/studio/${DEMO_EVENT.id}`);

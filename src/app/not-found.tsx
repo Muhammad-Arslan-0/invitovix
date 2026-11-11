@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-[#fcfaf7] luxury-editorial-bg flex items-center justify-center px-6">
       <div className="max-w-md w-full rounded-3xl border border-stone-200 bg-white/95 p-8 text-center shadow-lg">
-        <div className="w-12 h-12 rounded-2xl bg-stone-900 text-amber-300 flex items-center justify-center mx-auto shadow-sm">
-          <Sparkles className="w-5 h-5" />
-        </div>
+        <BrandMark
+          size="lg"
+          decorative
+          className="mx-auto"
+        />
         <p className="mt-4 text-[11px] uppercase tracking-[0.24em] text-amber-700 font-semibold">
           404 · Invitovix
         </p>

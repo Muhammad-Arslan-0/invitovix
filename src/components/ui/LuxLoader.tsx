@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { BrandMark } from "./BrandMark";
 
 interface LuxLoaderProps {
   title?: string;
@@ -29,18 +29,12 @@ export function LuxLoader({
           className="absolute w-16 h-16 rounded-full border border-amber-500/40 animate-spin"
           style={{ animationDuration: "6s" }}
         />
-        {/* Wax crest emblem */}
-        <div
-          className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg border border-amber-200/60"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 28%, #E5C185, #B3842B 68%, #7C5817)",
-          }}
-        >
-          <span className="w-10 h-10 rounded-full border border-white/35 flex items-center justify-center text-amber-50">
-            <Sparkles className="w-4 h-4 animate-pulse" />
-          </span>
-        </div>
+        {/* Brushed gold envelope emblem */}
+        <BrandMark
+          size="lg"
+          decorative
+          className="relative w-12 h-12"
+        />
       </div>
 
       <h2
