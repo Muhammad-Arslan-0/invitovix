@@ -205,7 +205,7 @@ create policy "Hosts can delete RSVPs for their events"
     )
   );
 
--- Seed 4 Curated Starter Templates
+-- Seed 7 Curated Wedding Starter Templates
 insert into public.templates (id, title, category, thumbnail_url, is_active, default_config)
 values
 (
@@ -231,7 +231,15 @@ values
         "bodyFont": "cormorant",
         "scriptFont": "great-vibes"
       },
-      "paperTexture": "linen"
+      "paperTexture": "linen",
+      "cardArt": {
+        "motif": "royal-arch",
+        "borderStyle": "gold-filigree",
+        "backdropPreset": "nikah-courtyard",
+        "backdropUrl": null,
+        "backdropOpacity": 0.44,
+        "heroFrame": "arch"
+      }
     },
     "envelope": {
       "style": "royal-flap",
@@ -251,9 +259,20 @@ values
       "subtitle": "Request the honor of your presence at their Nikah & Reception",
       "storyQuote": "Two souls, one timeless promise — surrounded by family, prayer, and celebration.",
       "heroImageUrl": null,
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "arch",
+        "crestText": "&",
+        "brideName": "Amina Tariq",
+        "brideRole": "Daughter of Mr. & Mrs. Tariq",
+        "brideImageUrl": null,
+        "groomName": "Zayan Mansoor",
+        "groomRole": "Son of Mr. & Mrs. Mansoor",
+        "groomImageUrl": null
+      },
       "dressCode": "Formal Traditional / Emerald & Champagne",
       "itinerary": [
-        { "id": "it-1", "title": "Guest Arrival & Welcome Rose Sherbet", "time": "6:30 PM", "description": "Courtyard lantern reception and acoustic strings" },
+        { "id": "it-1", "title": "Guest Arrival & Rose Sherbet", "time": "6:30 PM", "description": "Courtyard lantern reception and acoustic strings" },
         { "id": "it-2", "title": "Nikah Ceremony", "time": "7:30 PM", "description": "Sacred vows beneath the floral pavilion" },
         { "id": "it-3", "title": "Royal Banquet Dinner", "time": "8:45 PM", "description": "Candlelit feast and family toasts" }
       ],
@@ -263,6 +282,7 @@ values
       "maxGuestsPerParty": 6
     },
     "sections": {
+      "showCouple": true,
       "showCountdown": true,
       "showItinerary": true,
       "showVenue": true,
@@ -280,6 +300,291 @@ values
       "trackTitle": "Velvet Nocturne",
       "customUrl": null,
       "volume": 0.6
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111105',
+  'Blush Peony & Champagne Arch',
+  'wedding',
+  '/art/peony-arch.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "blush-peony",
+      "palette": {
+        "background": "#FDF8F5",
+        "surface": "#FFFFFF",
+        "primary": "#6E2B3E",
+        "secondary": "#A65E70",
+        "accent": "#C89A52",
+        "text": "#2B191E",
+        "mutedText": "#7C646B"
+      },
+      "typography": {
+        "displayFont": "cormorant",
+        "bodyFont": "jakarta",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "vellum",
+      "cardArt": {
+        "motif": "floral-bouquet",
+        "borderStyle": "arch-frame",
+        "backdropPreset": "peony-arch",
+        "backdropUrl": null,
+        "backdropOpacity": 0.5,
+        "heroFrame": "arch"
+      }
+    },
+    "envelope": {
+      "style": "arch-pocket",
+      "envelopeColor": "#6E2B3E",
+      "linerColor": "#E8C794",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#C89A52",
+        "monogram": "Z&O",
+        "emblem": "floral"
+      },
+      "promptText": "Tap the floral crest to unseal the celebration"
+    },
+    "content": {
+      "hostLine": "In joyful celebration of their marriage",
+      "headline": "Zoya & Omar",
+      "subtitle": "Invite you to share an afternoon of blooms, vows & dinner",
+      "storyQuote": "Surrounded by spring peonies and the people who mean the world to us.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "arch",
+        "crestText": "&",
+        "brideName": "Zoya Raza",
+        "brideRole": "The Bride",
+        "brideImageUrl": null,
+        "groomName": "Omar Farooq",
+        "groomRole": "The Groom",
+        "groomImageUrl": null
+      },
+      "dressCode": "Garden Couture / Rose, Ivory & Champagne",
+      "itinerary": [
+        { "id": "it-1", "title": "Botanical Welcome Tea", "time": "5:00 PM", "description": "Rosewater spritz & acoustic strings under the pergola" },
+        { "id": "it-2", "title": "Vows Beneath the Floral Arch", "time": "6:15 PM", "description": "Intimate ceremony framed by blush peonies" },
+        { "id": "it-3", "title": "Conservatory Candlelight Dinner", "time": "7:45 PM", "description": "Shared tables, speeches, and dessert bar" }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Celebrate With Us",
+      "rsvpDeadline": "Kindly confirm two weeks prior",
+      "maxGuestsPerParty": 6
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "cinematic-silk",
+      "particles": "petals",
+      "lottieAccent": "floral-flourish"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "celestial-harp",
+      "trackTitle": "Moonlight Harp",
+      "customUrl": null,
+      "volume": 0.6
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111106',
+  'Mehndi Marigold & Courtyard',
+  'mehndi',
+  '/art/marigold-mehndi.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "marigold-mehndi",
+      "palette": {
+        "background": "#FFF9EE",
+        "surface": "#FFFDF7",
+        "primary": "#B44323",
+        "secondary": "#D97724",
+        "accent": "#E29E21",
+        "text": "#2A1B12",
+        "mutedText": "#7B6150"
+      },
+      "typography": {
+        "displayFont": "playfair",
+        "bodyFont": "dm-sans",
+        "scriptFont": "great-vibes"
+      },
+      "paperTexture": "linen",
+      "cardArt": {
+        "motif": "marigold-garland",
+        "borderStyle": "gold-filigree",
+        "backdropPreset": "marigold-mehndi",
+        "backdropUrl": null,
+        "backdropOpacity": 0.46,
+        "heroFrame": "polaroid"
+      }
+    },
+    "envelope": {
+      "style": "royal-flap",
+      "envelopeColor": "#B44323",
+      "linerColor": "#F4C257",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#E29E21",
+        "monogram": "H&D",
+        "emblem": "floral"
+      },
+      "promptText": "Unseal the marigold envelope for our Mehndi night"
+    },
+    "content": {
+      "hostLine": "Come dance, laugh & celebrate the Dholki & Mehndi of",
+      "headline": "Hira & Daniyal",
+      "subtitle": "Marigold garlands, dhol rhythms & starlit courtyard festivities",
+      "storyQuote": "Henna, music, and vibrant colors as two families become one.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "scallop",
+        "crestText": "&",
+        "brideName": "Hira Noor",
+        "brideRole": "Team Bride",
+        "brideImageUrl": null,
+        "groomName": "Daniyal Mir",
+        "groomRole": "Team Groom",
+        "groomImageUrl": null
+      },
+      "dressCode": "Festive Desi / Mustard, Sage, Coral & Emerald",
+      "itinerary": [
+        { "id": "it-1", "title": "Mogra Welcome & Bangles Bar", "time": "7:00 PM", "description": "Fresh jasmine bracelets & artisan henna corner" },
+        { "id": "it-2", "title": "Rasm-e-Heena & Dhol Entrance", "time": "8:30 PM", "description": "Choreographed family dances beneath the fairy lights" },
+        { "id": "it-3", "title": "Late Night Street Feast", "time": "10:00 PM", "description": "Chai cart, kulfi & live qawwali" }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Join the Festivities",
+      "rsvpDeadline": "RSVP with your party headcount",
+      "maxGuestsPerParty": 8
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "playful-pop",
+      "particles": "petals",
+      "lottieAccent": "confetti-burst"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "festive-strings",
+      "trackTitle": "Golden Hour Chimes",
+      "customUrl": null,
+      "volume": 0.65
+    }
+  }'::jsonb
+),
+(
+  '11111111-1111-4111-8111-111111111107',
+  'Avant-Garde Champagne Silk',
+  'wedding',
+  '/art/abstract-silk.jpg',
+  true,
+  '{
+    "theme": {
+      "presetId": "champagne-silk",
+      "palette": {
+        "background": "#F7F3ED",
+        "surface": "#FCF9F4",
+        "primary": "#261E1A",
+        "secondary": "#5B483E",
+        "accent": "#B5825E",
+        "text": "#201915",
+        "mutedText": "#72645B"
+      },
+      "typography": {
+        "displayFont": "syne",
+        "bodyFont": "cormorant",
+        "scriptFont": "cormorant"
+      },
+      "paperTexture": "silk",
+      "cardArt": {
+        "motif": "abstract-organic",
+        "borderStyle": "editorial-double",
+        "backdropPreset": "abstract-silk",
+        "backdropUrl": null,
+        "backdropOpacity": 0.48,
+        "heroFrame": "polaroid"
+      }
+    },
+    "envelope": {
+      "style": "minimal-folio",
+      "envelopeColor": "#261E1A",
+      "linerColor": "#DFC3AC",
+      "waxSeal": {
+        "enabled": true,
+        "color": "#B5825E",
+        "monogram": "M&F",
+        "emblem": "monogram"
+      },
+      "promptText": "Tap seal to open the modern wedding folio"
+    },
+    "content": {
+      "hostLine": "An Editorial Celebration",
+      "headline": "Maham & Faris",
+      "subtitle": "Modern vows, sculptural florals & late-evening supper",
+      "storyQuote": "Crafted around minimal beauty, meaningful vows, and effortless joy.",
+      "heroImageUrl": null,
+      "couple": {
+        "layout": "editorial-split",
+        "frameShape": "polaroid",
+        "crestText": "+",
+        "brideName": "Maham",
+        "brideRole": "Architect & Collector",
+        "brideImageUrl": null,
+        "groomName": "Faris",
+        "groomRole": "Designer & Dreamer",
+        "groomImageUrl": null
+      },
+      "dressCode": "Modern Black & Earth Tones",
+      "itinerary": [
+        { "id": "it-1", "title": "Atelier Cocktail Hour", "time": "6:00 PM", "description": "Warm espresso tonics & ambient vinyl set" },
+        { "id": "it-2", "title": "Candlelit Signing & Toasts", "time": "7:30 PM", "description": "Minimalist glasshouse vows" },
+        { "id": "it-3", "title": "Tasting Dinner", "time": "8:45 PM", "description": "Four-course contemporary supper" }
+      ],
+      "gallery": [],
+      "rsvpHeadline": "Your Presence Matters",
+      "rsvpDeadline": "Please respond online below",
+      "maxGuestsPerParty": 4
+    },
+    "sections": {
+      "showCouple": true,
+      "showCountdown": true,
+      "showItinerary": true,
+      "showVenue": true,
+      "showGallery": true,
+      "showRsvp": true
+    },
+    "motion": {
+      "preset": "editorial-fade",
+      "particles": "gold-dust",
+      "lottieAccent": "sparkle-ring"
+    },
+    "audio": {
+      "enabled": true,
+      "trackId": "ambient-piano",
+      "trackTitle": "Velvet Nocturne",
+      "customUrl": null,
+      "volume": 0.55
     }
   }'::jsonb
 ),
@@ -306,7 +611,15 @@ values
         "bodyFont": "jakarta",
         "scriptFont": "great-vibes"
       },
-      "paperTexture": "silk"
+      "paperTexture": "silk",
+      "cardArt": {
+        "motif": "celestial-stars",
+        "borderStyle": "arch-frame",
+        "backdropPreset": "moonlit-garden",
+        "backdropUrl": null,
+        "backdropOpacity": 0.5,
+        "heroFrame": "oval"
+      }
     },
     "envelope": {
       "style": "arch-pocket",
@@ -326,11 +639,22 @@ values
       "subtitle": "An evening of moonlight, gratitude, and heartfelt celebration",
       "storyQuote": "As the stars gather above, we celebrate a new chapter blessed with love and warmth.",
       "heroImageUrl": null,
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "oval",
+        "crestText": "&",
+        "brideName": "Sana",
+        "brideRole": "The Bride",
+        "brideImageUrl": null,
+        "groomName": "Hamza",
+        "groomRole": "Son of Mr. & Mrs. Siddiqui",
+        "groomImageUrl": null
+      },
       "dressCode": "Evening Formal / Midnight, Ivory & Pearl",
       "itinerary": [
         { "id": "it-1", "title": "Red Carpet & Portraits", "time": "7:30 PM", "description": "Welcome mocktails and family photographs" },
         { "id": "it-2", "title": "Grand Entrance", "time": "8:30 PM", "description": "Candlelit walkway and live instrumental tribute" },
-        { "id": "it-3", "title": "Valima Dinner & Dessert Salon", "time": "9:15 PM", "description": "Artisanal culinary showcase and chai bar" }
+        { "id": "it-3", "title": "Valima Dinner & Chai Salon", "time": "9:15 PM", "description": "Artisanal culinary showcase and dessert bar" }
       ],
       "gallery": [],
       "rsvpHeadline": "Reserve Your Seat",
@@ -338,6 +662,7 @@ values
       "maxGuestsPerParty": 6
     },
     "sections": {
+      "showCouple": true,
       "showCountdown": true,
       "showItinerary": true,
       "showVenue": true,
@@ -359,60 +684,80 @@ values
   }'::jsonb
 ),
 (
-  '11111111-1111-4111-8111-111111111103',
-  'Confetti Atelier (Editorial Birthday)',
-  'birthday',
-  '/templates/confetti-atelier.svg',
+  '11111111-1111-4111-8111-111111111108',
+  'Shahi Baraat (Crimson & Zari)',
+  'baraat',
+  '/art/baraat-palace.jpg',
   true,
   '{
     "theme": {
-      "presetId": "confetti-atelier",
+      "presetId": "shahi-baraat",
       "palette": {
-        "background": "#FFF7F2",
-        "surface": "#FFFFFF",
-        "primary": "#C94B38",
-        "secondary": "#F29E74",
-        "accent": "#E8B931",
-        "text": "#231917",
-        "mutedText": "#755F59"
+        "background": "#FAF3EB",
+        "surface": "#FFFDF9",
+        "primary": "#6E1423",
+        "secondary": "#9A2A3B",
+        "accent": "#C9983A",
+        "text": "#241114",
+        "mutedText": "#785D60"
       },
       "typography": {
-        "displayFont": "syne",
-        "bodyFont": "dm-sans",
+        "displayFont": "cinzel",
+        "bodyFont": "cormorant",
         "scriptFont": "great-vibes"
       },
-      "paperTexture": "vellum"
+      "paperTexture": "linen",
+      "cardArt": {
+        "motif": "royal-arch",
+        "borderStyle": "gold-filigree",
+        "backdropPreset": "baraat-palace",
+        "backdropUrl": null,
+        "backdropOpacity": 0.46,
+        "heroFrame": "arch"
+      }
     },
     "envelope": {
-      "style": "minimal-folio",
-      "envelopeColor": "#C94B38",
-      "linerColor": "#F9DFD5",
+      "style": "royal-flap",
+      "envelopeColor": "#6E1423",
+      "linerColor": "#D6A954",
       "waxSeal": {
         "enabled": true,
-        "color": "#E8B931",
-        "monogram": "30",
-        "emblem": "star"
+        "color": "#C9983A",
+        "monogram": "S&H",
+        "emblem": "crown"
       },
-      "promptText": "Tap the golden star seal to pop the celebration"
+      "promptText": "Tap the royal crest to welcome the Shahi Baraat"
     },
     "content": {
-      "hostLine": "Raise a glass & celebrate",
-      "headline": "Maya Turns 30",
-      "subtitle": "Golden hour rooftops, vinyl beats, and unforgettable memories",
-      "storyQuote": "Three decades of adventures — come celebrate the next chapter together!",
+      "hostLine": "Mr. & Mrs. Qureshi joyously invite you to the Baraat of",
+      "headline": "Salma & Haris",
+      "subtitle": "Procession under candlelit chandeliers, Nikah vows & royal banquet",
+      "storyQuote": "Two traditions woven together with crimson roses, heritage, and blessings.",
       "heroImageUrl": null,
-      "dressCode": "Cocktail Chic / Sunset Hues",
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "arch",
+        "crestText": "&",
+        "brideName": "Salma Qureshi",
+        "brideRole": "The Bride",
+        "brideImageUrl": null,
+        "groomName": "Haris Javed",
+        "groomRole": "The Groom",
+        "groomImageUrl": null
+      },
+      "dressCode": "Royal Heritage / Crimson, Ivory & Antique Gold",
       "itinerary": [
-        { "id": "it-1", "title": "Sunset Spritz & Polaroids", "time": "6:00 PM", "description": "Rooftop terrace welcome drinks" },
-        { "id": "it-2", "title": "Candlelight Toasts & Cake", "time": "8:00 PM", "description": "Speeches, sparklers, and artisan cake cutting" },
-        { "id": "it-3", "title": "Late Night Vinyl Set", "time": "9:30 PM", "description": "Dance floor under the string lights" }
+        { "id": "it-1", "title": "Istiqbal-e-Baraat", "time": "7:00 PM", "description": "Grand floral welcome and traditional dhol procession" },
+        { "id": "it-2", "title": "Nikah & Garland Exchange", "time": "8:00 PM", "description": "Sacred vows beneath the crimson jharokha pavilion" },
+        { "id": "it-3", "title": "Shahi Dastarkhwan", "time": "9:15 PM", "description": "Heritage multi-course dinner and family blessings" }
       ],
       "gallery": [],
-      "rsvpHeadline": "Are You In?",
-      "rsvpDeadline": "Let us know so we save your spot at the bar",
-      "maxGuestsPerParty": 4
+      "rsvpHeadline": "Grace Us With Your Presence",
+      "rsvpDeadline": "Please confirm attendance two weeks prior",
+      "maxGuestsPerParty": 6
     },
     "sections": {
+      "showCouple": true,
       "showCountdown": true,
       "showItinerary": true,
       "showVenue": true,
@@ -420,74 +765,94 @@ values
       "showRsvp": true
     },
     "motion": {
-      "preset": "playful-pop",
-      "particles": "confetti",
-      "lottieAccent": "confetti-burst"
+      "preset": "royal-unfold",
+      "particles": "petals",
+      "lottieAccent": "floral-flourish"
     },
     "audio": {
       "enabled": true,
       "trackId": "festive-strings",
       "trackTitle": "Golden Hour Chimes",
       "customUrl": null,
-      "volume": 0.65
+      "volume": 0.6
     }
   }'::jsonb
 ),
 (
-  '11111111-1111-4111-8111-111111111104',
-  'Noir & Champagne (Black-Tie Gala)',
-  'gala',
-  '/templates/noir-gala.svg',
+  '11111111-1111-4111-8111-111111111109',
+  'Ivory Magnolia & Rose Engagement',
+  'engagement',
+  '/art/engagement-bloom.jpg',
   true,
   '{
     "theme": {
-      "presetId": "noir-gala",
+      "presetId": "ivory-engagement",
       "palette": {
-        "background": "#0B0B0D",
-        "surface": "#151519",
-        "primary": "#D4AF37",
-        "secondary": "#2A251B",
-        "accent": "#F3E5AB",
-        "text": "#F5F2EB",
-        "mutedText": "#9E978B"
+        "background": "#FBF8F4",
+        "surface": "#FFFFFF",
+        "primary": "#3D4F46",
+        "secondary": "#7C9286",
+        "accent": "#C7927A",
+        "text": "#212724",
+        "mutedText": "#6D7772"
       },
       "typography": {
-        "displayFont": "cinzel",
+        "displayFont": "cormorant",
         "bodyFont": "jakarta",
-        "scriptFont": "cormorant"
+        "scriptFont": "great-vibes"
       },
-      "paperTexture": "obsidian"
+      "paperTexture": "vellum",
+      "cardArt": {
+        "motif": "floral-bouquet",
+        "borderStyle": "botanical-vine",
+        "backdropPreset": "engagement-bloom",
+        "backdropUrl": null,
+        "backdropOpacity": 0.5,
+        "heroFrame": "oval"
+      }
     },
     "envelope": {
-      "style": "art-deco",
-      "envelopeColor": "#151519",
-      "linerColor": "#D4AF37",
+      "style": "arch-pocket",
+      "envelopeColor": "#3D4F46",
+      "linerColor": "#E4C5B6",
       "waxSeal": {
         "enabled": true,
-        "color": "#D4AF37",
-        "monogram": "VIP",
-        "emblem": "crown"
+        "color": "#C7927A",
+        "monogram": "R&K",
+        "emblem": "floral"
       },
-      "promptText": "Tap the crest to enter the annual gala"
+      "promptText": "Tap the rose-gold seal to celebrate the engagement"
     },
     "content": {
-      "hostLine": "An Exclusive Evening Benefiting Creative Arts",
-      "headline": "The Lumiere Gala",
-      "subtitle": "Black-tie dinner, live auction, and symphony showcase",
-      "storyQuote": "Elegance in every detail — celebrating visionaries, patronage, and timeless craft.",
+      "hostLine": "Together with both families, celebrate the engagement of",
+      "headline": "Rania & Kabir",
+      "subtitle": "Ring ceremony, botanical garden high-tea & evening portraits",
+      "storyQuote": "From one unforgettable promise to a lifetime ahead — begin this chapter with us.",
       "heroImageUrl": null,
-      "dressCode": "Strict Black Tie",
+      "couple": {
+        "layout": "side-by-side",
+        "frameShape": "oval",
+        "crestText": "&",
+        "brideName": "Rania Aziz",
+        "brideRole": "Soon-to-be Bride",
+        "brideImageUrl": null,
+        "groomName": "Kabir Hassan",
+        "groomRole": "Soon-to-be Groom",
+        "groomImageUrl": null
+      },
+      "dressCode": "Pastel Sage, Champagne & Pearl",
       "itinerary": [
-        { "id": "it-1", "title": "Champagne Reception", "time": "7:00 PM", "description": "Gallery atrium preview & string quartet" },
-        { "id": "it-2", "title": "Keynote & Honors", "time": "8:15 PM", "description": "Three-course gala dinner and awards" },
-        { "id": "it-3", "title": "Midnight Encore", "time": "10:00 PM", "description": "Jazz lounge and curated dessert tasting" }
+        { "id": "it-1", "title": "Garden Aperitifs & Portraits", "time": "5:00 PM", "description": "Welcome tea & magnolia courtyard photos" },
+        { "id": "it-2", "title": "Rasm-e-Nisbat & Ring Exchange", "time": "6:15 PM", "description": "Formal exchange of rings & sweet traditions" },
+        { "id": "it-3", "title": "Sunset Conservatory Dinner", "time": "7:30 PM", "description": "Acoustic violin & intimate celebration feast" }
       ],
       "gallery": [],
-      "rsvpHeadline": "Confirm Attendance",
-      "rsvpDeadline": "Kindly RSVP for seating assignment",
-      "maxGuestsPerParty": 4
+      "rsvpHeadline": "Join Our Celebration",
+      "rsvpDeadline": "Kindly confirm below",
+      "maxGuestsPerParty": 5
     },
     "sections": {
+      "showCouple": true,
       "showCountdown": true,
       "showItinerary": true,
       "showVenue": true,
@@ -495,16 +860,16 @@ values
       "showRsvp": true
     },
     "motion": {
-      "preset": "editorial-fade",
+      "preset": "cinematic-silk",
       "particles": "gold-dust",
       "lottieAccent": "sparkle-ring"
     },
     "audio": {
       "enabled": true,
-      "trackId": "ambient-piano",
-      "trackTitle": "Velvet Nocturne",
+      "trackId": "celestial-harp",
+      "trackTitle": "Moonlight Harp",
       "customUrl": null,
-      "volume": 0.5
+      "volume": 0.55
     }
   }'::jsonb
 )
@@ -514,6 +879,14 @@ on conflict (id) do update
       thumbnail_url = excluded.thumbnail_url,
       default_config = excluded.default_config,
       is_active = excluded.is_active;
+
+update public.templates
+set is_active = false
+where id in (
+  '11111111-1111-4111-8111-111111111103',
+  '11111111-1111-4111-8111-111111111104'
+)
+or lower(category) in ('birthday', 'gala');
 
 -- Storage Buckets & Access Policies
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

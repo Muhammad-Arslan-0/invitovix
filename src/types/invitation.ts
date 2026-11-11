@@ -38,6 +38,8 @@ export const cardBackdropPresetSchema = z.enum([
   "nikah-courtyard",
   "peony-arch",
   "marigold-mehndi",
+  "baraat-palace",
+  "engagement-bloom",
   "abstract-silk",
   "moonlit-garden",
   "custom",
@@ -172,7 +174,15 @@ export type CoupleFrameShape = z.infer<typeof coupleFrameShapeSchema>;
 export type CoupleProfile = z.infer<typeof coupleProfileSchema>;
 export type ItineraryItem = z.infer<typeof itineraryItemSchema>;
 export type GalleryPhoto = z.infer<typeof galleryPhotoSchema>;
-export type EventCategory = "wedding" | "valima" | "birthday" | "gala";
+export type EventCategory =
+  | "wedding"
+  | "nikah"
+  | "mehndi"
+  | "baraat"
+  | "valima"
+  | "engagement"
+  | "birthday"
+  | "gala";
 export type AttendingStatus = "attending" | "declined" | "tentative";
 
 export interface TemplateRecord {

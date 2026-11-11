@@ -92,15 +92,45 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     expect(ssrHtml).toContain("Host Dashboard");
     expect(ssrHtml).toContain("Royal Nikah");
 
+    const mixedWithLegacy = [
+      ...STARTER_TEMPLATES,
+      {
+        id: "11111111-1111-4111-8111-111111111103",
+        title: "Confetti Atelier (Editorial Birthday)",
+        category: "birthday",
+        thumbnail_url: null,
+        is_active: true,
+        created_at: "2026-01-01T00:00:00.000Z",
+        default_config: STARTER_TEMPLATES[0].default_config,
+      },
+      {
+        id: "11111111-1111-4111-8111-111111111104",
+        title: "Noir & Champagne (Black-Tie Gala)",
+        category: "gala",
+        thumbnail_url: null,
+        is_active: true,
+        created_at: "2026-01-01T00:00:00.000Z",
+        default_config: STARTER_TEMPLATES[0].default_config,
+      },
+    ];
+
     render(
       <DashboardClient
         userId={DEMO_EVENT.user_id}
         userEmail="host@invitovix.test"
         userName="Amina"
         initialEvents={sampleEvents}
-        templates={STARTER_TEMPLATES}
+        templates={mixedWithLegacy}
       />
     );
+
+    fireEvent.click(screen.getByRole("button", { name: /new invitation/i }));
+    expect(screen.getByText("Create Wedding Invitation")).toBeTruthy();
+    expect(screen.getByText("Shahi Baraat (Crimson & Zari)")).toBeTruthy();
+    expect(screen.getByText("Ivory Magnolia & Rose Engagement")).toBeTruthy();
+    expect(screen.queryByText(/Confetti Atelier/i)).toBeNull();
+    expect(screen.queryByText(/Black-Tie Gala/i)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
 
     const openStudioBtn = screen.getByRole("button", { name: /open studio/i });
     fireEvent.click(openStudioBtn);
@@ -127,14 +157,38 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
     render(
       <StudioShell
         initialEvent={DEMO_EVENT}
-        templates={STARTER_TEMPLATES}
+        templates={[
+          ...STARTER_TEMPLATES,
+          {
+            id: "11111111-1111-4111-8111-111111111103",
+            title: "Confetti Atelier (Editorial Birthday)",
+            category: "birthday",
+            thumbnail_url: null,
+            is_active: true,
+            created_at: "2026-01-01T00:00:00.000Z",
+            default_config: STARTER_TEMPLATES[0].default_config,
+          },
+          {
+            id: "11111111-1111-4111-8111-111111111104",
+            title: "Noir & Champagne (Black-Tie Gala)",
+            category: "gala",
+            thumbnail_url: null,
+            is_active: true,
+            created_at: "2026-01-01T00:00:00.000Z",
+            default_config: STARTER_TEMPLATES[0].default_config,
+          },
+        ]}
         userId={DEMO_EVENT.user_id}
       />
     );
 
     const titleInput = screen.getByLabelText("Invitation Title") as HTMLInputElement;
     expect(titleInput.value).toBe(DEMO_EVENT.title);
-    expect(screen.getByText("Starter Templates")).toBeTruthy();
+    expect(screen.getByText("Wedding Templates")).toBeTruthy();
+    expect(screen.getByText("Shahi Baraat (Crimson & Zari)")).toBeTruthy();
+    expect(screen.getByText("Ivory Magnolia & Rose Engagement")).toBeTruthy();
+    expect(screen.queryByText(/Confetti Atelier/i)).toBeNull();
+    expect(screen.queryByText(/Black-Tie Gala/i)).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /inside card/i }));
     await waitFor(
@@ -260,11 +314,33 @@ describe("Dashboard, StudioShell & RSVPs SSR + Client Mount", () => {
             },
           },
         },
+        {
+          id: "11111111-1111-4111-8111-111111111103",
+          title: "Confetti Atelier (Editorial Birthday)",
+          category: "birthday",
+          thumbnail_url: null,
+          is_active: true,
+          created_at: "2026-01-01T00:00:00.000Z",
+          default_config: STARTER_TEMPLATES[0].default_config,
+        },
+        {
+          id: "11111111-1111-4111-8111-111111111104",
+          title: "Noir & Champagne (Black-Tie Gala)",
+          category: "gala",
+          thumbnail_url: null,
+          is_active: true,
+          created_at: "2026-01-01T00:00:00.000Z",
+          default_config: STARTER_TEMPLATES[0].default_config,
+        },
       ],
       STARTER_TEMPLATES
     );
 
     expect(mergedCatalog.length).toBe(STARTER_TEMPLATES.length);
+    expect(mergedCatalog.some((t) => t.category === "birthday")).toBe(false);
+    expect(mergedCatalog.some((t) => t.category === "gala")).toBe(false);
+    expect(mergedCatalog.some((t) => t.category === "baraat")).toBe(true);
+    expect(mergedCatalog.some((t) => t.category === "engagement")).toBe(true);
     expect(mergedCatalog[0].title).toBe("Custom DB Title");
     expect(mergedCatalog[0].default_config.theme.cardArt.backdropPreset).toBe(
       "nikah-courtyard"

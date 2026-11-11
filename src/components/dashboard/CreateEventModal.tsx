@@ -8,7 +8,11 @@ import { Calendar, Check, Loader2, MapPin, Plus, Sparkles, X } from "lucide-reac
 import { TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
 import { generateUniqueSlug, toSlug } from "@/lib/utils/slug";
-import { mergeDesignData, resolveCardBackdropUrl } from "@/lib/templates/presets";
+import {
+  isWeddingTemplate,
+  mergeDesignData,
+  resolveCardBackdropUrl,
+} from "@/lib/templates/presets";
 import { startNavigation } from "@/components/ui/NavigationProgress";
 import { LuxLoader } from "@/components/ui/LuxLoader";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -20,9 +24,10 @@ interface CreateEventModalProps {
 
 export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
   const router = useRouter();
+  const weddingTemplates = templates.filter(isWeddingTemplate);
   const [open, setOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
-    templates[0]?.id ?? ""
+    weddingTemplates[0]?.id ?? ""
   );
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -40,7 +45,8 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate =
-    templates.find((t) => t.id === selectedTemplateId) ?? templates[0];
+    weddingTemplates.find((t) => t.id === selectedTemplateId) ??
+    weddingTemplates[0];
 
   const isBusy = launchPhase !== "idle" || isPending;
 
@@ -228,10 +234,10 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                     <span>New Experience</span>
                   </div>
                   <Dialog.Title className="mt-1 text-xl font-serif font-semibold text-stone-900">
-                    Create New Invitation
+                    Create Wedding Invitation
                   </Dialog.Title>
                   <Dialog.Description className="text-sm text-stone-500 mt-0.5">
-                    Pick a starter aesthetic and enter your core event details.
+                    Pick a starter wedding template and enter your ceremony details.
                   </Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
@@ -249,10 +255,10 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                 {/* Template Picker */}
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
-                    1. Choose Template
+                    1. Choose Wedding Template
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                    {templates.map((tpl) => {
+                    {weddingTemplates.map((tpl) => {
                       const active = tpl.id === selectedTemplateId;
                       const palette = tpl.default_config.theme.palette;
                       const sceneUrl = resolveCardBackdropUrl(
@@ -317,7 +323,7 @@ export function CreateEventModal({ templates, userId }: CreateEventModalProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-stone-700 mb-1">
-                      Event / Couple Headline *
+                      Couple / Wedding Headline *
                     </label>
                     <input
                       type="text"

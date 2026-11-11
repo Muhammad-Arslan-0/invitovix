@@ -48,7 +48,7 @@ const WORKFLOW_STEPS = [
     step: "01",
     icon: Wand2,
     title: "Choose & Customize",
-    desc: "Start with a curated wedding, Valima, birthday, or gala template and tune fonts, photos, and music.",
+    desc: "Start with a curated Nikah, Mehndi, Baraat, Engagement, or Valima template and tune florals, couple portraits, and music.",
   },
   {
     step: "02",
@@ -136,7 +136,7 @@ export function LandingShowcase() {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-700/20 bg-amber-50/90 px-3.5 py-1 text-xs font-medium text-amber-900 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-            <span>Interactive Wax-Seal Digital Invitations</span>
+            <span>Interactive Wax-Seal Wedding Invitations</span>
           </div>
 
           <h1
@@ -147,10 +147,10 @@ export function LandingShowcase() {
           </h1>
 
           <p className="text-base sm:text-lg text-stone-600 max-w-xl leading-relaxed">
-            Design bespoke animated wedding, Valima, birthday, and gala
-            invitations in our live visual studio. Guests tap an embossed wax
-            seal to unlock music, multi-scene storytelling, calendar sync, and
-            instant RSVPs.
+            Design bespoke animated Nikah, Mehndi, Baraat, Engagement, and
+            Valima wedding invitations in our live visual studio. Guests tap an
+            embossed wax seal to unlock music, multi-scene storytelling, calendar
+            sync, and instant RSVPs.
           </p>
 
           <div className="flex flex-wrap items-center gap-3.5 pt-2">
@@ -301,13 +301,13 @@ export function LandingShowcase() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-amber-700 font-semibold">
-              Starter Collection
+              Wedding Collection
             </p>
             <h2
               className="mt-1 text-2xl sm:text-3xl font-semibold text-stone-900"
               style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
             >
-              Templates for every celebration
+              Wedding cards for every ceremony
             </h2>
           </div>
           <Link
@@ -427,7 +427,7 @@ export function LandingShowcase() {
       </section>
 
       <footer className="border-t border-stone-200/80 py-8 text-center text-xs text-stone-500">
-        Invitovix · Interactive Event &amp; Wedding Invitation Platform
+        Invitovix · Luxury Digital Wedding Invitation Platform
       </footer>
     </div>
   );

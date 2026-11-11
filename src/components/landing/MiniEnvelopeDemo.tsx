@@ -12,6 +12,16 @@ import {
 } from "@/lib/utils/fonts";
 import { WaxSeal } from "@/components/invitation/WaxSeal";
 
+const SHORT_LABEL_BY_PRESET: Record<string, string> = {
+  "noor-emerald": "Nikah",
+  "blush-peony": "Peony",
+  "marigold-mehndi": "Mehndi",
+  "shahi-baraat": "Baraat",
+  "ivory-engagement": "Engagement",
+  "champagne-silk": "Silk",
+  "moonlit-valima": "Valima",
+};
+
 interface MiniEnvelopeDemoProps {
   selectedIdx?: number;
   onSelectIdx?: (idx: number) => void;
@@ -39,10 +49,12 @@ export function MiniEnvelopeDemo({
   return (
     <div className="relative mx-auto w-full max-w-[390px]">
       {/* Theme Swatch Switcher */}
-      <div className="mb-4 flex flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
+      <div className="mx-auto mb-4 flex max-w-[285px] flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
         {STARTER_TEMPLATES.map((tpl, idx) => {
           const active = idx === activeIdx;
-          const shortName = tpl.title.split("(")[0].trim().split(" ")[0] ?? tpl.category;
+          const shortName =
+            SHORT_LABEL_BY_PRESET[tpl.default_config.theme.presetId] ??
+            tpl.category;
           return (
             <button
               key={tpl.id}

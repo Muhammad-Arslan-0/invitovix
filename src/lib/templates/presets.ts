@@ -69,6 +69,20 @@ export const CARD_BACKDROP_PRESETS: Array<{
     previewGradient: "linear-gradient(135deg, #FFF5DB, #E29E21)",
   },
   {
+    id: "baraat-palace",
+    label: "Shahi Baraat",
+    subtitle: "Crimson roses & chandeliers",
+    imageUrl: "/art/baraat-palace.jpg",
+    previewGradient: "linear-gradient(135deg, #FAF3EB, #6E1423)",
+  },
+  {
+    id: "engagement-bloom",
+    label: "Ivory Magnolia",
+    subtitle: "Eucalyptus & rose quartz",
+    imageUrl: "/art/engagement-bloom.jpg",
+    previewGradient: "linear-gradient(135deg, #FBF8F4, #7C9286)",
+  },
+  {
     id: "abstract-silk",
     label: "Abstract Silk",
     subtitle: "Editorial champagne waves",
@@ -182,6 +196,31 @@ export function resolveCardBackdropUrl(
     (p) => p.id === cardArt.backdropPreset
   );
   return preset?.imageUrl ?? null;
+}
+
+export const WEDDING_TEMPLATE_CATEGORIES = new Set([
+  "wedding",
+  "nikah",
+  "mehndi",
+  "baraat",
+  "valima",
+  "walima",
+  "engagement",
+  "reception",
+  "sangeet",
+  "rukhsati",
+]);
+
+export const RETIRED_NON_WEDDING_TEMPLATE_IDS = new Set([
+  "11111111-1111-4111-8111-111111111103",
+  "11111111-1111-4111-8111-111111111104",
+]);
+
+export function isWeddingTemplate(
+  tpl: Pick<TemplateRecord, "id" | "category">
+): boolean {
+  if (RETIRED_NON_WEDDING_TEMPLATE_IDS.has(tpl.id)) return false;
+  return WEDDING_TEMPLATE_CATEGORIES.has(tpl.category.trim().toLowerCase());
 }
 
 export const STARTER_TEMPLATES: TemplateRecord[] = [
@@ -413,7 +452,7 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
   {
     id: "11111111-1111-4111-8111-111111111106",
     title: "Mehndi Marigold & Courtyard",
-    category: "wedding",
+    category: "mehndi",
     thumbnail_url: "/art/marigold-mehndi.jpg",
     is_active: true,
     created_at: "2026-02-02T00:00:00.000Z",
@@ -749,87 +788,98 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
     },
   },
   {
-    id: "11111111-1111-4111-8111-111111111103",
-    title: "Confetti Atelier (Editorial Birthday)",
-    category: "birthday",
-    thumbnail_url: "/templates/confetti-atelier.svg",
+    id: "11111111-1111-4111-8111-111111111108",
+    title: "Shahi Baraat (Crimson & Zari)",
+    category: "baraat",
+    thumbnail_url: "/art/baraat-palace.jpg",
     is_active: true,
-    created_at: "2026-01-01T00:00:00.000Z",
+    created_at: "2026-02-04T00:00:00.000Z",
     default_config: {
       theme: {
-        presetId: "confetti-atelier",
+        presetId: "shahi-baraat",
         palette: {
-          background: "#FFF7F2",
-          surface: "#FFFFFF",
-          primary: "#C94B38",
-          secondary: "#F29E74",
-          accent: "#E8B931",
-          text: "#231917",
-          mutedText: "#755F59",
+          background: "#FAF3EB",
+          surface: "#FFFDF9",
+          primary: "#6E1423",
+          secondary: "#9A2A3B",
+          accent: "#C9983A",
+          text: "#241114",
+          mutedText: "#785D60",
         },
         typography: {
-          displayFont: "syne",
-          bodyFont: "dm-sans",
+          displayFont: "cinzel",
+          bodyFont: "cormorant",
           scriptFont: "great-vibes",
         },
-        paperTexture: "vellum",
+        paperTexture: "linen",
         cardArt: {
-          motif: "abstract-organic",
-          borderStyle: "editorial-double",
-          backdropPreset: "none",
+          motif: "royal-arch",
+          borderStyle: "gold-filigree",
+          backdropPreset: "baraat-palace",
           backdropUrl: null,
-          backdropOpacity: 0.28,
-          heroFrame: "polaroid",
+          backdropOpacity: 0.46,
+          heroFrame: "arch",
         },
       },
       envelope: {
-        style: "minimal-folio",
-        envelopeColor: "#C94B38",
-        linerColor: "#F9DFD5",
+        style: "royal-flap",
+        envelopeColor: "#6E1423",
+        linerColor: "#D6A954",
         waxSeal: {
           enabled: true,
-          color: "#E8B931",
-          monogram: "30",
-          emblem: "star",
+          color: "#C9983A",
+          monogram: "S&H",
+          emblem: "crown",
         },
-        promptText: "Tap the golden star seal to pop the celebration",
+        promptText: "Tap the royal crest to welcome the Shahi Baraat",
       },
       content: {
-        hostLine: "Raise a glass & celebrate",
-        headline: "Maya Turns 30",
-        subtitle: "Golden hour rooftops, vinyl beats, and unforgettable memories",
+        hostLine: "Mr. & Mrs. Qureshi joyously invite you to the Baraat of",
+        headline: "Salma & Haris",
+        subtitle:
+          "Procession under candlelit chandeliers, Nikah vows & royal banquet",
         storyQuote:
-          "Three decades of adventures — come celebrate the next chapter together!",
+          "Two traditions woven together with crimson roses, heritage, and blessings.",
         heroImageUrl: null,
-        couple: LEGACY_COUPLE_FALLBACK,
-        dressCode: "Cocktail Chic / Sunset Hues",
+        couple: {
+          layout: "side-by-side",
+          frameShape: "arch",
+          crestText: "&",
+          brideName: "Salma Qureshi",
+          brideRole: "The Bride",
+          brideImageUrl: null,
+          groomName: "Haris Javed",
+          groomRole: "The Groom",
+          groomImageUrl: null,
+        },
+        dressCode: "Royal Heritage / Crimson, Ivory & Antique Gold",
         itinerary: [
           {
             id: "it-1",
-            title: "Sunset Spritz & Polaroids",
-            time: "6:00 PM",
-            description: "Rooftop terrace welcome drinks",
+            title: "Istiqbal-e-Baraat",
+            time: "7:00 PM",
+            description: "Grand floral welcome and traditional dhol procession",
           },
           {
             id: "it-2",
-            title: "Candlelight Toasts & Cake",
+            title: "Nikah & Garland Exchange",
             time: "8:00 PM",
-            description: "Speeches, sparklers, and artisan cake cutting",
+            description: "Sacred vows beneath the crimson jharokha pavilion",
           },
           {
             id: "it-3",
-            title: "Late Night Vinyl Set",
-            time: "9:30 PM",
-            description: "Dance floor under the string lights",
+            title: "Shahi Dastarkhwan",
+            time: "9:15 PM",
+            description: "Heritage multi-course dinner and family blessings",
           },
         ],
         gallery: [],
-        rsvpHeadline: "Are You In?",
-        rsvpDeadline: "Let us know so we save your spot",
-        maxGuestsPerParty: 4,
+        rsvpHeadline: "Grace Us With Your Presence",
+        rsvpDeadline: "Please confirm attendance two weeks prior",
+        maxGuestsPerParty: 6,
       },
       sections: {
-        showCouple: false,
+        showCouple: true,
         showCountdown: true,
         showItinerary: true,
         showVenue: true,
@@ -837,101 +887,112 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
         showRsvp: true,
       },
       motion: {
-        preset: "playful-pop",
-        particles: "confetti",
-        lottieAccent: "confetti-burst",
+        preset: "royal-unfold",
+        particles: "petals",
+        lottieAccent: "floral-flourish",
       },
       audio: {
         enabled: true,
         trackId: "festive-strings",
         trackTitle: "Golden Hour Chimes",
         customUrl: null,
-        volume: 0.65,
+        volume: 0.6,
       },
     },
   },
   {
-    id: "11111111-1111-4111-8111-111111111104",
-    title: "Noir & Champagne (Black-Tie Gala)",
-    category: "gala",
-    thumbnail_url: "/templates/noir-gala.svg",
+    id: "11111111-1111-4111-8111-111111111109",
+    title: "Ivory Magnolia & Rose Engagement",
+    category: "engagement",
+    thumbnail_url: "/art/engagement-bloom.jpg",
     is_active: true,
-    created_at: "2026-01-01T00:00:00.000Z",
+    created_at: "2026-02-05T00:00:00.000Z",
     default_config: {
       theme: {
-        presetId: "noir-gala",
+        presetId: "ivory-engagement",
         palette: {
-          background: "#0B0B0D",
-          surface: "#151519",
-          primary: "#D4AF37",
-          secondary: "#2A251B",
-          accent: "#F3E5AB",
-          text: "#F5F2EB",
-          mutedText: "#9E978B",
+          background: "#FBF8F4",
+          surface: "#FFFFFF",
+          primary: "#3D4F46",
+          secondary: "#7C9286",
+          accent: "#C7927A",
+          text: "#212724",
+          mutedText: "#6D7772",
         },
         typography: {
-          displayFont: "cinzel",
+          displayFont: "cormorant",
           bodyFont: "jakarta",
-          scriptFont: "cormorant",
+          scriptFont: "great-vibes",
         },
-        paperTexture: "obsidian",
+        paperTexture: "vellum",
         cardArt: {
-          motif: "celestial-stars",
-          borderStyle: "gold-filigree",
-          backdropPreset: "none",
+          motif: "floral-bouquet",
+          borderStyle: "botanical-vine",
+          backdropPreset: "engagement-bloom",
           backdropUrl: null,
-          backdropOpacity: 0.28,
-          heroFrame: "rounded",
+          backdropOpacity: 0.5,
+          heroFrame: "oval",
         },
       },
       envelope: {
-        style: "art-deco",
-        envelopeColor: "#151519",
-        linerColor: "#D4AF37",
+        style: "arch-pocket",
+        envelopeColor: "#3D4F46",
+        linerColor: "#E4C5B6",
         waxSeal: {
           enabled: true,
-          color: "#D4AF37",
-          monogram: "VIP",
-          emblem: "crown",
+          color: "#C7927A",
+          monogram: "R&K",
+          emblem: "floral",
         },
-        promptText: "Tap the crest to enter the annual gala",
+        promptText: "Tap the rose-gold seal to celebrate the engagement",
       },
       content: {
-        hostLine: "An Exclusive Evening Benefiting Creative Arts",
-        headline: "The Lumiere Gala",
-        subtitle: "Black-tie dinner, live auction, and symphony showcase",
+        hostLine: "Together with both families, celebrate the engagement of",
+        headline: "Rania & Kabir",
+        subtitle:
+          "Ring ceremony, botanical garden high-tea & evening portraits",
         storyQuote:
-          "Elegance in every detail — celebrating visionaries, patronage, and timeless craft.",
+          "From one unforgettable promise to a lifetime ahead — begin this chapter with us.",
         heroImageUrl: null,
-        couple: LEGACY_COUPLE_FALLBACK,
-        dressCode: "Strict Black Tie",
+        couple: {
+          layout: "side-by-side",
+          frameShape: "oval",
+          crestText: "&",
+          brideName: "Rania Aziz",
+          brideRole: "Soon-to-be Bride",
+          brideImageUrl: null,
+          groomName: "Kabir Hassan",
+          groomRole: "Soon-to-be Groom",
+          groomImageUrl: null,
+        },
+        dressCode: "Pastel Sage, Champagne & Pearl",
         itinerary: [
           {
             id: "it-1",
-            title: "Champagne Reception",
-            time: "7:00 PM",
-            description: "Gallery atrium preview & string quartet",
+            title: "Garden Aperitifs & Portraits",
+            time: "5:00 PM",
+            description: "Welcome tea & magnolia courtyard photos",
           },
           {
             id: "it-2",
-            title: "Keynote & Honors",
-            time: "8:15 PM",
-            description: "Three-course gala dinner and awards",
+            title: "Rasm-e-Nisbat & Ring Exchange",
+            time: "6:15 PM",
+            description: "Formal exchange of rings & sweet traditions",
           },
           {
             id: "it-3",
-            title: "Midnight Encore",
-            time: "10:00 PM",
-            description: "Jazz lounge and curated dessert tasting",
+            title: "Sunset Conservatory Dinner",
+            time: "7:30 PM",
+            description: "Acoustic violin & intimate celebration feast",
           },
         ],
         gallery: [],
-        rsvpHeadline: "Confirm Attendance",
-        rsvpDeadline: "Kindly RSVP for seating assignment",
-        maxGuestsPerParty: 4,
+        rsvpHeadline: "Join Our Celebration",
+        rsvpDeadline: "Kindly confirm below",
+        maxGuestsPerParty: 5,
       },
       sections: {
-        showCouple: false,
+        showCouple: true,
         showCountdown: true,
         showItinerary: true,
         showVenue: true,
@@ -939,16 +1000,16 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
         showRsvp: true,
       },
       motion: {
-        preset: "editorial-fade",
+        preset: "cinematic-silk",
         particles: "gold-dust",
         lottieAccent: "sparkle-ring",
       },
       audio: {
         enabled: true,
-        trackId: "ambient-piano",
-        trackTitle: "Velvet Nocturne",
+        trackId: "celestial-harp",
+        trackTitle: "Moonlight Harp",
         customUrl: null,
-        volume: 0.5,
+        volume: 0.55,
       },
     },
   },
@@ -1131,9 +1192,13 @@ export function mergeTemplateCatalog(
     };
   });
 
-  // Preserve any extra custom DB templates added directly in Supabase
+  // Preserve extra custom wedding DB templates while excluding retired non-wedding starters
   for (const row of dbRows ?? []) {
-    if (!starterById.has(row.id)) {
+    if (
+      !starterById.has(row.id) &&
+      row.is_active !== false &&
+      isWeddingTemplate(row)
+    ) {
       merged.push({
         ...row,
         default_config: mergeDesignData(row.default_config),

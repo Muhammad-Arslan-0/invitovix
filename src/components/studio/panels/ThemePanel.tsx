@@ -9,6 +9,7 @@ import {
   CARD_BORDER_OPTIONS,
   CARD_MOTIF_OPTIONS,
   HERO_FRAME_OPTIONS,
+  isWeddingTemplate,
   resolveCardBackdropUrl,
 } from "@/lib/templates/presets";
 import { MediaUploader } from "../MediaUploader";
@@ -34,16 +35,17 @@ export const ThemePanel = memo(function ThemePanel({
 
   const { palette, typography, paperTexture, cardArt } = theme;
   const activeBackdropUrl = resolveCardBackdropUrl(cardArt);
+  const weddingTemplates = templates.filter(isWeddingTemplate);
 
   return (
     <div className="space-y-6">
       {/* Starter Template Switcher */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
-          Starter Templates
+          Wedding Templates
         </h3>
         <div className="grid grid-cols-2 gap-2.5">
-          {templates.map((tpl) => {
+          {weddingTemplates.map((tpl) => {
             const active = templateId === tpl.id;
             const p = tpl.default_config.theme.palette;
             const bgImg = resolveCardBackdropUrl(
@@ -121,7 +123,7 @@ export const ThemePanel = memo(function ThemePanel({
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {CARD_BACKDROP_PRESETS.map((scene) => {
             const active = cardArt.backdropPreset === scene.id;
             return (
