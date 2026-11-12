@@ -370,18 +370,18 @@ export function CreateEventModal({
                   </div>
                 </div>
 
-                {/* Step 2: Category-Isolated Template Picker */}
+                {/* Step 2: Category-Isolated Template Picker (Horizontal Row) */}
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <div className="flex items-center justify-between gap-2 mb-2">
                     <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500">
                       2. Choose {domainConfig.templateLabel} Template
                     </label>
-                    <span className="text-[11px] font-medium text-stone-500">
+                    <span className="text-[11px] font-medium text-stone-400">
                       {domainTemplates.length}{" "}
-                      {domainTemplates.length === 1 ? "design" : "designs"}
+                      {domainTemplates.length === 1 ? "design" : "designs"} · Scroll to browse
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  <div className="flex gap-3 overflow-x-auto pb-3 pt-1 px-0.5 no-scrollbar sm:scrollbar-thin sm:scrollbar-thumb-stone-200 snap-x">
                     {domainTemplates.map((tpl) => {
                       const active = tpl.id === selectedTemplate?.id;
                       const palette = tpl.default_config.theme.palette;
@@ -395,14 +395,14 @@ export function CreateEventModal({
                           whileHover={{ y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedTemplateId(tpl.id)}
-                          className={`relative rounded-2xl border p-2 text-left transition cursor-pointer ${
+                          className={`relative w-40 sm:w-44 shrink-0 snap-start rounded-2xl border p-2.5 text-left transition cursor-pointer ${
                             active
                               ? "border-stone-900 ring-2 ring-amber-500/35 bg-amber-50/40 shadow-sm"
                               : "border-stone-200 hover:border-stone-300 bg-white"
                           }`}
                         >
                           <div
-                            className="h-20 rounded-xl flex flex-col items-center justify-center p-2 text-center border relative overflow-hidden"
+                            className="h-24 rounded-xl flex flex-col items-center justify-center p-2 text-center border relative overflow-hidden"
                             style={{
                               backgroundColor: palette.background,
                               borderColor: `${palette.accent}66`,
@@ -423,17 +423,17 @@ export function CreateEventModal({
                               {tpl.default_config.envelope.waxSeal.monogram}
                             </span>
                             <span
-                              className="relative z-10 mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-1.5 rounded-full bg-white/80"
+                              className="relative z-10 mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/85 shadow-2xs"
                               style={{ color: palette.primary }}
                             >
                               {formatCategoryBadge(tpl.category)}
                             </span>
                           </div>
-                          <p className="mt-2 text-xs font-medium text-stone-900 line-clamp-1">
+                          <p className="mt-2 text-xs font-semibold text-stone-900 line-clamp-1" title={tpl.title}>
                             {tpl.title}
                           </p>
                           {active && (
-                            <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-stone-900 text-amber-300 flex items-center justify-center shadow">
+                            <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-stone-900 text-amber-300 flex items-center justify-center shadow">
                               <Check className="w-3 h-3" />
                             </span>
                           )}

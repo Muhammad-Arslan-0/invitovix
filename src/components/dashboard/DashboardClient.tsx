@@ -14,8 +14,10 @@ import {
   LogOut,
   MapPin,
   Palette,
+  Search,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import {
   EventRecord,
@@ -62,6 +64,7 @@ export function DashboardClient({
   const [activeFilter, setActiveFilter] = useState<"all" | InvitationDomainId>(
     "all"
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [navTarget, setNavTarget] = useState<string | null>(null);
@@ -72,19 +75,22 @@ export function DashboardClient({
     setMounted(true);
   }, []);
 
-  const filteredEvents =
-    activeFilter === "all"
-      ? events
-      : events.filter(
-          (e) => getDomainForCategory(e.event_type) === activeFilter
-        );
-
-  const totalPublished = filteredEvents.filter((e) => e.is_published).length;
-  const totalRsvps = filteredEvents.reduce((sum, e) => sum + e.rsvp_count, 0);
-  const totalConfirmedGuests = filteredEvents.reduce(
-    (sum, e) => sum + e.attending_guests,
-    0
-  );
+  const filteredEvents = events.filter((e) => {
+    if (
+      activeFilter !== "all" &&
+      getDomainForCategory(e.event_type) !== activeFilter
+    ) {
+      return false;
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const matchTitle = e.title.toLowerCase().includes(q);
+      const matchVenue = (e.venue_name || "").toLowerCase().includes(q);
+      const matchType = (e.event_type || "").toLowerCase().includes(q);
+      return matchTitle || matchVenue || matchType;
+    }
+    return true;
+  });
 
   function handleNavigate(key: string, href: string) {
     setNavTarget(key);
@@ -202,7 +208,7 @@ export function DashboardClient({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
         >
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-amber-700 font-semibold">
@@ -219,51 +225,37 @@ export function DashboardClient({
               guest RSVPs.
             </p>
           </div>
-          <CreateEventModal
-            templates={templates}
-            userId={userId}
-            defaultDomain={activeFilter === "all" ? "wedding" : activeFilter}
-          />
-        </motion.div>
 
-        {/* KPI Cards */}
-        <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            {
-              label: activeFilter === "all" ? "Total Cards" : "Category Cards",
-              value: filteredEvents.length,
-              accent: "border-stone-200",
-            },
-            {
-              label: "Published Live",
-              value: totalPublished,
-              accent: "border-emerald-200/80",
-            },
-            {
-              label: "RSVP Responses",
-              value: totalRsvps,
-              accent: "border-amber-200/90",
-            },
-            {
-              label: "Confirmed Guests",
-              value: totalConfirmedGuests,
-              accent: "border-stone-200",
-            },
-          ].map((stat, idx) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: idx * 0.05 }}
-              className={`rounded-2xl border ${stat.accent} bg-white/95 p-5 shadow-2xs hover:shadow-md transition-shadow`}
-            >
-              <p className="text-xs font-medium text-stone-500">{stat.label}</p>
-              <p className="mt-2 text-2xl sm:text-3xl font-serif font-semibold text-stone-900 tabular-nums">
-                {stat.value}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+          {/* Action Row: Search Bar + New Invitation CTA */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 sm:w-72">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search cards by name..."
+                className="w-full pl-9 pr-8 py-2.5 rounded-2xl border border-stone-200 bg-white/95 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-900 transition shadow-2xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1 cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <CreateEventModal
+              templates={templates}
+              userId={userId}
+              defaultDomain={activeFilter === "all" ? "wedding" : activeFilter}
+            />
+          </div>
+        </motion.div>
 
         {/* Events Grid */}
         <section className="mt-9">
@@ -337,16 +329,32 @@ export function DashboardClient({
             </motion.div>
           ) : filteredEvents.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-stone-300 bg-white/90 p-10 text-center">
+              <Search className="w-8 h-8 text-stone-300 mx-auto mb-2" />
               <p className="text-sm font-medium text-stone-700">
-                No invitations in this category yet.
+                {searchQuery.trim()
+                  ? `No invitations matching "${searchQuery}"`
+                  : "No invitations in this category yet."}
               </p>
-              <button
-                type="button"
-                onClick={() => setActiveFilter("all")}
-                className="mt-3 rounded-xl border border-stone-300 px-3.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 cursor-pointer"
-              >
-                Show All Invitations
-              </button>
+              <div className="mt-3.5 flex items-center justify-center gap-2">
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="rounded-xl bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-stone-800 cursor-pointer transition"
+                  >
+                    Clear Search
+                  </button>
+                )}
+                {activeFilter !== "all" && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("all")}
+                    className="rounded-xl border border-stone-300 px-3.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 cursor-pointer transition"
+                  >
+                    Show All Invitations
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
