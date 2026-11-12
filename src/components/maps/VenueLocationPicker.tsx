@@ -5,20 +5,25 @@ import dynamic from "next/dynamic";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   CheckCircle2,
+  ClipboardPaste,
   Compass,
+  ExternalLink,
+  HelpCircle,
+  Link2,
   Loader2,
-  LocateFixed,
   MapPin,
   Maximize2,
   Minimize2,
-  Search,
   Sparkles,
   X,
 } from "lucide-react";
 import {
   GeocodedPlace,
   buildGoogleMapsCoordsUrl,
+  buildGoogleMapsSearchUrl,
+  extractPlaceNameFromMapUrl,
   formatCoordinatesLabel,
+  isGoogleMapsUrl,
   parseCoordinatesFromMapUrl,
 } from "@/lib/utils/location";
 import type { MapTileStyle } from "./LeafletMapCanvas";
@@ -28,7 +33,7 @@ const DynamicLeafletMap = dynamic(() => import("./LeafletMapCanvas"), {
   loading: () => (
     <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-stone-100 text-stone-500 text-xs">
       <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
-      <span>Loading free OpenStreetMap...</span>
+      <span>Loading map preview...</span>
     </div>
   ),
 });
@@ -64,123 +69,156 @@ export function VenueLocationPicker({
   onChangeMapUrl,
   onLocationPicked,
   onApplySuggestedName,
-  addressLabel = "Event Location / Address",
-  addressPlaceholder = "Search or click on the map to auto-fill location...",
-  defaultMapExpanded = true,
   allowModalExpand = true,
   compact = false,
 }: VenueLocationPickerProps) {
   const coordinates = parseCoordinatesFromMapUrl(mapUrl);
 
-  const [mapOpen, setMapOpen] = useState(defaultMapExpanded);
   const [modalOpen, setModalOpen] = useState(false);
   const [inlineTall, setInlineTall] = useState(false);
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>("street");
+  const tileStyle: MapTileStyle = "street";
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<GeocodedPlace[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  const [isReversing, setIsReversing] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
-  const [suggestedPlace, setSuggestedPlace] = useState<string | null>(null);
+  const [googleLinkInput, setGoogleLinkInput] = useState(mapUrl || "");
+  const [isLinking, setIsLinking] = useState(false);
+  const [isLinkedSuccess, setIsLinkedSuccess] = useState(
+    Boolean(mapUrl && (isGoogleMapsUrl(mapUrl) || parseCoordinatesFromMapUrl(mapUrl)))
+  );
+  const [showGuide, setShowGuide] = useState(false);
   const [geoNotice, setGeoNotice] = useState<string | null>(null);
+  const [isReversing, setIsReversing] = useState(false);
 
-  const searchAbortRef = useRef<AbortController | null>(null);
+  const googleLinkInputRef = useRef<HTMLInputElement | null>(null);
   const reverseReqIdRef = useRef(0);
-  const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
-  // Close autocomplete dropdown on outside click
+  // Sync when mapUrl changes from parent
   useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (
-        searchBoxRef.current &&
-        !searchBoxRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
+    if (mapUrl && mapUrl !== googleLinkInput) {
+      setGoogleLinkInput(mapUrl);
+      setIsLinkedSuccess(
+        Boolean(isGoogleMapsUrl(mapUrl) || parseCoordinatesFromMapUrl(mapUrl))
+      );
     }
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, []);
+  }, [mapUrl]);
 
-  // Debounced free geocoding search
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < 3) {
-      setSearchResults([]);
-      setIsSearching(false);
+  // Open Google Maps pre-searched with the user's venue
+  function handleOpenGoogleMapsSearch() {
+    const parts = [venueName, address].filter(Boolean).map((s) => s!.trim());
+    const query = parts.length > 0 ? parts.join(", ") : "Wedding Hall";
+    const targetUrl = buildGoogleMapsSearchUrl(query);
+    if (typeof window !== "undefined") {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  // Process pasted Google Maps share link, URL, or coordinates
+  async function handleProcessGoogleLink(rawInput: string) {
+    const clean = rawInput.trim();
+    if (!clean) return;
+
+    setIsLinking(true);
+    setGeoNotice(null);
+
+    // 1. Direct coordinate check
+    const directCoords = parseCoordinatesFromMapUrl(clean);
+    const directName = extractPlaceNameFromMapUrl(clean);
+
+    if (directCoords) {
+      const nextMapUrl = clean.startsWith("http")
+        ? clean
+        : buildGoogleMapsCoordsUrl(directCoords.lat, directCoords.lng);
+      onChangeMapUrl(nextMapUrl);
+      setIsLinkedSuccess(true);
+      setIsLinking(false);
+
+      if (directName && onApplySuggestedName) {
+        onApplySuggestedName(directName);
+      }
+
+      if (!address.trim()) {
+        void handlePinPicked(directCoords.lat, directCoords.lng);
+      } else {
+        onLocationPicked({
+          address: address.trim(),
+          mapUrl: nextMapUrl,
+          lat: directCoords.lat,
+          lng: directCoords.lng,
+          suggestedPlaceName: directName || undefined,
+        });
+      }
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      void executeSearch(trimmed);
-    }, 380);
-
-    return () => window.clearTimeout(timer);
-  }, [searchQuery]);
-
-  async function executeSearch(queryText: string) {
-    const q = queryText.trim();
-    if (q.length < 2) return;
-
-    searchAbortRef.current?.abort();
-    const controller = new AbortController();
-    searchAbortRef.current = controller;
-
-    setIsSearching(true);
-    setGeoNotice(null);
-
+    // 2. Fetch via /api/geocode to expand short links (maps.app.goo.gl) and resolve coordinates
     try {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
-        signal: controller.signal,
-      });
-      if (!res.ok) throw new Error("Lookup unavailable");
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(clean)}`);
+      if (!res.ok) throw new Error("Could not resolve link");
       const data = (await res.json()) as { results?: GeocodedPlace[] };
-      const list = data.results ?? [];
-      setSearchResults(list);
-      setShowDropdown(true);
-      if (list.length === 0) {
-        setGeoNotice("No places matched. Try clicking directly on the map.");
+      const place = data.results?.[0];
+
+      if (place) {
+        const nextMapUrl = clean.startsWith("http")
+          ? clean
+          : buildGoogleMapsCoordsUrl(place.lat, place.lng);
+
+        onChangeMapUrl(nextMapUrl);
+        setIsLinkedSuccess(true);
+
+        const resolvedAddress = place.address || formatCoordinatesLabel(place.lat, place.lng);
+        onChangeAddress(resolvedAddress);
+
+        if (place.placeName && onApplySuggestedName) {
+          onApplySuggestedName(place.placeName);
+        }
+
+        onLocationPicked({
+          address: resolvedAddress,
+          mapUrl: nextMapUrl,
+          lat: place.lat,
+          lng: place.lng,
+          suggestedPlaceName: place.placeName || undefined,
+        });
+        setGeoNotice(null);
+      } else {
+        setIsLinkedSuccess(false);
+        setGeoNotice(
+          "Could not detect venue from this link. Try copying from your browser's address bar or click on the map."
+        );
       }
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        setGeoNotice("Search service busy — click anywhere on the map to pin.");
-      }
+    } catch {
+      setIsLinkedSuccess(false);
+      setGeoNotice(
+        "Could not load Google Maps link. Please check the URL or click directly on the map below."
+      );
     } finally {
-      if (!controller.signal.aborted) {
-        setIsSearching(false);
-      }
+      setIsLinking(false);
     }
   }
 
-  function handleSelectSearchResult(place: GeocodedPlace) {
-    const nextUrl = buildGoogleMapsCoordsUrl(place.lat, place.lng);
-    setShowDropdown(false);
-    setSearchQuery(place.placeName || place.address);
-    setGeoNotice(null);
-    setSuggestedPlace(
-      place.placeName &&
-        place.placeName.toLowerCase() !== (venueName || "").trim().toLowerCase()
-        ? place.placeName
-        : null
-    );
-    onLocationPicked({
-      address: place.address,
-      mapUrl: nextUrl,
-      lat: place.lat,
-      lng: place.lng,
-      suggestedPlaceName: place.placeName || undefined,
-    });
+  // Paste directly from clipboard
+  async function handlePasteFromClipboard() {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim()) {
+          setGoogleLinkInput(text.trim());
+          void handleProcessGoogleLink(text.trim());
+          return;
+        }
+      }
+    } catch {
+      // Browser permission blocked clipboard reading
+    }
+    googleLinkInputRef.current?.focus();
   }
 
+  // Direct map click
   async function handlePinPicked(lat: number, lng: number) {
     const nextUrl = buildGoogleMapsCoordsUrl(lat, lng);
     const reqId = ++reverseReqIdRef.current;
 
-    // Update exact map coordinates immediately so Save always has latest pin
     onChangeMapUrl(nextUrl);
+    setGoogleLinkInput(nextUrl);
+    setIsLinkedSuccess(true);
     setGeoNotice(null);
     setIsReversing(true);
 
@@ -200,12 +238,10 @@ export function VenueLocationPicker({
         data.result?.address || formatCoordinatesLabel(lat, lng);
       const placeName = data.result?.placeName || "";
 
-      setSuggestedPlace(
-        placeName &&
-          placeName.toLowerCase() !== (venueName || "").trim().toLowerCase()
-          ? placeName
-          : null
-      );
+      onChangeAddress(resolvedAddress);
+      if (placeName && onApplySuggestedName && !venueName?.trim()) {
+        onApplySuggestedName(placeName);
+      }
 
       onLocationPicked({
         address: resolvedAddress,
@@ -214,12 +250,6 @@ export function VenueLocationPicker({
         lng,
         suggestedPlaceName: placeName || undefined,
       });
-
-      if (data.fallback) {
-        setGeoNotice(
-          "Pinned exact GPS coordinates. You can refine the street text above."
-        );
-      }
     } catch {
       if (reqId !== reverseReqIdRef.current) return;
       const fallbackAddress = address.trim() || formatCoordinatesLabel(lat, lng);
@@ -229,9 +259,6 @@ export function VenueLocationPicker({
         lat,
         lng,
       });
-      setGeoNotice(
-        "Pinned exact coordinates. Add or adjust the address text if needed."
-      );
     } finally {
       if (reqId === reverseReqIdRef.current) {
         setIsReversing(false);
@@ -239,256 +266,12 @@ export function VenueLocationPicker({
     }
   }
 
-  function handleUseCurrentLocation() {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setGeoNotice("Browser GPS location is unavailable on this device.");
-      return;
-    }
+  const cleanVenueName = venueName?.trim();
+  const searchButtonText = cleanVenueName
+    ? `Search "${cleanVenueName.length > 22 ? cleanVenueName.slice(0, 22) + '...' : cleanVenueName}" on Google Maps`
+    : "Search Venue on Google Maps";
 
-    setIsLocating(true);
-    setGeoNotice(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setIsLocating(false);
-        setMapOpen(true);
-        void handlePinPicked(pos.coords.latitude, pos.coords.longitude);
-      },
-      (err) => {
-        setIsLocating(false);
-        setGeoNotice(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission denied — search or click on the map instead."
-            : "Could not detect current position — pick a spot on the map."
-        );
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  }
-
-  function renderMapControlsAndCanvas(heightClass: string, inModal = false) {
-    return (
-      <div className="space-y-2.5">
-        {/* Search Bar + GPS Button */}
-        <div className="flex items-center gap-1.5">
-          <div ref={searchBoxRef} className="relative flex-1">
-            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.trim().length >= 3) setShowDropdown(true);
-              }}
-              onFocus={() => {
-                if (searchResults.length > 0) setShowDropdown(true);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  void executeSearch(searchQuery);
-                }
-              }}
-              placeholder="Search place, hotel, street, or city..."
-              className="w-full rounded-xl border border-stone-200 bg-white pl-8 pr-16 py-2 text-xs text-stone-800 focus:border-stone-900 focus:outline-none transition"
-            />
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {isSearching && (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
-              )}
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchResults([]);
-                    setShowDropdown(false);
-                  }}
-                  className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
-                  aria-label="Clear search"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => void executeSearch(searchQuery)}
-                className="rounded-lg bg-stone-900 px-2 py-1 text-[10px] font-medium text-white hover:bg-stone-800 cursor-pointer"
-              >
-                Find
-              </button>
-            </div>
-
-            {showDropdown && searchResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 z-[1100] max-h-52 overflow-y-auto rounded-2xl border border-stone-200 bg-white shadow-xl divide-y divide-stone-100">
-                {searchResults.map((place) => (
-                  <button
-                    key={place.id}
-                    type="button"
-                    onClick={() => handleSelectSearchResult(place)}
-                    className="w-full text-left px-3 py-2.5 hover:bg-amber-50/60 transition flex items-start gap-2 cursor-pointer"
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      {place.placeName && (
-                        <p className="text-xs font-semibold text-stone-900 truncate">
-                          {place.placeName}
-                        </p>
-                      )}
-                      <p className="text-[11px] text-stone-600 line-clamp-2">
-                        {place.address}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleUseCurrentLocation}
-            disabled={isLocating}
-            title="Snap to my current GPS location"
-            className="inline-flex items-center gap-1 rounded-xl border border-stone-200 bg-white px-2.5 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-60 cursor-pointer shrink-0 transition"
-          >
-            {isLocating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
-            ) : (
-              <LocateFixed className="w-3.5 h-3.5 text-emerald-700" />
-            )}
-            <span className="hidden sm:inline">My Location</span>
-          </button>
-        </div>
-
-        {/* Interactive OpenStreetMap Canvas */}
-        <div className="relative rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
-          <DynamicLeafletMap
-            coordinates={coordinates}
-            interactive
-            tileStyle={tileStyle}
-            className={`w-full ${heightClass}`}
-            onPick={(lat, lng) => void handlePinPicked(lat, lng)}
-          />
-
-          {/* Floating Map Controls Overlay (top-right) */}
-          <div className="absolute top-2.5 right-2.5 z-[500] flex items-center gap-1.5">
-            <div className="flex items-center rounded-lg bg-white/95 backdrop-blur-xs border border-stone-200/90 p-0.5 shadow-xs text-[10px] font-medium">
-              {(
-                [
-                  { id: "street", label: "Street" },
-                  { id: "editorial", label: "Clean" },
-                ] as const
-              ).map((st) => (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => setTileStyle(st.id)}
-                  className={`px-2 py-0.5 rounded-md transition cursor-pointer ${
-                    tileStyle === st.id
-                      ? "bg-stone-900 text-white"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  {st.label}
-                </button>
-              ))}
-            </div>
-
-            {!inModal &&
-              (allowModalExpand ? (
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-white/95 backdrop-blur-xs border border-stone-200/90 px-2 py-1 text-[10px] font-medium text-stone-700 hover:text-stone-900 shadow-xs cursor-pointer"
-                  title="Expand large map picker"
-                >
-                  <Maximize2 className="w-3 h-3" />
-                  <span className="hidden sm:inline">Expand</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setInlineTall((prev) => !prev)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-white/95 backdrop-blur-xs border border-stone-200/90 px-2 py-1 text-[10px] font-medium text-stone-700 hover:text-stone-900 shadow-xs cursor-pointer"
-                  title={inlineTall ? "Compact map" : "Larger map"}
-                >
-                  {inlineTall ? (
-                    <Minimize2 className="w-3 h-3" />
-                  ) : (
-                    <Maximize2 className="w-3 h-3" />
-                  )}
-                </button>
-              ))}
-          </div>
-
-          {/* Floating Instruction / Status Bar (bottom-left) */}
-          <div className="pointer-events-none absolute bottom-2.5 left-2.5 right-2.5 z-[500] flex items-center justify-between gap-2">
-            <div className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs border border-stone-200/90 px-3 py-1 text-[11px] text-stone-700 shadow-sm max-w-full">
-              {isReversing ? (
-                <>
-                  <Loader2 className="w-3 h-3 animate-spin text-amber-700 shrink-0" />
-                  <span>Auto-filling address...</span>
-                </>
-              ) : coordinates ? (
-                <>
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                  <span className="truncate font-mono text-[10px]">
-                    {formatCoordinatesLabel(coordinates.lat, coordinates.lng)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Compass className="w-3 h-3 text-amber-700 shrink-0" />
-                  <span>Click map or drag pin to point exact location</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Optional Suggested Landmark Name Chip (never overwrites manual Venue Name) */}
-        {suggestedPlace && onApplySuggestedName && (
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-1.5 text-[11px] text-amber-900">
-            <span className="inline-flex items-center gap-1.5 truncate">
-              <Sparkles className="w-3 h-3 text-amber-700 shrink-0" />
-              <span className="truncate">
-                Detected landmark: <strong>{suggestedPlace}</strong>
-              </span>
-            </span>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  onApplySuggestedName(suggestedPlace);
-                  setSuggestedPlace(null);
-                }}
-                className="rounded-lg bg-stone-900 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-stone-800 cursor-pointer"
-              >
-                Use as Venue Name
-              </button>
-              <button
-                type="button"
-                onClick={() => setSuggestedPlace(null)}
-                className="p-0.5 text-amber-700 hover:text-amber-950 cursor-pointer"
-                aria-label="Dismiss suggestion"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {geoNotice && (
-          <p className="text-[11px] text-stone-500 leading-snug px-0.5">
-            {geoNotice}
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  const inlineHeight = compact
+  const mapHeight = compact
     ? inlineTall
       ? "h-72"
       : "h-48"
@@ -497,52 +280,238 @@ export function VenueLocationPicker({
       : "h-56";
 
   return (
-    <div className="space-y-2.5">
-      {/* Location / Address Field Header & Input */}
-      <div>
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <label className="block text-xs font-medium text-stone-700">
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-amber-700" />
-              {addressLabel}
-            </span>
-          </label>
+    <div className="space-y-3">
+      {/* Redesigned Card: Google Maps Venue Finder */}
+      <div className="rounded-2xl border border-stone-200/90 bg-white p-3.5 sm:p-4 space-y-3 shadow-2xs">
+        {/* Title row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-800 flex items-center justify-center shrink-0">
+              <MapPin className="w-4 h-4 text-amber-700" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-xs font-semibold text-stone-900 truncate">
+                Find on Google Maps
+              </h4>
+              <p className="text-[11px] text-stone-500 truncate">
+                Search venue, copy share link, paste below
+              </p>
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={() => setMapOpen((v) => !v)}
-            className="text-[11px] font-medium text-amber-800 hover:text-stone-900 underline underline-offset-2 cursor-pointer"
+            onClick={() => setShowGuide((v) => !v)}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 hover:text-stone-800 transition cursor-pointer shrink-0"
+            title="How to get Google Maps link"
           >
-            {mapOpen ? "Hide Map" : "Pick on Map"}
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Guide</span>
           </button>
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => onChangeAddress(e.target.value)}
-            placeholder={addressPlaceholder}
-            className={`w-full rounded-xl border border-stone-200 bg-white px-3.5 pr-8 ${
-              compact ? "py-2 text-xs" : "py-2.5 text-sm"
-            } focus:border-stone-900 focus:outline-none transition`}
-          />
-          {address && (
-            <button
-              type="button"
-              onClick={() => onChangeAddress("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
-              aria-label="Clear address"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+        {/* 1-Click Search Button (Full width, responsive, clean) */}
+        <button
+          type="button"
+          onClick={handleOpenGoogleMapsSearch}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white px-3.5 py-2 text-xs font-medium shadow-xs transition cursor-pointer"
+        >
+          <ExternalLink className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span className="truncate">{searchButtonText}</span>
+        </button>
+
+        {/* 3-Step Guide (Expandable) */}
+        {showGuide && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-2.5 text-[11px] text-stone-700 space-y-1 leading-relaxed">
+            <p className="font-semibold text-stone-900 flex items-center gap-1 text-[11px]">
+              <Sparkles className="w-3 h-3 text-amber-700" />
+              Quick 3 Steps:
+            </p>
+            <ol className="list-decimal list-inside space-y-0.5 text-stone-600 pl-1">
+              <li>Click the search button above to open Google Maps.</li>
+              <li>Tap <strong className="text-stone-800">Share</strong> → <strong className="text-stone-800">Copy link</strong> (or copy URL).</li>
+              <li>Click <strong className="text-stone-800">Paste</strong> below — name &amp; pin auto-sync!</li>
+            </ol>
+          </div>
+        )}
+
+        {/* Link Input Row */}
+        <div className="space-y-1.5">
+          <div className="relative flex items-center">
+            <Link2 className="w-3.5 h-3.5 text-stone-400 absolute left-3 pointer-events-none" />
+            <input
+              ref={googleLinkInputRef}
+              type="text"
+              value={googleLinkInput}
+              onChange={(e) => {
+                setGoogleLinkInput(e.target.value);
+                const val = e.target.value.trim();
+                if (isGoogleMapsUrl(val) || parseCoordinatesFromMapUrl(val)) {
+                  void handleProcessGoogleLink(val);
+                }
+              }}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData("text");
+                if (
+                  pasted &&
+                  (isGoogleMapsUrl(pasted) || parseCoordinatesFromMapUrl(pasted))
+                ) {
+                  e.preventDefault();
+                  setGoogleLinkInput(pasted.trim());
+                  void handleProcessGoogleLink(pasted.trim());
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (googleLinkInput.trim()) {
+                    void handleProcessGoogleLink(googleLinkInput.trim());
+                  }
+                }
+              }}
+              placeholder="Paste Google Maps link (e.g. https://maps.app.goo.gl/...)"
+              className="w-full rounded-xl border border-stone-200 bg-stone-50/60 pl-8 pr-28 py-2 text-xs text-stone-900 placeholder:text-stone-400 focus:bg-white focus:border-stone-900 focus:outline-none transition"
+            />
+
+            <div className="absolute right-1.5 flex items-center gap-1">
+              {isLinking && (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700 mr-1" />
+              )}
+              {googleLinkInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoogleLinkInput("");
+                    setIsLinkedSuccess(false);
+                  }}
+                  className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+                  aria-label="Clear link"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="inline-flex items-center gap-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 text-[10px] font-semibold cursor-pointer transition shrink-0"
+                title="Paste from clipboard"
+              >
+                <ClipboardPaste className="w-3 h-3" />
+                <span>Paste</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (googleLinkInput.trim()) {
+                    void handleProcessGoogleLink(googleLinkInput.trim());
+                  }
+                }}
+                disabled={isLinking || !googleLinkInput.trim()}
+                className="rounded-lg bg-stone-900 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-stone-800 disabled:opacity-40 cursor-pointer transition shrink-0"
+              >
+                Set Pin
+              </button>
+            </div>
+          </div>
+
+          {/* Sync Success Badge with auto-fetched details */}
+          {isLinkedSuccess && coordinates && (
+            <div className="rounded-xl bg-emerald-50/90 border border-emerald-200 p-2.5 text-xs text-emerald-950 space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 font-medium text-emerald-800">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Linked with Google Maps</span>
+                </span>
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-900 hover:underline"
+                >
+                  <span>Test Link</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+              {address && (
+                <p className="text-[11px] text-emerald-800 line-clamp-2 pl-5">
+                  📍 {address}
+                </p>
+              )}
+            </div>
+          )}
+
+          {geoNotice && (
+            <p className="text-[11px] text-stone-500 leading-snug px-0.5">
+              {geoNotice}
+            </p>
           )}
         </div>
       </div>
 
-      {/* Inline Interactive Map Picker */}
-      {mapOpen && renderMapControlsAndCanvas(inlineHeight, false)}
+      {/* Clean Leaflet Map Canvas */}
+      <div className="relative rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
+        <DynamicLeafletMap
+          coordinates={coordinates}
+          interactive
+          tileStyle={tileStyle}
+          className={`w-full ${mapHeight}`}
+          onPick={(lat, lng) => void handlePinPicked(lat, lng)}
+        />
 
-      {/* Spacious Expanded Modal Map Picker (used in Studio sidebar) */}
+        {/* Expand Map Control (top-right) */}
+        <div className="absolute top-2.5 right-2.5 z-[500] flex items-center gap-1.5">
+          {allowModalExpand ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center gap-1 rounded-lg bg-white/95 backdrop-blur-xs border border-stone-200/90 px-2 py-1 text-[10px] font-medium text-stone-700 hover:text-stone-900 shadow-xs cursor-pointer"
+              title="Expand large map picker"
+            >
+              <Maximize2 className="w-3 h-3" />
+              <span className="hidden sm:inline">Expand</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setInlineTall((prev) => !prev)}
+              className="inline-flex items-center gap-1 rounded-lg bg-white/95 backdrop-blur-xs border border-stone-200/90 px-2 py-1 text-[10px] font-medium text-stone-700 hover:text-stone-900 shadow-xs cursor-pointer"
+              title={inlineTall ? "Compact map" : "Larger map"}
+            >
+              {inlineTall ? (
+                <Minimize2 className="w-3 h-3" />
+              ) : (
+                <Maximize2 className="w-3 h-3" />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Coordinates status pill (bottom-left) */}
+        <div className="pointer-events-none absolute bottom-2.5 left-2.5 right-2.5 z-[500] flex items-center justify-between gap-2">
+          <div className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs border border-stone-200/90 px-3 py-1 text-[11px] text-stone-700 shadow-sm max-w-full">
+            {isReversing ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin text-amber-700 shrink-0" />
+                <span>Auto-fetching address...</span>
+              </>
+            ) : coordinates ? (
+              <>
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                <span className="truncate font-mono text-[10px]">
+                  {formatCoordinatesLabel(coordinates.lat, coordinates.lng)}
+                </span>
+              </>
+            ) : (
+              <>
+                <Compass className="w-3 h-3 text-amber-700 shrink-0" />
+                <span>Click map to mark exact location</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded Modal Map Picker */}
       {allowModalExpand && (
         <Dialog.Root open={modalOpen} onOpenChange={setModalOpen}>
           <Dialog.Portal>
@@ -551,14 +520,13 @@ export function VenueLocationPicker({
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold">
-                    Free OpenStreetMap Location Picker
+                    Interactive Location Picker
                   </p>
                   <Dialog.Title className="mt-0.5 text-lg font-serif font-semibold text-stone-900">
                     Pin Exact Event Location
                   </Dialog.Title>
                   <Dialog.Description className="text-xs text-stone-500 mt-0.5">
-                    Click anywhere on the map, drag the pin, or search to
-                    auto-fill the address. Your venue name remains manual.
+                    Click anywhere on the map or drag the pin to adjust.
                   </Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
@@ -572,7 +540,15 @@ export function VenueLocationPicker({
                 </Dialog.Close>
               </div>
 
-              {renderMapControlsAndCanvas("h-[380px]", true)}
+              <div className="relative rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
+                <DynamicLeafletMap
+                  coordinates={coordinates}
+                  interactive
+                  tileStyle={tileStyle}
+                  className="w-full h-[380px]"
+                  onPick={(lat, lng) => void handlePinPicked(lat, lng)}
+                />
+              </div>
 
               <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -580,7 +556,7 @@ export function VenueLocationPicker({
                     Selected Location Address
                   </p>
                   <p className="text-xs text-stone-800 font-medium truncate">
-                    {address || "Click map or search to auto-fill address"}
+                    {address || "Click map to set exact coordinates"}
                   </p>
                 </div>
                 <Dialog.Close asChild>

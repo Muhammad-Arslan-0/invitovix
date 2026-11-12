@@ -36,6 +36,48 @@ export function buildGoogleMapsCoordsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
+export function buildGoogleMapsSearchUrl(query: string): string {
+  const clean = query.trim();
+  if (!clean) return "https://www.google.com/maps";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clean)}`;
+}
+
+export function isGoogleMapsUrl(url?: string | null): boolean {
+  if (!url || typeof url !== "string") return false;
+  return /https?:\/\/(?:[a-z0-9.-]+\.)?(?:google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(
+    url.trim()
+  );
+}
+
+export function extractPlaceNameFromMapUrl(url?: string | null): string | null {
+  if (!url || typeof url !== "string") return null;
+  const input = url.trim();
+
+  // /place/Pearl+Cuisine/@...
+  const placeMatch = input.match(/\/place\/([^/@?#]+)/i);
+  if (placeMatch && placeMatch[1]) {
+    try {
+      const decoded = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+      if (decoded && !/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(decoded)) {
+        return decoded.trim();
+      }
+    } catch {}
+  }
+
+  // ?q=Pearl+Cuisine or ?query=... (if not raw coordinates)
+  const qMatch = input.match(/[?&](?:query|q)=([^&]+)/i);
+  if (qMatch && qMatch[1]) {
+    try {
+      const decoded = decodeURIComponent(qMatch[1].replace(/\+/g, " "));
+      if (decoded && !/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(decoded)) {
+        return decoded.trim();
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
 export function buildOsmLinkUrl(lat: number, lng: number, zoom = 16): string {
   const latStr = lat.toFixed(6);
   const lngStr = lng.toFixed(6);

@@ -117,19 +117,6 @@ export const ContentPanel = memo(function ContentPanel({
           allowModalExpand
           compact
         />
-
-        <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Pinned Maps URL (Auto-generated or custom)
-          </label>
-          <input
-            type="url"
-            value={venueMapUrl}
-            onChange={(e) => updateMeta({ venue_map_url: e.target.value })}
-            placeholder="https://www.google.com/maps/search/?api=1&query=..."
-            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
-          />
-        </div>
       </div>
 
       {/* Card Typography Copy */}

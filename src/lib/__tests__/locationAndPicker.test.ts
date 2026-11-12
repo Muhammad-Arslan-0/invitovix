@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildGoogleMapsCoordsUrl,
+  buildGoogleMapsSearchUrl,
   buildOsmLinkUrl,
+  extractPlaceNameFromMapUrl,
   formatReadableAddress,
+  isGoogleMapsUrl,
   parseCoordinatesFromMapUrl,
 } from "@/lib/utils/location";
 
@@ -69,6 +72,30 @@ describe("Location & Coordinate Utilities", () => {
         country: "Pakistan",
       })
     ).toBe("Main Boulevard, Islamabad, Pakistan");
+  });
+
+  it("identifies Google Maps URLs, extracts search links and venue names", () => {
+    expect(
+      isGoogleMapsUrl("https://maps.app.goo.gl/ABC123xyz")
+    ).toBe(true);
+    expect(
+      isGoogleMapsUrl("https://www.google.com/maps/place/Pearl+Cuisine/@31.81,72.91,17z")
+    ).toBe(true);
+    expect(isGoogleMapsUrl("https://example.com/other")).toBe(false);
+
+    expect(buildGoogleMapsSearchUrl("Pearl Cuisine Chichawatni")).toBe(
+      "https://www.google.com/maps/search/?api=1&query=Pearl%20Cuisine%20Chichawatni"
+    );
+
+    expect(
+      extractPlaceNameFromMapUrl(
+        "https://www.google.com/maps/place/Pearl+Cuisine/@31.812345,72.912345,17z"
+      )
+    ).toBe("Pearl Cuisine");
+
+    expect(
+      extractPlaceNameFromMapUrl("https://maps.google.com/?q=Royal+Palm+Golf+Club")
+    ).toBe("Royal Palm Golf Club");
   });
 });
 

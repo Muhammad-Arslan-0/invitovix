@@ -39,10 +39,10 @@ describe("VenueLocationPicker", () => {
         onLocationPicked={vi.fn()}
       />
     );
-    expect(html).toContain("Event Location / Address");
+    expect(html).toContain("Find on Google Maps");
   });
 
-  it("auto-fills address and coordinates when searching or clicking map while keeping venue name manual", async () => {
+  it("auto-fills place name, address and coordinates when pasting a Google Maps link or clicking the map", async () => {
     const fetchMock = vi.fn().mockImplementation((input: string) => {
       if (input.includes("q=")) {
         return Promise.resolve({
@@ -67,7 +67,7 @@ describe("VenueLocationPicker", () => {
             id: "202",
             lat: 31.515,
             lng: 74.351,
-            placeName: "",
+            placeName: "Gulberg Lawn",
             address: "55 Canal Bank Road, Gulberg III, Lahore, Pakistan",
           },
         }),
@@ -84,7 +84,7 @@ describe("VenueLocationPicker", () => {
       <VenueLocationPicker
         address=""
         mapUrl=""
-        venueName="My Custom Lawn"
+        venueName=""
         onChangeAddress={onChangeAddress}
         onChangeMapUrl={onChangeMapUrl}
         onLocationPicked={onLocationPicked}
@@ -92,31 +92,30 @@ describe("VenueLocationPicker", () => {
       />
     );
 
-    const searchInput = screen.getByPlaceholderText(
-      /Search place, hotel, street, or city/i
+    const linkInput = screen.getByPlaceholderText(
+      /Paste Google Maps link/i
     );
-    fireEvent.change(searchInput, { target: { value: "Pearl Continental" } });
-    fireEvent.click(screen.getByRole("button", { name: /^Find$/i }));
+    fireEvent.change(linkInput, {
+      target: { value: "https://maps.app.goo.gl/sample123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Set Pin$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Pearl Continental Hotel")).toBeTruthy();
+      expect(onApplySuggestedName).toHaveBeenCalledWith("Pearl Continental Hotel");
     });
 
-    fireEvent.click(screen.getByText("Pearl Continental Hotel"));
-
+    expect(onChangeAddress).toHaveBeenCalledWith(
+      "Shahrah-e-Quaid-e-Azam, Mall Road, Lahore, Pakistan"
+    );
     expect(onLocationPicked).toHaveBeenCalledWith({
       address: "Shahrah-e-Quaid-e-Azam, Mall Road, Lahore, Pakistan",
-      mapUrl: "https://www.google.com/maps/search/?api=1&query=31.554600,74.331200",
+      mapUrl: "https://maps.app.goo.gl/sample123",
       lat: 31.5546,
       lng: 74.3312,
       suggestedPlaceName: "Pearl Continental Hotel",
     });
 
-    // Optional manual venue suggestion chip lets user opt in without forcing overwrite
-    fireEvent.click(screen.getByRole("button", { name: /Use as Venue Name/i }));
-    expect(onApplySuggestedName).toHaveBeenCalledWith("Pearl Continental Hotel");
-
-    // Clicking on map triggers reverse geocoding and auto-fills address + coordinates
+    // Clicking on map triggers reverse geocoding and updates location
     fireEvent.click(screen.getByRole("button", { name: /Simulate Map Click/i }));
 
     await waitFor(() => {
@@ -125,9 +124,8 @@ describe("VenueLocationPicker", () => {
         mapUrl: "https://www.google.com/maps/search/?api=1&query=31.515000,74.351000",
         lat: 31.515,
         lng: 74.351,
-        suggestedPlaceName: undefined,
+        suggestedPlaceName: "Gulberg Lawn",
       });
     });
   });
 });
-

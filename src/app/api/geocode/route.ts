@@ -4,6 +4,9 @@ import {
   formatCoordinatesLabel,
   formatReadableAddress,
   isValidCoordinates,
+  parseCoordinatesFromMapUrl,
+  extractPlaceNameFromMapUrl,
+  isGoogleMapsUrl,
 } from "@/lib/utils/location";
 
 const REQUEST_HEADERS = {
@@ -113,54 +116,297 @@ function normalizePhoton(feature: PhotonFeature, idx = 0): GeocodedPlace | null 
   };
 }
 
+async function resolveGoogleMapsLink(input: string): Promise<GeocodedPlace | null> {
+  const trimmed = input.trim();
+
+  // 1. Direct coordinates from the URL or text if already present
+  const directCoords = parseCoordinatesFromMapUrl(trimmed);
+  const directName = extractPlaceNameFromMapUrl(trimmed) || "";
+
+  if (directCoords) {
+    const reversed = await reversePlace(directCoords.lat, directCoords.lng);
+    return {
+      id: `gmaps-${directCoords.lat.toFixed(5)}-${directCoords.lng.toFixed(5)}`,
+      lat: directCoords.lat,
+      lng: directCoords.lng,
+      address:
+        reversed.result?.address ||
+        formatCoordinatesLabel(directCoords.lat, directCoords.lng),
+      placeName: directName || reversed.result?.placeName || "",
+      category: "venue",
+    };
+  }
+
+  // 2. Short links (maps.app.goo.gl, goo.gl/maps) or full google maps URLs requiring redirect inspection
+  if (
+    /https?:\/\/(?:[a-z0-9.-]+\.)?(?:maps\.app\.goo\.gl|goo\.gl\/maps|google\.[a-z.]+\/maps)/i.test(
+      trimmed
+    )
+  ) {
+    try {
+      const res = await fetch(trimmed, {
+        method: "GET",
+        redirect: "follow",
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      let targetUrl = res.url;
+      // Handle Google Consent page redirect
+      if (targetUrl.includes("consent.google.com")) {
+        try {
+          const parsedConsent = new URL(targetUrl);
+          const cont = parsedConsent.searchParams.get("continue");
+          if (cont) targetUrl = decodeURIComponent(cont);
+        } catch {}
+      }
+
+      let coords = parseCoordinatesFromMapUrl(targetUrl);
+      let placeName = extractPlaceNameFromMapUrl(targetUrl) || "";
+
+      // If coordinates weren't directly in the final URL, inspect HTML content
+      if (!coords) {
+        const html = await res.text();
+
+        // Check og:title for place name
+        const titleMatch =
+          html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+          html.match(/<title>([^<]+)<\/title>/i);
+        if (titleMatch && !placeName) {
+          const cleanTitle = titleMatch[1].replace(/ - Google Maps$/, "").trim();
+          if (cleanTitle && !cleanTitle.toLowerCase().includes("google maps")) {
+            placeName = cleanTitle;
+          }
+        }
+
+        // Check center=lat,lng
+        const centerMatch =
+          html.match(/center=(-?\d+(?:\.\d+)?)%2C(-?\d+(?:\.\d+)?)/i) ||
+          html.match(/center=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i);
+        if (centerMatch) {
+          const lat = parseFloat(centerMatch[1]);
+          const lng = parseFloat(centerMatch[2]);
+          if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+        }
+
+        // Check !3dlat!4dlng in body text
+        if (!coords) {
+          const bangMatch = html.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+          if (bangMatch) {
+            const lat = parseFloat(bangMatch[1]);
+            const lng = parseFloat(bangMatch[2]);
+            if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+          }
+        }
+
+        // Check /@lat,lng in body text
+        if (!coords) {
+          const atMatch = html.match(/\/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+          if (atMatch) {
+            const lat = parseFloat(atMatch[1]);
+            const lng = parseFloat(atMatch[2]);
+            if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+          }
+        }
+      }
+
+      if (coords) {
+        const reversed = await reversePlace(coords.lat, coords.lng);
+        return {
+          id: `gmaps-${coords.lat.toFixed(5)}-${coords.lng.toFixed(5)}`,
+          lat: coords.lat,
+          lng: coords.lng,
+          address:
+            reversed.result?.address ||
+            formatCoordinatesLabel(coords.lat, coords.lng),
+          placeName: placeName || reversed.result?.placeName || "",
+          category: "venue",
+        };
+      }
+    } catch {
+      // Fetch failed or timed out
+    }
+  }
+
+  return null;
+}
+
 async function searchPlaces(query: string): Promise<GeocodedPlace[]> {
   const cacheKey = `q:${query.toLowerCase()}`;
   const cached = getCache<GeocodedPlace[]>(cacheKey);
   if (cached) return cached;
 
-  try {
-    const nomUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6&accept-language=en&q=${encodeURIComponent(
-      query
-    )}`;
-    const res = await fetch(nomUrl, {
-      headers: REQUEST_HEADERS,
-      signal: AbortSignal.timeout(4500),
-    });
-    if (res.ok) {
-      const items = (await res.json()) as NominatimItem[];
-      const normalized = items
-        .map((item, i) => normalizeNominatim(item, i))
-        .filter((x): x is GeocodedPlace => x !== null);
-      if (normalized.length > 0) {
-        setCache(cacheKey, normalized);
-        return normalized;
-      }
+  // 1. Check if query is a Google Maps share link, URL, or raw coordinates
+  if (isGoogleMapsUrl(query) || parseCoordinatesFromMapUrl(query)) {
+    const resolvedGoogle = await resolveGoogleMapsLink(query);
+    if (resolvedGoogle) {
+      const payload = [resolvedGoogle];
+      setCache(cacheKey, payload);
+      return payload;
     }
-  } catch {
-    // Fallback to Photon below
   }
 
-  try {
-    const photonUrl = `https://photon.komoot.io/api/?limit=6&lang=en&q=${encodeURIComponent(
-      query
-    )}`;
-    const res = await fetch(photonUrl, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(4500),
-    });
-    if (res.ok) {
+  // 3. If GOOGLE_MAPS_API_KEY is configured, use official Google Places API (highest venue accuracy)
+  const googleApiKey =
+    process.env.GOOGLE_MAPS_API_KEY ||
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  if (googleApiKey) {
+    try {
+      const googleUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+        query
+      )}&key=${googleApiKey}`;
+      const res = await fetch(googleUrl, { signal: AbortSignal.timeout(3500) });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          results?: Array<{
+            place_id: string;
+            name: string;
+            formatted_address: string;
+            geometry?: {
+              location: { lat: number; lng: number };
+            };
+            types?: string[];
+          }>;
+        };
+        const googlePlaces: GeocodedPlace[] = (data.results ?? [])
+          .map((r) => ({
+            id: r.place_id,
+            lat: r.geometry?.location.lat ?? 0,
+            lng: r.geometry?.location.lng ?? 0,
+            placeName: r.name,
+            address: r.formatted_address,
+            category: r.types?.[0],
+          }))
+          .filter((p) => isValidCoordinates(p.lat, p.lng));
+
+        if (googlePlaces.length > 0) {
+          setCache(cacheKey, googlePlaces);
+          return googlePlaces;
+        }
+      }
+    } catch {
+      // Fallback to OSM below
+    }
+  }
+
+  // 4. Query Photon (fast POI & venue autocomplete) and Nominatim concurrently
+  const photonPromise = (async (): Promise<GeocodedPlace[]> => {
+    try {
+      const photonUrl = `https://photon.komoot.io/api/?limit=6&lang=en&q=${encodeURIComponent(
+        query
+      )}`;
+      const res = await fetch(photonUrl, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(3500),
+      });
+      if (!res.ok) return [];
       const json = (await res.json()) as { features?: PhotonFeature[] };
-      const normalized = (json.features ?? [])
+      return (json.features ?? [])
         .map((f, i) => normalizePhoton(f, i))
         .filter((x): x is GeocodedPlace => x !== null);
-      setCache(cacheKey, normalized);
-      return normalized;
+    } catch {
+      return [];
     }
-  } catch {
-    // Both upstream services unreachable
+  })();
+
+  const nominatimPromise = (async (): Promise<GeocodedPlace[]> => {
+    try {
+      const nomUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6&accept-language=en&q=${encodeURIComponent(
+        query
+      )}`;
+      const res = await fetch(nomUrl, {
+        headers: REQUEST_HEADERS,
+        signal: AbortSignal.timeout(3500),
+      });
+      if (!res.ok) return [];
+      const items = (await res.json()) as NominatimItem[];
+      return items
+        .map((item, i) => normalizeNominatim(item, i))
+        .filter((x): x is GeocodedPlace => x !== null);
+    } catch {
+      return [];
+    }
+  })();
+
+  const [photonResults, nomResults] = await Promise.all([
+    photonPromise,
+    nominatimPromise,
+  ]);
+
+  // Combine and deduplicate by coordinate grid (lat/lng ~100m)
+  const combined: GeocodedPlace[] = [];
+  const seen = new Set<string>();
+
+  // Prioritize results that have explicit place names
+  const allResults = [...photonResults, ...nomResults].sort((a, b) => {
+    const aHasName = a.placeName ? 1 : 0;
+    const bHasName = b.placeName ? 1 : 0;
+    return bHasName - aHasName;
+  });
+
+  for (const place of allResults) {
+    const key = `${place.lat.toFixed(3)},${place.lng.toFixed(3)}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      combined.push(place);
+    }
   }
 
-  return [];
+  // 5. Smart Fallback for local businesses not yet indexed in OpenStreetMap (e.g. "Pearl Cuisine Chichawatni")
+  // If no direct venue match was found, extract the city/town name from the query and locate it!
+  const words = query.trim().split(/\s+/);
+  if (words.length > 1) {
+    const candidateCity = words[words.length - 1];
+    // Check if any existing result already matches this city
+    const hasCityMatch = combined.some((p) =>
+      p.address.toLowerCase().includes(candidateCity.toLowerCase())
+    );
+
+    if (!hasCityMatch && candidateCity.length >= 3) {
+      try {
+        const cityNomUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&accept-language=en&q=${encodeURIComponent(
+          candidateCity
+        )}`;
+        const cityRes = await fetch(cityNomUrl, {
+          headers: REQUEST_HEADERS,
+          signal: AbortSignal.timeout(2500),
+        });
+        if (cityRes.ok) {
+          const cityItems = (await cityRes.json()) as NominatimItem[];
+          const cityNormalized = cityItems[0]
+            ? normalizeNominatim(cityItems[0], 0)
+            : null;
+          if (cityNormalized) {
+            // Prepend city-level match with the user's searched venue name
+            const venueLabel = words.slice(0, -1).join(" ");
+            const fallbackPlace: GeocodedPlace = {
+              id: `fallback-${cityNormalized.lat.toFixed(4)}`,
+              lat: cityNormalized.lat,
+              lng: cityNormalized.lng,
+              placeName: `${venueLabel} (${candidateCity})`,
+              address: `${venueLabel}, ${cityNormalized.address}`,
+              category: "city_area",
+            };
+            combined.unshift(fallbackPlace);
+          }
+        }
+      } catch {
+        // Fallback search skipped
+      }
+    }
+  }
+
+  if (combined.length > 0) {
+    setCache(cacheKey, combined);
+  }
+
+  return combined;
 }
 
 async function reversePlace(

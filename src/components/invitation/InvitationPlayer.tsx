@@ -129,6 +129,7 @@ export const InvitationPlayer = forwardRef<
 
   const scrollToSection = useCallback(
     (sectionId: InvitationSectionId) => {
+      if (typeof document === "undefined") return;
       const scroller = isBoundedScroll ? scrollContainerRef.current : null;
       const targetEl = scroller
         ? ((scroller.querySelector(`#${sectionId}`) as HTMLElement | null) ??
