@@ -144,73 +144,99 @@ async function resolveGoogleMapsLink(input: string): Promise<GeocodedPlace | nul
     )
   ) {
     try {
-      const res = await fetch(trimmed, {
-        method: "GET",
-        redirect: "follow",
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
-        signal: AbortSignal.timeout(5000),
-      });
+      let targetUrl = trimmed;
 
-      let targetUrl = res.url;
-      // Handle Google Consent page redirect
-      if (targetUrl.includes("consent.google.com")) {
-        try {
-          const parsedConsent = new URL(targetUrl);
-          const cont = parsedConsent.searchParams.get("continue");
-          if (cont) targetUrl = decodeURIComponent(cont);
-        } catch {}
-      }
+      // Fast-path: Check HTTP redirect Location header
+      try {
+        const redirectRes = await fetch(trimmed, {
+          method: "GET",
+          redirect: "manual",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          },
+          signal: AbortSignal.timeout(3500),
+        });
+        const redirectHeader = redirectRes.headers.get("location");
+        if (redirectHeader) {
+          targetUrl = redirectHeader;
+        }
+      } catch {}
 
+      // Check if coordinates were obtained directly from the redirect Location header
       let coords = parseCoordinatesFromMapUrl(targetUrl);
       let placeName = extractPlaceNameFromMapUrl(targetUrl) || "";
 
-      // If coordinates weren't directly in the final URL, inspect HTML content
       if (!coords) {
-        const html = await res.text();
+        const res = await fetch(targetUrl, {
+          method: "GET",
+          redirect: "follow",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          },
+          signal: AbortSignal.timeout(5000),
+        });
 
-        // Check og:title for place name
-        const titleMatch =
-          html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
-          html.match(/<title>([^<]+)<\/title>/i);
-        if (titleMatch && !placeName) {
-          const cleanTitle = titleMatch[1].replace(/ - Google Maps$/, "").trim();
-          if (cleanTitle && !cleanTitle.toLowerCase().includes("google maps")) {
-            placeName = cleanTitle;
-          }
+        let finalUrl = res.url;
+        if (finalUrl.includes("consent.google.com")) {
+          try {
+            const parsedConsent = new URL(finalUrl);
+            const cont = parsedConsent.searchParams.get("continue");
+            if (cont) finalUrl = decodeURIComponent(cont);
+          } catch {}
         }
 
-        // Check center=lat,lng
-        const centerMatch =
-          html.match(/center=(-?\d+(?:\.\d+)?)%2C(-?\d+(?:\.\d+)?)/i) ||
-          html.match(/center=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i);
-        if (centerMatch) {
-          const lat = parseFloat(centerMatch[1]);
-          const lng = parseFloat(centerMatch[2]);
-          if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+        coords = parseCoordinatesFromMapUrl(finalUrl);
+        if (!placeName) {
+          placeName = extractPlaceNameFromMapUrl(finalUrl) || "";
         }
 
-        // Check !3dlat!4dlng in body text
+        // If coordinates weren't directly in the final URL, inspect HTML content
         if (!coords) {
-          const bangMatch = html.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
-          if (bangMatch) {
-            const lat = parseFloat(bangMatch[1]);
-            const lng = parseFloat(bangMatch[2]);
+          const html = await res.text();
+
+          // Check og:title for place name
+          const titleMatch =
+            html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+            html.match(/<title>([^<]+)<\/title>/i);
+          if (titleMatch && !placeName) {
+            const cleanTitle = titleMatch[1].replace(/ - Google Maps$/, "").trim();
+            if (cleanTitle && !cleanTitle.toLowerCase().includes("google maps")) {
+              placeName = cleanTitle;
+            }
+          }
+
+          // Check center=lat,lng
+          const centerMatch =
+            html.match(/center=(-?\d+(?:\.\d+)?)%2C(-?\d+(?:\.\d+)?)/i) ||
+            html.match(/center=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i);
+          if (centerMatch) {
+            const lat = parseFloat(centerMatch[1]);
+            const lng = parseFloat(centerMatch[2]);
             if (isValidCoordinates(lat, lng)) coords = { lat, lng };
           }
-        }
 
-        // Check /@lat,lng in body text
-        if (!coords) {
-          const atMatch = html.match(/\/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
-          if (atMatch) {
-            const lat = parseFloat(atMatch[1]);
-            const lng = parseFloat(atMatch[2]);
-            if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+          // Check !3dlat!4dlng in body text
+          if (!coords) {
+            const bangMatch = html.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+            if (bangMatch) {
+              const lat = parseFloat(bangMatch[1]);
+              const lng = parseFloat(bangMatch[2]);
+              if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+            }
+          }
+
+          // Check /@lat,lng in body text
+          if (!coords) {
+            const atMatch = html.match(/\/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+            if (atMatch) {
+              const lat = parseFloat(atMatch[1]);
+              const lng = parseFloat(atMatch[2]);
+              if (isValidCoordinates(lat, lng)) coords = { lat, lng };
+            }
           }
         }
       }

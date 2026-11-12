@@ -108,6 +108,12 @@ export function parseCoordinatesFromMapUrl(
     return tryPair(rawMatch[1], rawMatch[2]);
   }
 
+  // geo:lat,lng
+  const geoMatch = input.match(/^geo:(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
+  if (geoMatch) {
+    return tryPair(geoMatch[1], geoMatch[2]);
+  }
+
   // OpenStreetMap ?mlat=...&mlon=...
   const osmQueryMatch = input.match(
     /[?&]mlat=(-?\d+(?:\.\d+)?)(?:&[^#]*)?&mlon=(-?\d+(?:\.\d+)?)/i
@@ -126,9 +132,9 @@ export function parseCoordinatesFromMapUrl(
     if (parsed) return parsed;
   }
 
-  // Google Maps ?query=lat,lng or ?q=lat,lng or ?ll=lat,lng or ?center=lat,lng
+  // Google Maps ?query=lat,lng or ?q=lat,lng or ?q=loc:lat,lng or ?daddr=lat,lng
   const queryParamMatch = input.match(
-    /[?&](?:query|q|ll|center)=(-?\d+(?:\.\d+)?)(?:,|%2C)\s*(-?\d+(?:\.\d+)?)/i
+    /[?&](?:query|q|ll|center|daddr|saddr)=(?:loc:)?(-?\d+(?:\.\d+)?)(?:,|%2C)\s*(-?\d+(?:\.\d+)?)/i
   );
   if (queryParamMatch) {
     const parsed = tryPair(queryParamMatch[1], queryParamMatch[2]);
@@ -146,6 +152,13 @@ export function parseCoordinatesFromMapUrl(
   const atMatch = input.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
   if (atMatch) {
     const parsed = tryPair(atMatch[1], atMatch[2]);
+    if (parsed) return parsed;
+  }
+
+  // Google Maps /dir/.../lat,lng
+  const dirMatch = input.match(/\/maps\/dir\/.*?\/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
+  if (dirMatch) {
+    const parsed = tryPair(dirMatch[1], dirMatch[2]);
     if (parsed) return parsed;
   }
 

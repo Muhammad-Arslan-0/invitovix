@@ -18,12 +18,14 @@ import {
   X,
 } from "lucide-react";
 import {
+  Coordinates,
   GeocodedPlace,
   buildGoogleMapsCoordsUrl,
   buildGoogleMapsSearchUrl,
   extractPlaceNameFromMapUrl,
   formatCoordinatesLabel,
   isGoogleMapsUrl,
+  isValidCoordinates,
   parseCoordinatesFromMapUrl,
 } from "@/lib/utils/location";
 import type { MapTileStyle } from "./LeafletMapCanvas";
@@ -73,6 +75,9 @@ export function VenueLocationPicker({
   compact = false,
 }: VenueLocationPickerProps) {
   const coordinates = parseCoordinatesFromMapUrl(mapUrl);
+  const [activeCoords, setActiveCoords] = useState<Coordinates | null>(() =>
+    parseCoordinatesFromMapUrl(mapUrl)
+  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [inlineTall, setInlineTall] = useState(false);
@@ -97,6 +102,10 @@ export function VenueLocationPicker({
       setIsLinkedSuccess(
         Boolean(isGoogleMapsUrl(mapUrl) || parseCoordinatesFromMapUrl(mapUrl))
       );
+    }
+    const parsed = parseCoordinatesFromMapUrl(mapUrl);
+    if (parsed) {
+      setActiveCoords(parsed);
     }
   }, [mapUrl]);
 
@@ -123,6 +132,7 @@ export function VenueLocationPicker({
     const directName = extractPlaceNameFromMapUrl(clean);
 
     if (directCoords) {
+      setActiveCoords(directCoords);
       const nextMapUrl = clean.startsWith("http")
         ? clean
         : buildGoogleMapsCoordsUrl(directCoords.lat, directCoords.lng);
@@ -155,7 +165,10 @@ export function VenueLocationPicker({
       const data = (await res.json()) as { results?: GeocodedPlace[] };
       const place = data.results?.[0];
 
-      if (place) {
+      if (place && isValidCoordinates(place.lat, place.lng)) {
+        const resolvedCoords: Coordinates = { lat: place.lat, lng: place.lng };
+        setActiveCoords(resolvedCoords);
+
         const nextMapUrl = clean.startsWith("http")
           ? clean
           : buildGoogleMapsCoordsUrl(place.lat, place.lng);
@@ -213,6 +226,7 @@ export function VenueLocationPicker({
 
   // Direct map click
   async function handlePinPicked(lat: number, lng: number) {
+    setActiveCoords({ lat, lng });
     const nextUrl = buildGoogleMapsCoordsUrl(lat, lng);
     const reqId = ++reverseReqIdRef.current;
 
@@ -270,6 +284,8 @@ export function VenueLocationPicker({
   const searchButtonText = cleanVenueName
     ? `Search "${cleanVenueName.length > 22 ? cleanVenueName.slice(0, 22) + '...' : cleanVenueName}" on Google Maps`
     : "Search Venue on Google Maps";
+
+  const effectiveCoords = activeCoords || coordinates;
 
   const mapHeight = compact
     ? inlineTall
@@ -415,7 +431,7 @@ export function VenueLocationPicker({
           </div>
 
           {/* Sync Success Badge with auto-fetched details */}
-          {isLinkedSuccess && coordinates && (
+          {isLinkedSuccess && effectiveCoords && (
             <div className="rounded-xl bg-emerald-50/90 border border-emerald-200 p-2.5 text-xs text-emerald-950 space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 font-medium text-emerald-800">
@@ -451,7 +467,7 @@ export function VenueLocationPicker({
       {/* Clean Leaflet Map Canvas */}
       <div className="relative rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
         <DynamicLeafletMap
-          coordinates={coordinates}
+          coordinates={effectiveCoords}
           interactive
           tileStyle={tileStyle}
           className={`w-full ${mapHeight}`}
@@ -494,11 +510,11 @@ export function VenueLocationPicker({
                 <Loader2 className="w-3 h-3 animate-spin text-amber-700 shrink-0" />
                 <span>Auto-fetching address...</span>
               </>
-            ) : coordinates ? (
+            ) : effectiveCoords ? (
               <>
                 <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                 <span className="truncate font-mono text-[10px]">
-                  {formatCoordinatesLabel(coordinates.lat, coordinates.lng)}
+                  {formatCoordinatesLabel(effectiveCoords.lat, effectiveCoords.lng)}
                 </span>
               </>
             ) : (
@@ -542,7 +558,7 @@ export function VenueLocationPicker({
 
               <div className="relative rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
                 <DynamicLeafletMap
-                  coordinates={coordinates}
+                  coordinates={effectiveCoords}
                   interactive
                   tileStyle={tileStyle}
                   className="w-full h-[380px]"
