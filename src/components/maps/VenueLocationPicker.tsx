@@ -81,7 +81,7 @@ export function VenueLocationPicker({
 
   const [modalOpen, setModalOpen] = useState(false);
   const [inlineTall, setInlineTall] = useState(false);
-  const tileStyle: MapTileStyle = "street";
+  const tileStyle: MapTileStyle = "satellite";
 
   const [googleLinkInput, setGoogleLinkInput] = useState(mapUrl || "");
   const [isLinking, setIsLinking] = useState(false);

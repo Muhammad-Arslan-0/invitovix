@@ -38,7 +38,7 @@ export function VenuePreviewMap({
         pinColor={pinColor}
         accentColor={accentColor}
         venueLabel={venueName}
-        tileStyle="street"
+        tileStyle="satellite"
         className={`w-full ${heightClass}`}
       />
     </div>

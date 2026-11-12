@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Coordinates, DEFAULT_MAP_CENTER } from "@/lib/utils/location";
 
-export type MapTileStyle = "street" | "editorial";
+export type MapTileStyle = "satellite" | "street" | "editorial";
 
 export interface LeafletMapCanvasProps {
   coordinates: Coordinates | null;
@@ -22,8 +22,21 @@ export interface LeafletMapCanvasProps {
 
 const TILE_LAYERS: Record<
   MapTileStyle,
-  { url: string; attribution: string; maxZoom: number }
+  {
+    url: string;
+    attribution: string;
+    maxZoom: number;
+    overlayUrl?: string;
+  }
 > = {
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    overlayUrl:
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
+    maxZoom: 19,
+  },
   street: {
     url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -77,13 +90,14 @@ export default function LeafletMapCanvas({
   pinColor = "#114232",
   accentColor = "#C99A3B",
   venueLabel,
-  tileStyle = "street",
+  tileStyle = "satellite",
   className = "w-full h-56",
   onPick,
 }: LeafletMapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const overlayLayerRef = useRef<L.TileLayer | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const onPickRef = useRef(onPick);
   const prevCoordsRef = useRef<string | null>(null);
@@ -116,7 +130,7 @@ export default function LeafletMapCanvas({
       maxZoom: layerConfig.maxZoom,
     });
 
-    // Silent fallback to OpenStreetMap if an editorial tile provider fails
+    // Silent fallback to OpenStreetMap if satellite or editorial provider fails
     tileLayer.on("tileerror", () => {
       if (tileStyle !== "street") {
         tileLayer.setUrl(TILE_LAYERS.street.url);
@@ -125,6 +139,14 @@ export default function LeafletMapCanvas({
 
     tileLayer.addTo(map);
     tileLayerRef.current = tileLayer;
+
+    if (layerConfig.overlayUrl) {
+      const overlayLayer = L.tileLayer(layerConfig.overlayUrl, {
+        maxZoom: layerConfig.maxZoom,
+      }).addTo(map);
+      overlayLayerRef.current = overlayLayer;
+    }
+
     mapRef.current = map;
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
@@ -154,6 +176,10 @@ export default function LeafletMapCanvas({
       window.clearTimeout(invalidateTimer);
       resizeObserver?.disconnect();
       map.off("click", handleMapClick);
+      if (overlayLayerRef.current) {
+        map.removeLayer(overlayLayerRef.current);
+        overlayLayerRef.current = null;
+      }
       map.remove();
       mapRef.current = null;
       tileLayerRef.current = null;
@@ -171,6 +197,11 @@ export default function LeafletMapCanvas({
 
     if (tileLayerRef.current) {
       map.removeLayer(tileLayerRef.current);
+      tileLayerRef.current = null;
+    }
+    if (overlayLayerRef.current) {
+      map.removeLayer(overlayLayerRef.current);
+      overlayLayerRef.current = null;
     }
 
     const cfg = TILE_LAYERS[tileStyle];
@@ -180,6 +211,13 @@ export default function LeafletMapCanvas({
     }).addTo(map);
 
     tileLayerRef.current = nextLayer;
+
+    if (cfg.overlayUrl) {
+      const nextOverlay = L.tileLayer(cfg.overlayUrl, {
+        maxZoom: cfg.maxZoom,
+      }).addTo(map);
+      overlayLayerRef.current = nextOverlay;
+    }
   }, [tileStyle]);
 
   // Sync marker position, icon colors, and map camera
