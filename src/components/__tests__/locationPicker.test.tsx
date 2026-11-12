@@ -128,4 +128,54 @@ describe("VenueLocationPicker", () => {
       });
     });
   });
+
+  it("shows empty venue notice when no location is provided and allows clearing location cleanly", () => {
+    const onChangeAddress = vi.fn();
+    const onChangeMapUrl = vi.fn();
+    const onLocationPicked = vi.fn();
+
+    const { rerender } = render(
+      <VenueLocationPicker
+        address=""
+        mapUrl=""
+        venueName=""
+        onChangeAddress={onChangeAddress}
+        onChangeMapUrl={onChangeMapUrl}
+        onLocationPicked={onLocationPicked}
+      />
+    );
+
+    // Empty state message is rendered
+    expect(
+      screen.getByText(/No venue location set yet/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Click map to mark exact location/i)
+    ).toBeTruthy();
+
+    // Now render with an existing location
+    rerender(
+      <VenueLocationPicker
+        address="Grand Ballroom"
+        mapUrl="https://maps.google.com/?q=31.5,74.3"
+        venueName="Grand Ballroom"
+        onChangeAddress={onChangeAddress}
+        onChangeMapUrl={onChangeMapUrl}
+        onLocationPicked={onLocationPicked}
+      />
+    );
+
+    expect(screen.getByText(/Linked with Google Maps/i)).toBeTruthy();
+    const removeBtn = screen.getByRole("button", { name: /^Remove$/i });
+    fireEvent.click(removeBtn);
+
+    expect(onChangeAddress).toHaveBeenCalledWith("");
+    expect(onChangeMapUrl).toHaveBeenCalledWith("");
+    expect(onLocationPicked).toHaveBeenCalledWith({
+      address: "",
+      mapUrl: "",
+      lat: 0,
+      lng: 0,
+    });
+  });
 });

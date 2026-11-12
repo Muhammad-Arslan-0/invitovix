@@ -97,17 +97,60 @@ export function VenueLocationPicker({
 
   // Sync when mapUrl changes from parent
   useEffect(() => {
-    if (mapUrl && mapUrl !== googleLinkInput) {
+    if (!mapUrl) {
+      setGoogleLinkInput("");
+      setIsLinkedSuccess(false);
+      setActiveCoords(null);
+      return;
+    }
+    if (mapUrl !== googleLinkInput) {
       setGoogleLinkInput(mapUrl);
       setIsLinkedSuccess(
         Boolean(isGoogleMapsUrl(mapUrl) || parseCoordinatesFromMapUrl(mapUrl))
       );
     }
     const parsed = parseCoordinatesFromMapUrl(mapUrl);
-    if (parsed) {
-      setActiveCoords(parsed);
-    }
+    setActiveCoords(parsed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapUrl]);
+
+  function handleClearLocation() {
+    setGoogleLinkInput("");
+    setIsLinkedSuccess(false);
+    setActiveCoords(null);
+    setGeoNotice(null);
+    onChangeMapUrl("");
+    onChangeAddress("");
+    onLocationPicked({
+      address: "",
+      mapUrl: "",
+      lat: 0,
+      lng: 0,
+    });
+  }
+
+  function handleUseCurrentLocation() {
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      setIsReversing(true);
+      setGeoNotice("Detecting your location...");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setIsReversing(false);
+          setGeoNotice(null);
+          void handlePinPicked(pos.coords.latitude, pos.coords.longitude);
+        },
+        () => {
+          setIsReversing(false);
+          setGeoNotice(
+            "Could not detect your current location. Please check browser permissions or search Google Maps."
+          );
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      setGeoNotice("Geolocation is not supported by your browser.");
+    }
+  }
 
   // Open Google Maps pre-searched with the user's venue
   function handleOpenGoogleMapsSearch() {
@@ -396,10 +439,7 @@ export function VenueLocationPicker({
               {googleLinkInput && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setGoogleLinkInput("");
-                    setIsLinkedSuccess(false);
-                  }}
+                  onClick={handleClearLocation}
                   className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
                   aria-label="Clear link"
                 >
@@ -430,6 +470,13 @@ export function VenueLocationPicker({
             </div>
           </div>
 
+          {/* Unset indicator: shows clearly that location is empty until user inputs or pins it */}
+          {!effectiveCoords && !address && (
+            <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50/70 p-2 text-center text-[11px] text-stone-500">
+              <span className="font-medium text-stone-700">📍 No venue location set yet.</span> Paste a Google Maps link above or tap the map to place your pin.
+            </div>
+          )}
+
           {/* Sync Success Badge with auto-fetched details */}
           {isLinkedSuccess && effectiveCoords && (
             <div className="rounded-xl bg-emerald-50/90 border border-emerald-200 p-2.5 text-xs text-emerald-950 space-y-1">
@@ -438,15 +485,24 @@ export function VenueLocationPicker({
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Linked with Google Maps</span>
                 </span>
-                <a
-                  href={mapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-900 hover:underline"
-                >
-                  <span>Test Link</span>
-                  <ExternalLink className="w-2.5 h-2.5" />
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-900 hover:underline"
+                  >
+                    <span>Test Link</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleClearLocation}
+                    className="text-[10px] font-medium text-stone-500 hover:text-rose-600 underline cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               {address && (
                 <p className="text-[11px] text-emerald-800 line-clamp-2 pl-5">
@@ -516,6 +572,15 @@ export function VenueLocationPicker({
                 <span className="truncate font-mono text-[10px]">
                   {formatCoordinatesLabel(effectiveCoords.lat, effectiveCoords.lng)}
                 </span>
+                <button
+                  type="button"
+                  onClick={handleClearLocation}
+                  className="ml-1 text-[10px] text-stone-400 hover:text-rose-600 cursor-pointer"
+                  title="Clear location pin"
+                  aria-label="Clear location pin"
+                >
+                  ✕
+                </button>
               </>
             ) : (
               <>
@@ -524,6 +589,18 @@ export function VenueLocationPicker({
               </>
             )}
           </div>
+
+          {!effectiveCoords && (
+            <button
+              type="button"
+              onClick={handleUseCurrentLocation}
+              className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-xs border border-stone-200/90 px-2.5 py-1 text-[10px] font-medium text-stone-700 hover:text-stone-900 shadow-xs cursor-pointer"
+              title="Locate my position"
+            >
+              <Compass className="w-3 h-3 text-amber-700" />
+              <span className="hidden xs:inline">My Location</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -112,7 +112,7 @@ export default function LeafletMapCanvas({
     if (!container) return;
 
     const initialCenter = coordinates ?? fallbackCenter;
-    const initialZoom = zoom ?? (coordinates ? 16 : 12);
+    const initialZoom = zoom ?? (coordinates ? 16 : 5);
 
     const map = L.map(container, {
       center: [initialCenter.lat, initialCenter.lng],

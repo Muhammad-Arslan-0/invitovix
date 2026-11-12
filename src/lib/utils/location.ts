@@ -13,8 +13,8 @@ export interface GeocodedPlace {
 }
 
 export const DEFAULT_MAP_CENTER: Coordinates = {
-  lat: 31.5105,
-  lng: 74.3487,
+  lat: 30.3753,
+  lng: 69.3451,
 };
 
 export function isValidCoordinates(lat: number, lng: number): boolean {

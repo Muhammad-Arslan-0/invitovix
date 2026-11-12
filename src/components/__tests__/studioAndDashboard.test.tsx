@@ -229,26 +229,16 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
     expect(screen.getByText("Upload Bride Photo")).toBeTruthy();
     expect(screen.getByText("Upload Groom Photo")).toBeTruthy();
 
-    // Switch category from Wedding to Birthdays in Studio ThemePanel
+    // In Creator Studio ThemePanel, category selection is not shown (chosen at creation)
     const themeTab = screen.getByRole("tab", { name: /theme/i });
     fireEvent.mouseDown(themeTab, { button: 0, ctrlKey: false });
     fireEvent.click(themeTab);
 
-    const catGroup = screen.getByRole("group", { name: /invitation category/i });
-    fireEvent.click(within(catGroup).getByRole("button", { name: /birthdays/i }));
-
-    expect(screen.getByTestId("studio-category-badge").textContent).toBe("Birthday");
-    expect(screen.getByText("Birthday Templates")).toBeTruthy();
-    expect(screen.getByText("Confetti Atelier (Editorial Birthday)")).toBeTruthy();
-    expect(screen.queryByText("Shahi Baraat (Crimson & Zari)")).toBeNull();
-    expect(screen.getByText("Upload Honoree Photo")).toBeTruthy();
-    expect(screen.getByText("+ Add Co-Host")).toBeTruthy();
-
-    const updatedDockLabels = Array.from(dock.querySelectorAll("button")).map(
-      (b) => b.textContent?.trim()
-    );
-    expect(updatedDockLabels).toContain("Honoree");
-    expect(updatedDockLabels).not.toContain("Couple");
+    // Verify category switcher is NOT displayed in studio
+    expect(screen.queryByRole("group", { name: /invitation category/i })).toBeNull();
+    expect(screen.getByText("Wedding Templates")).toBeTruthy();
+    expect(screen.getByText("Shahi Baraat (Crimson & Zari)")).toBeTruthy();
+    expect(screen.queryByText("Confetti Atelier (Editorial Birthday)")).toBeNull();
 
     // Toggle Tablet & Desktop device frames cleanly
     fireEvent.click(screen.getByRole("button", { name: /tablet/i }));

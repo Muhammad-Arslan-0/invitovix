@@ -81,6 +81,14 @@ export function CreateEventModal({
 
   useEffect(() => {
     if (!open) {
+      setTitle("");
+      setSlug("");
+      setSlugTouched(false);
+      setVenueName("");
+      setVenueAddress("");
+      setVenueMapUrl("");
+      setError(null);
+      setLaunchPhase("idle");
       setSelectedDomain(defaultDomain);
       const list = getTemplatesByDomain(templates, defaultDomain);
       setSelectedTemplateId(list[0]?.id ?? "");

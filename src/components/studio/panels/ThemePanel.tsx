@@ -5,7 +5,6 @@ import { ImagePlus, Sparkles, Trash2 } from "lucide-react";
 import { TemplateRecord } from "@/types/invitation";
 import { useStudioStore } from "@/store/useStudioStore";
 import {
-  INVITATION_DOMAINS,
   formatCategoryBadge,
   getDomainConfig,
   getDomainForCategory,
@@ -35,7 +34,6 @@ export const ThemePanel = memo(function ThemePanel({
   const templateId = useStudioStore((s) => s.eventMeta.template_id);
   const theme = useStudioStore((s) => s.designData.theme);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
-  const switchEventCategory = useStudioStore((s) => s.switchEventCategory);
   const updatePalette = useStudioStore((s) => s.updatePalette);
   const updateTypography = useStudioStore((s) => s.updateTypography);
   const updateCardArt = useStudioStore((s) => s.updateCardArt);
@@ -55,82 +53,17 @@ export const ThemePanel = memo(function ThemePanel({
 
   return (
     <div className="space-y-6">
-      {/* Invitation Category Switcher */}
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">
-          Invitation Category
-        </h3>
-        <div
-          role="group"
-          aria-label="Invitation Category"
-          className="grid grid-cols-2 gap-1.5"
-        >
-          {INVITATION_DOMAINS.map((domain) => {
-            const active = domain.id === currentDomain;
-            return (
-              <button
-                key={domain.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() =>
-                  switchEventCategory(domain.subCategories[0].id, templates)
-                }
-                className={`rounded-xl border px-2.5 py-2 text-left transition cursor-pointer ${
-                  active
-                    ? "border-stone-900 bg-stone-900 text-white shadow-2xs"
-                    : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
-                }`}
-              >
-                <p className="text-[11px] font-semibold leading-tight">
-                  {domain.label}
-                </p>
-                <p
-                  className={`text-[9.5px] mt-0.5 line-clamp-1 ${
-                    active ? "text-amber-200/90" : "text-stone-400"
-                  }`}
-                >
-                  {domain.subLabel}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-
-        {domainConfig.subCategories.length > 1 && (
-          <div className="mt-2.5">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400 mb-1.5">
-              Event Focus
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {domainConfig.subCategories.map((sub) => {
-                const subActive =
-                  (eventType ?? "wedding").trim().toLowerCase() === sub.id;
-                return (
-                  <button
-                    key={sub.id}
-                    type="button"
-                    onClick={() => switchEventCategory(sub.id, templates)}
-                    className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition cursor-pointer ${
-                      subActive
-                        ? "bg-amber-600 text-white shadow-2xs"
-                        : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-white"
-                    }`}
-                  >
-                    {sub.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Category-Isolated Template Switcher */}
-      <div className="border-t border-stone-200 pt-5">
+      <div>
         <div className="flex items-center justify-between gap-2 mb-2.5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-            {domainConfig.templateLabel} Templates
-          </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 rounded-full px-2.5 py-0.5">
+              {formatCategoryBadge(eventType)}
+            </span>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600">
+              {domainConfig.templateLabel} Templates
+            </h3>
+          </div>
           <span className="text-[10px] text-stone-400 font-medium">
             {domainTemplates.length} styles
           </span>
