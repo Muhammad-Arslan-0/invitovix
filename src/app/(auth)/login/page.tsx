@@ -9,7 +9,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   Loader2,
-  Mail,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/supabase/env";
@@ -25,7 +24,7 @@ function LoginForm() {
 
   const { isConfigured } = getSupabaseEnv();
 
-  const [mode, setMode] = useState<"signin" | "signup" | "magic">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +32,10 @@ function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "auth_callback_failed"
-      ? "Magic link verification failed or expired. Please try again."
+      ? "Verification failed or link expired. Please try again."
       : null
   );
-  const [magicSent, setMagicSent] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,23 +52,6 @@ function LoginForm() {
     try {
       const supabase = createClient();
 
-      if (mode === "magic") {
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-              nextPath
-            )}`,
-          },
-        });
-        if (otpError) {
-          setError(otpError.message);
-          return;
-        }
-        setMagicSent(true);
-        return;
-      }
-
       if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -82,7 +64,13 @@ function LoginForm() {
           },
         });
         if (signUpError) {
-          setError(signUpError.message);
+          if (signUpError.message.toLowerCase().includes("rate limit")) {
+            setError(
+              "Email rate limit exceeded. Please configure custom SMTP in Supabase (or disable 'Confirm email' in Supabase Dashboard > Authentication > Providers > Email for testing)."
+            );
+          } else {
+            setError(signUpError.message);
+          }
           return;
         }
         if (data.session) {
@@ -93,7 +81,7 @@ function LoginForm() {
           });
           return;
         }
-        setMagicSent(true);
+        setConfirmationSent(true);
         return;
       }
 
@@ -147,9 +135,7 @@ function LoginForm() {
           >
             {mode === "signup"
               ? "Create Host Account"
-              : mode === "magic"
-                ? "Sign In with Magic Link"
-                : "Welcome Back"}
+              : "Welcome Back"}
           </h1>
           <p className="mt-1 text-sm text-stone-500">
             Design animated invitations, customize music, and track live RSVPs.
@@ -159,7 +145,7 @@ function LoginForm() {
             <div className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 flex gap-2.5">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
               <div>
-                <p className="font-semibold">Supabase Setup Pending</p>
+                <p className="font-semibold">Invitovix Setup Pending</p>
                 <p className="mt-0.5 leading-relaxed">
                   Copy <code className="font-mono">.env.example</code> to{" "}
                   <code className="font-mono">.env.local</code>, add your{" "}
@@ -177,12 +163,11 @@ function LoginForm() {
           )}
 
           {/* Mode Tabs */}
-          <div className="mt-6 grid grid-cols-3 rounded-xl bg-stone-100 p-1 text-xs font-medium">
+          <div className="mt-6 grid grid-cols-2 rounded-xl bg-stone-100 p-1 text-xs font-medium">
             {(
               [
                 { id: "signin", label: "Sign In" },
                 { id: "signup", label: "Sign Up" },
-                { id: "magic", label: "Magic Link" },
               ] as const
             ).map((tab) => {
               const active = mode === tab.id;
@@ -193,7 +178,7 @@ function LoginForm() {
                   onClick={() => {
                     setMode(tab.id);
                     setError(null);
-                    setMagicSent(false);
+                    setConfirmationSent(false);
                   }}
                   className={`relative rounded-lg py-2 transition cursor-pointer ${
                     active
@@ -214,16 +199,16 @@ function LoginForm() {
             })}
           </div>
 
-          {magicSent ? (
+          {confirmationSent ? (
             <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-700 mx-auto" />
               <h2 className="mt-2 text-sm font-semibold text-emerald-950">
                 Check Your Inbox
               </h2>
               <p className="mt-1 text-xs text-emerald-800 leading-relaxed">
-                We sent a confirmation / sign-in link to{" "}
-                <strong>{email}</strong>. Click the link in your email to open
-                your Invitovix Dashboard.
+                We sent a confirmation link to{" "}
+                <strong>{email}</strong>. Click the link in your email to verify
+                your account and access your Invitovix Dashboard.
               </p>
             </div>
           ) : (
@@ -258,22 +243,20 @@ function LoginForm() {
                 />
               </div>
 
-              {mode !== "magic" && (
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none"
+                />
+              </div>
 
               {error && (
                 <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
@@ -292,11 +275,6 @@ function LoginForm() {
                     <span>
                       {isPending ? "Opening Dashboard..." : "Please wait..."}
                     </span>
-                  </>
-                ) : mode === "magic" ? (
-                  <>
-                    <Mail className="w-4 h-4" />
-                    <span>Send Magic Link</span>
                   </>
                 ) : mode === "signup" ? (
                   <span>Create Account</span>
