@@ -43,23 +43,52 @@ export default async function DashboardPage() {
 
   const templates = mergeTemplateCatalog(templatesRaw, STARTER_TEMPLATES);
 
-  const rsvpStats = new Map<string, { count: number; attending: number }>();
+  const rsvpStats = new Map<
+    string,
+    {
+      count: number;
+      attending: number;
+      attendingParties: number;
+      tentative: number;
+      declined: number;
+    }
+  >();
   for (const r of rsvpsRaw ?? []) {
-    const prev = rsvpStats.get(r.event_id) ?? { count: 0, attending: 0 };
+    const prev = rsvpStats.get(r.event_id) ?? {
+      count: 0,
+      attending: 0,
+      attendingParties: 0,
+      tentative: 0,
+      declined: 0,
+    };
     prev.count += 1;
     if (r.attending_status === "attending") {
       prev.attending += r.guests_count ?? 1;
+      prev.attendingParties += 1;
+    } else if (r.attending_status === "tentative") {
+      prev.tentative += 1;
+    } else if (r.attending_status === "declined") {
+      prev.declined += 1;
     }
     rsvpStats.set(r.event_id, prev);
   }
 
   const events = (eventsRaw ?? []).map((ev) => {
-    const stats = rsvpStats.get(ev.id) ?? { count: 0, attending: 0 };
+    const stats = rsvpStats.get(ev.id) ?? {
+      count: 0,
+      attending: 0,
+      attendingParties: 0,
+      tentative: 0,
+      declined: 0,
+    };
     return {
       ...(ev as EventRecord),
       design_data: mergeDesignData(ev.design_data),
       rsvp_count: stats.count,
       attending_guests: stats.attending,
+      attending_parties: stats.attendingParties,
+      tentative_count: stats.tentative,
+      declined_count: stats.declined,
     };
   });
 

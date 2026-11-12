@@ -37,6 +37,9 @@ import { startNavigation } from "@/components/ui/NavigationProgress";
 interface EventWithCount extends EventRecord {
   rsvp_count: number;
   attending_guests: number;
+  attending_parties?: number;
+  tentative_count?: number;
+  declined_count?: number;
 }
 
 interface DashboardClientProps {
@@ -76,9 +79,9 @@ export function DashboardClient({
           (e) => getDomainForCategory(e.event_type) === activeFilter
         );
 
-  const totalPublished = events.filter((e) => e.is_published).length;
-  const totalRsvps = events.reduce((sum, e) => sum + e.rsvp_count, 0);
-  const totalConfirmedGuests = events.reduce(
+  const totalPublished = filteredEvents.filter((e) => e.is_published).length;
+  const totalRsvps = filteredEvents.reduce((sum, e) => sum + e.rsvp_count, 0);
+  const totalConfirmedGuests = filteredEvents.reduce(
     (sum, e) => sum + e.attending_guests,
     0
   );
@@ -226,10 +229,26 @@ export function DashboardClient({
         {/* KPI Cards */}
         <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Total Invitations", value: events.length, accent: "border-stone-200" },
-            { label: "Published Live", value: totalPublished, accent: "border-emerald-200/80" },
-            { label: "RSVP Submissions", value: totalRsvps, accent: "border-amber-200/90" },
-            { label: "Confirmed Guests", value: totalConfirmedGuests, accent: "border-stone-200" },
+            {
+              label: activeFilter === "all" ? "Total Cards" : "Category Cards",
+              value: filteredEvents.length,
+              accent: "border-stone-200",
+            },
+            {
+              label: "Published Live",
+              value: totalPublished,
+              accent: "border-emerald-200/80",
+            },
+            {
+              label: "RSVP Responses",
+              value: totalRsvps,
+              accent: "border-amber-200/90",
+            },
+            {
+              label: "Confirmed Guests",
+              value: totalConfirmedGuests,
+              accent: "border-stone-200",
+            },
           ].map((stat, idx) => (
             <motion.div
               key={stat.label}
@@ -444,35 +463,116 @@ export function DashboardClient({
                         >
                           {event.title}
                         </h3>
-                        <p
-                          className="text-xs font-mono opacity-80"
-                          style={{ color: palette.mutedText }}
-                        >
-                          /e/{event.slug}
-                        </p>
+                        {event.design_data?.content?.subtitle && (
+                          <p
+                            className="text-xs line-clamp-1 opacity-80"
+                            style={{ color: palette.mutedText }}
+                          >
+                            {event.design_data.content.subtitle}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Metadata & Actions */}
-                    <div className="p-5 space-y-4">
+                    <div className="p-5 space-y-3.5">
                       <div className="space-y-1.5 text-xs text-stone-600">
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                          <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                           <span>{formattedDate}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-stone-400" />
+                          <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                           <span className="line-clamp-1">
                             {event.venue_name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Users className="w-3.5 h-3.5 text-stone-400" />
-                          <span>
-                            {event.rsvp_count} responses ({event.attending_guests}{" "}
-                            attending)
+                      </div>
+
+                      {/* Guest Status Breakdown Widget inside Card */}
+                      <div className="rounded-2xl border border-stone-200/90 bg-stone-50/80 p-3 space-y-2.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-stone-800 flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-amber-700" />
+                            Guest Status
+                          </span>
+                          <span className="text-[11px] font-mono font-medium text-stone-500">
+                            {event.rsvp_count} {event.rsvp_count === 1 ? "response" : "responses"}
                           </span>
                         </div>
+
+                        {event.rsvp_count === 0 ? (
+                          <div className="py-1 text-center">
+                            <p className="text-[11px] text-stone-400 italic">
+                              No guest responses yet
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-3 gap-1.5 text-center">
+                              {/* Attending / Confirmed */}
+                              <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 py-1.5 px-1 shadow-2xs">
+                                <p className="font-bold text-emerald-800 text-sm leading-tight tabular-nums">
+                                  {event.attending_guests}
+                                </p>
+                                <p className="text-[10px] text-emerald-700 uppercase tracking-wider font-semibold mt-0.5">
+                                  Attending
+                                </p>
+                              </div>
+
+                              {/* Tentative */}
+                              <div className="rounded-xl bg-amber-50 border border-amber-200/80 py-1.5 px-1 shadow-2xs">
+                                <p className="font-bold text-amber-800 text-sm leading-tight tabular-nums">
+                                  {event.tentative_count ?? 0}
+                                </p>
+                                <p className="text-[10px] text-amber-700 uppercase tracking-wider font-semibold mt-0.5">
+                                  Maybe
+                                </p>
+                              </div>
+
+                              {/* Declined */}
+                              <div className="rounded-xl bg-stone-100 border border-stone-200/80 py-1.5 px-1 shadow-2xs">
+                                <p className="font-bold text-stone-700 text-sm leading-tight tabular-nums">
+                                  {event.declined_count ?? 0}
+                                </p>
+                                <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mt-0.5">
+                                  Declined
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Proportion bar */}
+                            <div className="h-1.5 w-full bg-stone-200/70 rounded-full overflow-hidden flex">
+                              {(event.attending_parties ?? (event.attending_guests > 0 ? 1 : 0)) > 0 && (
+                                <div
+                                  style={{
+                                    width: `${((event.attending_parties ?? (event.attending_guests > 0 ? 1 : 0)) / event.rsvp_count) * 100}%`,
+                                  }}
+                                  className="bg-emerald-500 h-full transition-all"
+                                  title={`${event.attending_guests} attending guests`}
+                                />
+                              )}
+                              {(event.tentative_count ?? 0) > 0 && (
+                                <div
+                                  style={{
+                                    width: `${((event.tentative_count ?? 0) / event.rsvp_count) * 100}%`,
+                                  }}
+                                  className="bg-amber-400 h-full transition-all"
+                                  title={`${event.tentative_count} maybe`}
+                                />
+                              )}
+                              {(event.declined_count ?? 0) > 0 && (
+                                <div
+                                  style={{
+                                    width: `${((event.declined_count ?? 0) / event.rsvp_count) * 100}%`,
+                                  }}
+                                  className="bg-stone-300 h-full transition-all"
+                                  title={`${event.declined_count} declined`}
+                                />
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 pt-1">
