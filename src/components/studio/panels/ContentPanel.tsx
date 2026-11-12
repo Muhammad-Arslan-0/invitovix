@@ -1,14 +1,18 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { Plus, Trash2, UsersRound } from "lucide-react";
+import { Move, Plus, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { toSlug } from "@/lib/utils/slug";
 import { MediaUploader } from "../MediaUploader";
+import { ImageCropModal, FrameShapeOption } from "../ImageCropModal";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
+import { createClient } from "@/lib/supabase/client";
+import { CropState, AspectRatioType } from "@/lib/utils/imageOptimization";
+import { CoupleFrameShape, HeroFrameStyle } from "@/types/invitation";
 
 interface ContentPanelProps {
   userId: string;
@@ -26,6 +30,7 @@ export const ContentPanel = memo(function ContentPanel({
   const venueMapUrl = useStudioStore((s) => s.eventMeta.venue_map_url);
   const content = useStudioStore((s) => s.designData.content);
   const sections = useStudioStore((s) => s.designData.sections);
+  const theme = useStudioStore((s) => s.designData.theme);
 
   const typeMeta = getInvitationTypeMeta(eventType);
 
@@ -46,6 +51,115 @@ export const ContentPanel = memo(function ContentPanel({
     const offset = d.getTimezoneOffset() * 60000;
     return new Date(d.getTime() - offset).toISOString().slice(0, 16);
   })();
+
+  const [adjustTarget, setAdjustTarget] = useState<{
+    type: "bride" | "groom" | "hero" | "gallery";
+    url: string;
+    originalUrl: string;
+    crop?: CropState | null;
+    shape: FrameShapeOption;
+    aspect: AspectRatioType;
+    personName?: string;
+    roleBadge?: string;
+    galleryId?: string;
+  } | null>(null);
+
+  async function handleSaveAdjustedPhoto(result: {
+    blob: Blob;
+    shape?: FrameShapeOption;
+    crop: CropState;
+  }) {
+    if (!adjustTarget) return;
+    try {
+      const supabase = createClient();
+      const objectPath = `${userId}/${eventId}/images/${Date.now()}-crop-${adjustTarget.type}.webp`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("card-assets")
+        .upload(objectPath, result.blob, {
+          cacheControl: "3600",
+          contentType: "image/webp",
+          upsert: false,
+        });
+
+      if (uploadErr) {
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("card-assets").getPublicUrl(objectPath);
+
+      setPreviewStage("opened");
+
+      if (adjustTarget.type === "bride") {
+        updateCouple({
+          brideImageUrl: publicUrl,
+          brideOriginalUrl: adjustTarget.originalUrl,
+          brideCrop: result.crop,
+          ...(result.shape &&
+          result.shape !== "landscape" &&
+          result.shape !== "square"
+            ? { frameShape: result.shape as CoupleFrameShape }
+            : {}),
+        });
+      } else if (adjustTarget.type === "groom") {
+        updateCouple({
+          groomImageUrl: publicUrl,
+          groomOriginalUrl: adjustTarget.originalUrl,
+          groomCrop: result.crop,
+          ...(result.shape &&
+          result.shape !== "landscape" &&
+          result.shape !== "square"
+            ? { frameShape: result.shape as CoupleFrameShape }
+            : {}),
+        });
+      } else if (adjustTarget.type === "hero") {
+        updateContent({
+          heroImageUrl: publicUrl,
+          heroOriginalUrl: adjustTarget.originalUrl,
+          heroCrop: result.crop,
+        });
+        if (
+          result.shape &&
+          result.shape !== "landscape" &&
+          result.shape !== "square" &&
+          result.shape !== "scallop"
+        ) {
+          useStudioStore.setState((s) => ({
+            designData: {
+              ...s.designData,
+              theme: {
+                ...s.designData.theme,
+                cardArt: {
+                  ...s.designData.theme.cardArt,
+                  heroFrame: result.shape as HeroFrameStyle,
+                },
+              },
+            },
+            isDirty: true,
+          }));
+        }
+      } else if (adjustTarget.type === "gallery" && adjustTarget.galleryId) {
+        const targetId = adjustTarget.galleryId;
+        const currentGallery = useStudioStore.getState().designData.content.gallery;
+        updateContent({
+          gallery: currentGallery.map((p) =>
+            p.id === targetId
+              ? {
+                  ...p,
+                  url: publicUrl,
+                  originalUrl: adjustTarget.originalUrl,
+                  crop: result.crop,
+                }
+              : p
+          ),
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -310,13 +424,42 @@ export const ContentPanel = memo(function ContentPanel({
               </div>
 
               {content.couple.brideImageUrl && (
-                <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={content.couple.brideImageUrl}
-                    alt={content.couple.brideName || typeMeta.person1ShortLabel}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="space-y-1.5">
+                  <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={content.couple.brideImageUrl}
+                      alt={content.couple.brideName || typeMeta.person1ShortLabel}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAdjustTarget({
+                          type: "bride",
+                          url: content.couple.brideImageUrl!,
+                          originalUrl:
+                            content.couple.brideOriginalUrl ||
+                            content.couple.brideImageUrl!,
+                          crop: content.couple.brideCrop || null,
+                          aspect: "portrait",
+                          shape:
+                            (content.couple.frameShape as FrameShapeOption) ||
+                            "arch",
+                          personName:
+                            content.couple.brideName ||
+                            typeMeta.person1ShortLabel,
+                          roleBadge: typeMeta.person1BadgeLabel,
+                        })
+                      }
+                      className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2 py-0.5 text-[10px] font-medium text-stone-700 hover:bg-stone-100 transition cursor-pointer shadow-2xs"
+                    >
+                      <Move className="w-3 h-3 text-amber-600" />
+                      <span>Adjust Position</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -330,9 +473,27 @@ export const ContentPanel = memo(function ContentPanel({
                     : typeMeta.person1UploadLabel
                 }
                 folder="images"
-                onUploaded={(url) => {
+                enableCrop
+                cropAspect="portrait"
+                initialFrameShape={
+                  (content.couple.frameShape as FrameShapeOption) || "arch"
+                }
+                initialCrop={content.couple.brideCrop || null}
+                targetType="bride"
+                personName={
+                  content.couple.brideName || typeMeta.person1ShortLabel
+                }
+                roleBadge={typeMeta.person1BadgeLabel}
+                primaryColor={theme.palette.primary}
+                accentColor={theme.palette.accent}
+                surfaceColor={theme.palette.surface}
+                onUploaded={(url, _fileName, extra) => {
                   setPreviewStage("opened");
-                  updateCouple({ brideImageUrl: url });
+                  updateCouple({
+                    brideImageUrl: url,
+                    brideOriginalUrl: extra?.originalUrl || url,
+                    brideCrop: extra?.crop,
+                  });
                 }}
               />
 
@@ -382,15 +543,44 @@ export const ContentPanel = memo(function ContentPanel({
                 </div>
 
                 {content.couple.groomImageUrl && (
-                  <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={content.couple.groomImageUrl}
-                      alt={
-                        content.couple.groomName || typeMeta.person2ShortLabel
-                      }
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="space-y-1.5">
+                    <div className="h-24 w-20 mx-auto rounded-t-full rounded-b-xl overflow-hidden border border-stone-300 shadow-xs relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={content.couple.groomImageUrl}
+                        alt={
+                          content.couple.groomName || typeMeta.person2ShortLabel
+                        }
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAdjustTarget({
+                            type: "groom",
+                            url: content.couple.groomImageUrl!,
+                            originalUrl:
+                              content.couple.groomOriginalUrl ||
+                              content.couple.groomImageUrl!,
+                            crop: content.couple.groomCrop || null,
+                            aspect: "portrait",
+                            shape:
+                              (content.couple.frameShape as FrameShapeOption) ||
+                              "arch",
+                            personName:
+                              content.couple.groomName ||
+                              typeMeta.person2ShortLabel,
+                            roleBadge: typeMeta.person2BadgeLabel,
+                          })
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2 py-0.5 text-[10px] font-medium text-stone-700 hover:bg-stone-100 transition cursor-pointer shadow-2xs"
+                      >
+                        <Move className="w-3 h-3 text-amber-600" />
+                        <span>Adjust Position</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -404,9 +594,27 @@ export const ContentPanel = memo(function ContentPanel({
                       : typeMeta.person2UploadLabel
                   }
                   folder="images"
-                  onUploaded={(url) => {
+                  enableCrop
+                  cropAspect="portrait"
+                  initialFrameShape={
+                    (content.couple.frameShape as FrameShapeOption) || "arch"
+                  }
+                  initialCrop={content.couple.groomCrop || null}
+                  targetType="groom"
+                  personName={
+                    content.couple.groomName || typeMeta.person2ShortLabel
+                  }
+                  roleBadge={typeMeta.person2BadgeLabel}
+                  primaryColor={theme.palette.primary}
+                  accentColor={theme.palette.accent}
+                  surfaceColor={theme.palette.surface}
+                  onUploaded={(url, _fileName, extra) => {
                     setPreviewStage("opened");
-                    updateCouple({ groomImageUrl: url });
+                    updateCouple({
+                      groomImageUrl: url,
+                      groomOriginalUrl: extra?.originalUrl || url,
+                      groomCrop: extra?.crop,
+                    });
                   }}
                 />
 
@@ -446,13 +654,35 @@ export const ContentPanel = memo(function ContentPanel({
               alt="Hero preview"
               className="w-full h-full object-cover"
             />
-            <button
-              type="button"
-              onClick={() => updateContent({ heroImageUrl: null })}
-              className="absolute top-2 right-2 rounded-lg bg-black/70 px-2 py-1 text-[10px] text-white hover:bg-black cursor-pointer"
-            >
-              Remove
-            </button>
+            <div className="absolute top-2 right-2 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() =>
+                  setAdjustTarget({
+                    type: "hero",
+                    url: content.heroImageUrl!,
+                    originalUrl:
+                      content.heroOriginalUrl || content.heroImageUrl!,
+                    crop: content.heroCrop || null,
+                    aspect: "portrait",
+                    shape:
+                      (theme.cardArt.heroFrame as FrameShapeOption) || "arch",
+                    personName: content.headline,
+                  })
+                }
+                className="rounded-lg bg-black/70 px-2 py-1 text-[10px] text-white hover:bg-black inline-flex items-center gap-1 cursor-pointer"
+              >
+                <Move className="w-3 h-3 text-amber-300" />
+                <span>Adjust</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateContent({ heroImageUrl: null })}
+                className="rounded-lg bg-black/70 px-2 py-1 text-[10px] text-white hover:bg-black cursor-pointer"
+              >
+                Remove
+              </button>
+            </div>
           </div>
         )}
 
@@ -460,11 +690,28 @@ export const ContentPanel = memo(function ContentPanel({
           userId={userId}
           eventId={eventId}
           accept="image/png,image/jpeg,image/webp"
-          label={content.heroImageUrl ? "Replace Hero Photo" : "Upload Hero Photo"}
+          label={
+            content.heroImageUrl ? "Replace Hero Photo" : "Upload Hero Photo"
+          }
           folder="images"
-          onUploaded={(url) => {
+          enableCrop
+          cropAspect="portrait"
+          initialFrameShape={
+            (theme.cardArt.heroFrame as FrameShapeOption) || "arch"
+          }
+          initialCrop={content.heroCrop || null}
+          targetType="hero"
+          personName={content.headline}
+          primaryColor={theme.palette.primary}
+          accentColor={theme.palette.accent}
+          surfaceColor={theme.palette.surface}
+          onUploaded={(url, _fileName, extra) => {
             setPreviewStage("opened");
-            updateContent({ heroImageUrl: url });
+            updateContent({
+              heroImageUrl: url,
+              heroOriginalUrl: extra?.originalUrl || url,
+              heroCrop: extra?.crop,
+            });
           }}
         />
       </div>
@@ -551,7 +798,7 @@ export const ContentPanel = memo(function ContentPanel({
             {content.gallery.map((photo) => (
               <div
                 key={photo.id}
-                className="relative aspect-square rounded-xl overflow-hidden border border-stone-200"
+                className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -559,14 +806,36 @@ export const ContentPanel = memo(function ContentPanel({
                   alt={photo.caption}
                   className="w-full h-full object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={() => removeGalleryPhoto(photo.id)}
-                  className="absolute top-1 right-1 rounded-full bg-black/70 p-1 text-white hover:bg-black cursor-pointer"
-                  aria-label="Remove gallery photo"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+                <div className="absolute top-1 right-1 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAdjustTarget({
+                        type: "gallery",
+                        url: photo.url,
+                        originalUrl: photo.originalUrl || photo.url,
+                        crop: photo.crop || null,
+                        aspect: "square",
+                        shape: "square",
+                        galleryId: photo.id,
+                      })
+                    }
+                    className="rounded-full bg-black/70 p-1 text-white hover:bg-black cursor-pointer shadow-xs"
+                    title="Adjust Crop"
+                    aria-label="Adjust photo crop"
+                  >
+                    <Move className="w-3 h-3 text-amber-300" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryPhoto(photo.id)}
+                    className="rounded-full bg-black/70 p-1 text-white hover:bg-black cursor-pointer shadow-xs"
+                    title="Remove Photo"
+                    aria-label="Remove gallery photo"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -579,11 +848,20 @@ export const ContentPanel = memo(function ContentPanel({
             accept="image/png,image/jpeg,image/webp"
             label="Add Gallery Photo"
             folder="images"
-            onUploaded={(url, fileName) => {
+            enableCrop
+            cropAspect="square"
+            initialFrameShape="square"
+            targetType="gallery"
+            primaryColor={theme.palette.primary}
+            accentColor={theme.palette.accent}
+            surfaceColor={theme.palette.surface}
+            onUploaded={(url, fileName, extra) => {
               setPreviewStage("opened");
               addGalleryPhoto({
                 id: `img-${Date.now()}`,
                 url,
+                originalUrl: extra?.originalUrl || url,
+                crop: extra?.crop,
                 caption: fileName.replace(/\.[^/.]+$/, ""),
               });
             }}
@@ -652,6 +930,29 @@ export const ContentPanel = memo(function ContentPanel({
           />
         </div>
       </div>
+
+      {/* Adjust Crop & Reposition Modal for Existing Photos */}
+      {adjustTarget && (
+        <ImageCropModal
+          open={!!adjustTarget}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setAdjustTarget(null);
+          }}
+          imageSrc={adjustTarget.originalUrl || adjustTarget.url}
+          aspect={adjustTarget.aspect}
+          initialShape={adjustTarget.shape}
+          initialCrop={adjustTarget.crop}
+          targetType={adjustTarget.type}
+          personName={adjustTarget.personName}
+          roleBadge={adjustTarget.roleBadge}
+          primaryColor={theme.palette.primary}
+          accentColor={theme.palette.accent}
+          surfaceColor={theme.palette.surface}
+          onCropComplete={async (result) => {
+            await handleSaveAdjustedPhoto(result);
+          }}
+        />
+      )}
     </div>
   );
 });

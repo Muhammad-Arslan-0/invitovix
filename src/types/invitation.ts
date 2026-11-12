@@ -83,6 +83,14 @@ export const cardArtSchema = z.object({
   heroFrame: heroFrameStyleSchema,
 });
 
+export const imageCropTransformSchema = z.object({
+  panX: z.number(),
+  panY: z.number(),
+  zoom: z.number(),
+  rotation: z.number(),
+});
+export type ImageCropTransform = z.infer<typeof imageCropTransformSchema>;
+
 export const coupleProfileSchema = z.object({
   layout: z.enum(["side-by-side", "editorial-split", "featured-solo"]),
   frameShape: coupleFrameShapeSchema,
@@ -90,9 +98,13 @@ export const coupleProfileSchema = z.object({
   brideName: z.string(),
   brideRole: z.string(),
   brideImageUrl: z.string().nullable(),
+  brideOriginalUrl: z.string().nullable().optional(),
+  brideCrop: imageCropTransformSchema.optional(),
   groomName: z.string(),
   groomRole: z.string(),
   groomImageUrl: z.string().nullable(),
+  groomOriginalUrl: z.string().nullable().optional(),
+  groomCrop: imageCropTransformSchema.optional(),
 });
 
 export const itineraryItemSchema = z.object({
@@ -105,6 +117,8 @@ export const itineraryItemSchema = z.object({
 export const galleryPhotoSchema = z.object({
   id: z.string(),
   url: z.string(),
+  originalUrl: z.string().optional(),
+  crop: imageCropTransformSchema.optional(),
   caption: z.string(),
 });
 
@@ -134,6 +148,8 @@ export const eventDesignDataSchema = z.object({
     subtitle: z.string(),
     storyQuote: z.string(),
     heroImageUrl: z.string().nullable(),
+    heroOriginalUrl: z.string().nullable().optional(),
+    heroCrop: imageCropTransformSchema.optional(),
     couple: coupleProfileSchema,
     dressCode: z.string(),
     itinerary: z.array(itineraryItemSchema),

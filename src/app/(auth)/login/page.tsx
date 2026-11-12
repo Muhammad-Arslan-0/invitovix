@@ -43,7 +43,7 @@ function LoginForm() {
 
     if (!isConfigured) {
       setError(
-        "Supabase keys are not configured in .env.local yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY and restart the dev server."
+        "Account service is currently unavailable. Please check back shortly."
       );
       return;
     }
@@ -66,7 +66,7 @@ function LoginForm() {
         if (signUpError) {
           if (signUpError.message.toLowerCase().includes("rate limit")) {
             setError(
-              "Email rate limit exceeded. Please configure custom SMTP in Supabase (or disable 'Confirm email' in Supabase Dashboard > Authentication > Providers > Email for testing)."
+              "Sign-up limit reached. Please wait a few minutes before trying again or sign in if you already have an account."
             );
           } else {
             setError(signUpError.message);
@@ -145,14 +145,10 @@ function LoginForm() {
             <div className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 flex gap-2.5">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
               <div>
-                <p className="font-semibold">Invitovix Setup Pending</p>
+                <p className="font-semibold">Service Notice</p>
                 <p className="mt-0.5 leading-relaxed">
-                  Copy <code className="font-mono">.env.example</code> to{" "}
-                  <code className="font-mono">.env.local</code>, add your{" "}
-                  <code className="font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>
-                  , and run the SQL scripts in{" "}
-                  <code className="font-mono">supabase/migrations/</code>. You can
-                  still preview the guest experience at{" "}
+                  Host sign-in is currently undergoing brief maintenance. You can
+                  still preview the interactive guest experience at{" "}
                   <Link href="/e/demo" className="underline font-medium">
                     /e/demo
                   </Link>

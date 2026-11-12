@@ -167,7 +167,7 @@ export function VenueScene({
                 className="w-3 h-3"
                 style={{ color: theme.palette.accent }}
               />
-              <span>Open Pin in OpenStreetMap</span>
+              <span>View Location on Map</span>
             </a>
           )}
 
