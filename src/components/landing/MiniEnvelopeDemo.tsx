@@ -23,6 +23,14 @@ const SHORT_LABEL_BY_PRESET: Record<string, string> = {
   "ivory-engagement": "Engagement",
   "champagne-silk": "Silk",
   "moonlit-valima": "Valima",
+  "rajputana-heritage": "Rajputana",
+  "dawat-e-ishq": "Qawwali",
+  "tuscan-terracotta": "Tuscan",
+  "kanjeevaram-temple": "Muhurtham",
+  "quiet-luxury-minimalist": "Minimalist",
+  "chateau-rococo-blue": "Rococo",
+  "boho-sunset-sangeet": "Sangeet",
+  "anand-karaj-sage": "Anand Karaj",
 };
 
 interface MiniEnvelopeDemoProps {
@@ -53,7 +61,7 @@ export function MiniEnvelopeDemo({
   return (
     <div className="relative mx-auto w-full max-w-[390px]">
       {/* Wedding Theme Swatch Switcher */}
-      <div className="mx-auto mb-4 flex max-w-[330px] flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs">
+      <div className="mx-auto mb-4 flex max-w-[380px] max-h-32 overflow-y-auto flex-wrap items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/85 backdrop-blur-md p-1.5 shadow-xs no-scrollbar">
         {WEDDING_STARTER_TEMPLATES.map((tpl, idx) => {
           const active = idx === activeIdx;
           const shortName =

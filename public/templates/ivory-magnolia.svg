@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#3F5547"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#BFA175" stroke-width="1.5" stroke-opacity="0.8"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#FAF7F2"/>
+  <ellipse cx="200" cy="245" rx="118" ry="165" fill="#FFFFFF" stroke="#3F5547" stroke-width="1.2"/>
+  <ellipse cx="200" cy="245" rx="108" ry="155" stroke="#BFA175" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <circle cx="200" cy="148" r="28" fill="#3F5547" fill-opacity="0.08" stroke="#BFA175" stroke-width="1.2"/>
+  <path d="M192 154C192 144 200 138 208 142C204 150 198 154 192 154Z" fill="#3F5547"/>
+  <text x="200" y="232" text-anchor="middle" fill="#24342B" font-family="Georgia, serif" font-size="24" letter-spacing="2">MAHNOOR &amp; BILAL</text>
+  <line x1="145" y1="252" x2="255" y2="252" stroke="#BFA175" stroke-width="1"/>
+  <text x="200" y="282" text-anchor="middle" fill="#6A7D71" font-family="Georgia, serif" font-size="12" letter-spacing="3">IVORY ENGAGEMENT</text>
+  <circle cx="200" cy="378" r="34" fill="#8C7043"/>
+  <circle cx="200" cy="378" r="27" stroke="#FAF7F2" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#FAF7F2" font-family="Georgia, serif" font-size="14" font-weight="bold">M&amp;B</text>
+</svg>

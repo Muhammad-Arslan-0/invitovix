@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#3C584C"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#C5A55D" stroke-width="1.5" stroke-opacity="0.8"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#F6F9F6"/>
+  <!-- Arch Canopy Frame -->
+  <path d="M200 66C148 66 104 110 104 170V446H296V170C296 110 252 66 200 66Z" fill="#FFFFFF" stroke="#4A6B5D" stroke-width="1.5"/>
+  <path d="M120 180C140 135 170 115 200 115C230 115 260 135 280 180" stroke="#C5A55D" stroke-width="1" stroke-dasharray="2 3"/>
+  <!-- Floral Botanical Bloom -->
+  <circle cx="200" cy="148" r="28" fill="#4A6B5D" fill-opacity="0.08" stroke="#C5A55D" stroke-width="1.2"/>
+  <circle cx="200" cy="148" r="7" fill="#E8B4B8" fill-opacity="0.7"/>
+  <circle cx="200" cy="148" r="3" fill="#C5A55D"/>
+  <text x="200" y="232" text-anchor="middle" fill="#192E25" font-family="Georgia, serif" font-size="23" letter-spacing="2">SIMRAN &amp; HARPREET</text>
+  <line x1="140" y1="252" x2="260" y2="252" stroke="#C5A55D" stroke-width="1"/>
+  <text x="200" y="280" text-anchor="middle" fill="#5E776C" font-family="Georgia, serif" font-size="12" letter-spacing="3">ANAND KARAJ</text>
+  <!-- Sage Floral Seal -->
+  <circle cx="200" cy="378" r="34" fill="#A88741"/>
+  <circle cx="200" cy="378" r="27" stroke="#F6F9F6" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#F6F9F6" font-family="Georgia, serif" font-size="13" font-weight="bold">S&amp;H</text>
+</svg>

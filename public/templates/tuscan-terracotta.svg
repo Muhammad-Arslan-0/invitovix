@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#B85D38"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#D99B43" stroke-width="1.5" stroke-opacity="0.6"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#F9F6F0"/>
+  <!-- Tuscan Arch Silhouette -->
+  <path d="M200 70C152 70 110 112 110 166V440H290V166C290 112 248 70 200 70Z" fill="#FFFFFF" stroke="#566A4E" stroke-width="1.2" stroke-opacity="0.4"/>
+  <!-- Olive Branch Laurel Motif -->
+  <circle cx="200" cy="148" r="28" fill="#B85D38" fill-opacity="0.08" stroke="#566A4E" stroke-width="1.2"/>
+  <path d="M190 148C194 138 206 138 210 148C206 158 194 158 190 148Z" fill="#566A4E" fill-opacity="0.8"/>
+  <circle cx="188" cy="144" r="2.5" fill="#B85D38"/>
+  <circle cx="212" cy="152" r="2.5" fill="#B85D38"/>
+  <text x="200" y="232" text-anchor="middle" fill="#B85D38" font-family="Georgia, serif" font-size="24" letter-spacing="2">SOFIA &amp; MATTEO</text>
+  <line x1="140" y1="252" x2="260" y2="252" stroke="#D99B43" stroke-width="1"/>
+  <text x="200" y="280" text-anchor="middle" fill="#7A6E64" font-family="Georgia, serif" font-size="12" letter-spacing="3">TUSCAN VILLA</text>
+  <!-- Terracotta Wax Seal -->
+  <circle cx="200" cy="378" r="34" fill="#8F4122"/>
+  <circle cx="200" cy="378" r="27" stroke="#F9F6F0" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, serif" font-size="13" font-weight="bold">S&amp;M</text>
+</svg>

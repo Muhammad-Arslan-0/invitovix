@@ -17,9 +17,9 @@ import {
 } from "@/lib/templates/categories";
 
 describe("Invitation schemas & multi-category template merging", () => {
-  it("validates all 15 multi-category starter templates and guarantees strict domain isolation", () => {
-    expect(STARTER_TEMPLATES.length).toBe(15);
-    expect(WEDDING_STARTER_TEMPLATES.length).toBe(7);
+  it("validates all 23 multi-category starter templates and guarantees strict domain isolation", () => {
+    expect(STARTER_TEMPLATES.length).toBe(23);
+    expect(WEDDING_STARTER_TEMPLATES.length).toBe(15);
 
     for (const tpl of STARTER_TEMPLATES) {
       const result = eventDesignDataSchema.safeParse(tpl.default_config);
@@ -31,7 +31,7 @@ describe("Invitation schemas & multi-category template merging", () => {
     const galaTemplates = getTemplatesByDomain(STARTER_TEMPLATES, "gala");
     const partyTemplates = getTemplatesByDomain(STARTER_TEMPLATES, "party");
 
-    expect(weddingTemplates.length).toBe(7);
+    expect(weddingTemplates.length).toBe(15);
     expect(weddingTemplates.every((t) => isWeddingTemplate(t))).toBe(true);
     expect(
       weddingTemplates.some((t) =>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#6A5340"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#D1B189" stroke-width="1.5" stroke-opacity="0.8"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#FBF8F4"/>
+  <rect x="55" y="60" width="290" height="400" rx="12" fill="#FFFFFF" stroke="#D1B189" stroke-width="1"/>
+  <circle cx="200" cy="148" r="28" fill="#6A5340" fill-opacity="0.08" stroke="#D1B189" stroke-width="1.2"/>
+  <text x="200" y="153" text-anchor="middle" fill="#6A5340" font-family="Georgia, serif" font-size="16" font-style="italic">S</text>
+  <text x="200" y="232" text-anchor="middle" fill="#3D2D1F" font-family="Georgia, serif" font-size="24" letter-spacing="2">SERA &amp; KIAN</text>
+  <line x1="145" y1="252" x2="255" y2="252" stroke="#D1B189" stroke-width="1"/>
+  <text x="200" y="282" text-anchor="middle" fill="#756758" font-family="Georgia, serif" font-size="12" letter-spacing="3">CHAMPAGNE SILK</text>
+  <circle cx="200" cy="378" r="34" fill="#A88358"/>
+  <circle cx="200" cy="378" r="27" stroke="#FBF8F4" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#FBF8F4" font-family="Georgia, serif" font-size="14" font-weight="bold">S&amp;K</text>
+</svg>

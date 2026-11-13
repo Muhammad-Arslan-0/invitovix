@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#5B121F"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#D4A348" stroke-width="1.5" stroke-opacity="0.75"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#FBF6EE"/>
+  <!-- Jharokha Scalloped Arch -->
+  <path d="M200 66C150 66 102 110 102 170V446H298V170C298 110 250 66 200 66Z" fill="#FFFDF8" stroke="#D4A348" stroke-width="1.5"/>
+  <path d="M120 180C140 135 170 115 200 115C230 115 260 135 280 180" stroke="#D4A348" stroke-width="1" stroke-dasharray="2 3"/>
+  <!-- Regal Crown Crest -->
+  <circle cx="200" cy="148" r="28" fill="#681424" fill-opacity="0.08" stroke="#D4A348" stroke-width="1.2"/>
+  <path d="M188 154L192 142L200 148L208 142L212 154H188Z" fill="#D4A348"/>
+  <text x="200" y="232" text-anchor="middle" fill="#681424" font-family="Georgia, serif" font-size="24" letter-spacing="2">MEERA &amp; DEVRAT</text>
+  <line x1="140" y1="252" x2="260" y2="252" stroke="#D4A348" stroke-width="1"/>
+  <text x="200" y="280" text-anchor="middle" fill="#7C5E50" font-family="Georgia, serif" font-size="12" letter-spacing="3">RAJPUTANA HERITAGE</text>
+  <!-- Royal Wax Seal -->
+  <circle cx="200" cy="378" r="34" fill="#B88628"/>
+  <circle cx="200" cy="378" r="27" stroke="#FBF6EE" stroke-opacity="0.55" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#FBF6EE" font-family="Georgia, serif" font-size="13" font-weight="bold">M&amp;D</text>
+</svg>

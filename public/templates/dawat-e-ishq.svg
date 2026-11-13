@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <rect width="400" height="520" rx="24" fill="#0B132B"/>
+  <rect x="20" y="20" width="360" height="480" rx="18" stroke="#E0A948" stroke-width="1.5" stroke-opacity="0.8"/>
+  <rect x="30" y="30" width="340" height="460" rx="14" fill="#131E3D"/>
+  <!-- Lantern Glow Oval -->
+  <ellipse cx="200" cy="240" rx="115" ry="165" fill="#0B132B" stroke="#E0A948" stroke-width="1.5"/>
+  <ellipse cx="200" cy="240" rx="105" ry="155" stroke="#F5C563" stroke-width="0.8" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+  <!-- Crescent & Star Motif -->
+  <circle cx="200" cy="148" r="28" fill="#E0A948" fill-opacity="0.12" stroke="#E0A948" stroke-width="1.2"/>
+  <path d="M195 138C202 138 207 143 207 150C207 157 202 162 195 162C192 162 189 161 187 159C192 157 196 153 196 148C196 143 192 139 187 137C189 138 192 138 195 138Z" fill="#F5C563"/>
+  <polygon points="210,144 212,148 216,148 213,151 214,155 210,152 207,155 208,151 205,148 209,148" fill="#F5C563"/>
+  <text x="200" y="232" text-anchor="middle" fill="#F5C563" font-family="Georgia, serif" font-size="24" letter-spacing="2">INAAYA &amp; FARHAN</text>
+  <line x1="140" y1="252" x2="260" y2="252" stroke="#E0A948" stroke-width="1"/>
+  <text x="200" y="280" text-anchor="middle" fill="#9BA9CC" font-family="Georgia, serif" font-size="12" letter-spacing="3">DAWAT-E-ISHQ</text>
+  <!-- Warm Amber Seal -->
+  <circle cx="200" cy="378" r="34" fill="#C98D2E"/>
+  <circle cx="200" cy="378" r="27" stroke="#F7F8FC" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="200" y="384" text-anchor="middle" fill="#F7F8FC" font-family="Georgia, serif" font-size="13" font-weight="bold">I&amp;F</text>
+</svg>
