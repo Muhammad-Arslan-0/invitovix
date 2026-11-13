@@ -6,7 +6,6 @@ import { Move, Plus, Sparkles, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
-import { toSlug } from "@/lib/utils/slug";
 import { MediaUploader } from "../MediaUploader";
 import { ImageCropModal, FrameShapeOption } from "../ImageCropModal";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -23,7 +22,6 @@ export const ContentPanel = memo(function ContentPanel({
 }: ContentPanelProps) {
   const eventId = useStudioStore((s) => s.eventMeta.id);
   const eventType = useStudioStore((s) => s.eventMeta.event_type);
-  const eventSlug = useStudioStore((s) => s.eventMeta.slug);
   const eventDate = useStudioStore((s) => s.eventMeta.event_date);
   const venueName = useStudioStore((s) => s.eventMeta.venue_name);
   const venueAddress = useStudioStore((s) => s.eventMeta.venue_address);
@@ -169,18 +167,6 @@ export const ContentPanel = memo(function ContentPanel({
         <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
           Event Basics
         </h3>
-
-        <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Event Slug (/e/{eventSlug})
-          </label>
-          <input
-            type="text"
-            value={eventSlug}
-            onChange={(e) => updateMeta({ slug: toSlug(e.target.value) })}
-            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs font-mono focus:border-stone-900 focus:outline-none"
-          />
-        </div>
 
         <div>
           <label className="block text-xs text-stone-600 mb-1">

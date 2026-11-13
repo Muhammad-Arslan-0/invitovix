@@ -4,7 +4,7 @@ import {
   buildMapsUrl,
   generateIcsContent,
 } from "@/lib/utils/calendar";
-import { generateUniqueSlug, isValidSlug, toSlug } from "@/lib/utils/slug";
+import { generateSecureSlug, generateUniqueSlug, isValidSlug, toSlug } from "@/lib/utils/slug";
 
 describe("Slug utilities", () => {
   it("normalizes titles into clean URL slugs", () => {
@@ -19,6 +19,18 @@ describe("Slug utilities", () => {
     const s2 = generateUniqueSlug("Maya Turns 30");
     expect(isValidSlug(s1)).toBe(true);
     expect(s1).not.toBe(s2);
+  });
+
+  it("generates unguessable, cryptographically secure hashed codes for invitation access", () => {
+    const code1 = generateSecureSlug(10);
+    const code2 = generateSecureSlug(10);
+    expect(code1).toHaveLength(10);
+    expect(code2).toHaveLength(10);
+    expect(isValidSlug(code1)).toBe(true);
+    expect(isValidSlug(code2)).toBe(true);
+    expect(code1).not.toBe(code2);
+    // Matches lowercase alphanumeric code
+    expect(code1).toMatch(/^[a-z0-9]{10}$/);
   });
 });
 

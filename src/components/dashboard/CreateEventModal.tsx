@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { InvitationDomainId, TemplateRecord } from "@/types/invitation";
 import { createClient } from "@/lib/supabase/client";
-import { generateUniqueSlug, toSlug } from "@/lib/utils/slug";
+import { generateSecureSlug } from "@/lib/utils/slug";
 import {
   INVITATION_DOMAINS,
   formatCategoryBadge,
@@ -63,8 +63,6 @@ export function CreateEventModal({
     () => getTemplatesByDomain(templates, defaultDomain)[0]?.id ?? ""
   );
   const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugTouched, setSlugTouched] = useState(false);
   const [eventDate, setEventDate] = useState(() => {
     const d = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     d.setHours(18, 30, 0, 0);
@@ -82,8 +80,6 @@ export function CreateEventModal({
   useEffect(() => {
     if (!open) {
       setTitle("");
-      setSlug("");
-      setSlugTouched(false);
       setVenueName("");
       setVenueAddress("");
       setVenueMapUrl("");
@@ -113,9 +109,6 @@ export function CreateEventModal({
 
   function handleTitleChange(value: string) {
     setTitle(value);
-    if (!slugTouched) {
-      setSlug(value.trim() ? toSlug(value) : "");
-    }
   }
 
   async function insertEventRecord(
@@ -183,7 +176,7 @@ export function CreateEventModal({
 
     try {
       const supabase = createClient();
-      const finalSlug = toSlug(slug || title) || generateUniqueSlug(title);
+      const finalSlug = generateSecureSlug(10);
 
       let usedTemplateNullFallback = false;
       let { data, error: insertError } = await insertEventRecord(supabase, finalSlug);
@@ -211,7 +204,7 @@ export function CreateEventModal({
 
       if (insertError) {
         if (insertError.code === "23505") {
-          const retrySlug = generateUniqueSlug(finalSlug);
+          const retrySlug = generateSecureSlug(12);
           const { data: retryData, error: retryErr } = await insertEventRecord(
             supabase,
             retrySlug,
@@ -465,28 +458,6 @@ export function CreateEventModal({
                       placeholder={typeMeta.createHeadlinePlaceholder}
                       className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm focus:border-stone-900 focus:outline-none transition"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1">
-                      Share URL Slug *
-                    </label>
-                    <div className="flex items-center rounded-xl border border-stone-300 overflow-hidden focus-within:border-stone-900 transition">
-                      <span className="bg-stone-50 px-2.5 py-2.5 text-xs text-stone-500 border-r border-stone-200">
-                        /e/
-                      </span>
-                      <input
-                        type="text"
-                        required
-                        value={slug}
-                        onChange={(e) => {
-                          setSlugTouched(true);
-                          setSlug(toSlug(e.target.value));
-                        }}
-                        placeholder={typeMeta.createSlugPlaceholder}
-                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
-                      />
-                    </div>
                   </div>
 
                   <div>
