@@ -46,7 +46,7 @@ const DOMAIN_ICONS: Record<InvitationDomainId, typeof Heart> = {
 const FEATURES = [
   {
     icon: Palette,
-    title: "Live WYSIWYG Studio",
+    title: "Real-Time Design Studio",
     desc: "Customize palettes, paper textures, scalloped wax-seal emblems, and scene copy tailored to each celebration category.",
   },
   {
@@ -220,7 +220,7 @@ export function LandingShowcase() {
                   <span>Unsealing Demo...</span>
                 </>
               ) : (
-                <span>Try Guest Experience (/e/demo)</span>
+                <span>Try Guest Experience</span>
               )}
             </motion.button>
           </div>
