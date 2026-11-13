@@ -2,7 +2,7 @@
 
 import { memo, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { Move, Plus, Trash2, UsersRound } from "lucide-react";
+import { Move, Plus, Sparkles, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
@@ -38,6 +38,7 @@ export const ContentPanel = memo(function ContentPanel({
   const updateContent = useStudioStore((s) => s.updateContent);
   const updateCouple = useStudioStore((s) => s.updateCouple);
   const updateSections = useStudioStore((s) => s.updateSections);
+  const setItinerary = useStudioStore((s) => s.setItinerary);
   const addItineraryItem = useStudioStore((s) => s.addItineraryItem);
   const updateItineraryItem = useStudioStore((s) => s.updateItineraryItem);
   const removeItineraryItem = useStudioStore((s) => s.removeItineraryItem);
@@ -716,36 +717,125 @@ export const ContentPanel = memo(function ContentPanel({
         />
       </div>
 
-      {/* Itinerary Schedule */}
-      <div className="space-y-3 border-t border-stone-200 pt-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-            Schedule Timeline
-          </h3>
-          <button
-            type="button"
-            onClick={() =>
-              addItineraryItem({
-                id: `it-${Date.now()}`,
-                title: "Celebration Moment",
-                time: "8:00 PM",
-                description: "Details for your guests",
-              })
-            }
-            className="inline-flex items-center gap-1 text-xs font-medium text-stone-800 hover:text-amber-700 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Item</span>
-          </button>
+      {/* Itinerary Schedule / Multi-Day Ceremonies */}
+      <div className="space-y-3.5 border-t border-stone-200 pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-700">
+              {typeMeta.domain === "wedding"
+                ? "Wedding Ceremonies & Events (Multi-Day)"
+                : "Celebration Events Timeline"}
+            </h3>
+            <p className="text-[11px] text-stone-500 mt-0.5">
+              Add individual days (Mehndi, Baraat, Reception) and control which guests see which events.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {typeMeta.domain === "wedding" && (
+              <button
+                type="button"
+                onClick={() =>
+                  setItinerary([
+                    {
+                      id: `it-${Date.now()}-1`,
+                      dayLabel: "Day 1 · Mehndi",
+                      date: "Friday, Nov 14",
+                      time: "7:30 PM",
+                      title: "Mehndi & Sangeet Night",
+                      description:
+                        "Rasm-e-Heena, dholki rhythms, choreographed family performances & street food feast",
+                      venue: "Courtyard Marquee & Lawn",
+                      venueAddress: "Gulberg III, Lahore",
+                      dressCode: "Festive Yellow, Coral & Emerald",
+                      guestTier: "three_days",
+                    },
+                    {
+                      id: `it-${Date.now()}-2`,
+                      dayLabel: "Day 2 · Baraat",
+                      date: "Saturday, Nov 15",
+                      time: "8:00 PM",
+                      title: "Shahi Baraat & Nikah",
+                      description:
+                        "Istiqbal-e-Baraat, sacred Nikah vows, garland exchange & royal banquet dinner",
+                      venue: "Grand Ballroom, Pearl Continental",
+                      venueAddress: "Mall Road, Lahore",
+                      dressCode: "Regal Traditional / Crimson & Antique Gold",
+                      guestTier: "three_days",
+                    },
+                    {
+                      id: `it-${Date.now()}-3`,
+                      dayLabel: "Day 3 · Reception",
+                      date: "Sunday, Nov 16",
+                      time: "8:30 PM",
+                      title: "Valima / Grand Reception",
+                      description:
+                        "Welcoming the newlyweds, celebration dinner, dessert salon & toasts",
+                      venue: "The Royal Palm Golf & Country Club",
+                      venueAddress: "Canal Bank Road, Lahore",
+                      dressCode: "Formal Evening / Pastel & Champagne",
+                      guestTier: "all",
+                    },
+                  ])
+                }
+                className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100 transition cursor-pointer shadow-2xs"
+                title="Quickly fill in the 3 classic Pakistani wedding events"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                <span>3-Day Wedding Preset</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() =>
+                addItineraryItem({
+                  id: `it-${Date.now()}`,
+                  dayLabel:
+                    typeMeta.domain === "wedding"
+                      ? `Day ${content.itinerary.length + 1}`
+                      : undefined,
+                  date: "Date & Day",
+                  title: "Ceremony Title",
+                  time: "8:00 PM",
+                  description: "Ceremony details for your guests",
+                  guestTier: "all",
+                })
+              }
+              className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-800 hover:bg-stone-50 transition cursor-pointer shadow-2xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Event</span>
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {content.itinerary.map((item) => (
             <div
               key={item.id}
-              className="rounded-xl border border-stone-200 p-3 space-y-2 bg-stone-50/50"
+              className="rounded-2xl border border-stone-200 p-3.5 space-y-2.5 bg-stone-50/70 shadow-2xs"
             >
-              <div className="flex items-center gap-2">
+              {/* Row 1: Day Badge, Date, Time, Remove */}
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={item.dayLabel ?? ""}
+                  onChange={(e) =>
+                    updateItineraryItem(item.id, { dayLabel: e.target.value })
+                  }
+                  placeholder="Day 1 · Mehndi"
+                  className="w-32 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs font-semibold text-stone-800"
+                  title="Day Label (e.g. Day 1 · Mehndi, Day 2 · Baraat, Day 3 · Valima)"
+                />
+                <input
+                  type="text"
+                  value={item.date ?? ""}
+                  onChange={(e) =>
+                    updateItineraryItem(item.id, { date: e.target.value })
+                  }
+                  placeholder="Friday, 14 Nov"
+                  className="w-32 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-700"
+                  title="Date of ceremony"
+                />
                 <input
                   type="text"
                   value={item.time}
@@ -753,35 +843,87 @@ export const ContentPanel = memo(function ContentPanel({
                     updateItineraryItem(item.id, { time: e.target.value })
                   }
                   placeholder="7:30 PM"
-                  className="w-24 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs"
-                />
-                <input
-                  type="text"
-                  value={item.title}
-                  onChange={(e) =>
-                    updateItineraryItem(item.id, { title: e.target.value })
-                  }
-                  placeholder="Ceremony"
-                  className="flex-1 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium"
+                  className="w-24 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs"
                 />
                 <button
                   type="button"
                   onClick={() => removeItineraryItem(item.id)}
-                  className="text-stone-400 hover:text-rose-600 p-1 cursor-pointer"
-                  aria-label="Remove schedule item"
+                  className="ml-auto text-stone-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                  aria-label="Remove ceremony item"
+                  title="Remove this event"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+              {/* Row 2: Title */}
+              <input
+                type="text"
+                value={item.title}
+                onChange={(e) =>
+                  updateItineraryItem(item.id, { title: e.target.value })
+                }
+                placeholder="Ceremony Title (e.g., Mehndi & Sangeet)"
+                className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-900"
+              />
+
+              {/* Row 3: Description */}
               <input
                 type="text"
                 value={item.description}
                 onChange={(e) =>
                   updateItineraryItem(item.id, { description: e.target.value })
                 }
-                placeholder="Short description..."
+                placeholder="Ceremony program details..."
                 className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs text-stone-600"
               />
+
+              {/* Row 4: Optional Venue & Dress Code */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={item.venue ?? ""}
+                  onChange={(e) =>
+                    updateItineraryItem(item.id, { venue: e.target.value })
+                  }
+                  placeholder="Venue (e.g. Royal Palm Marquee)"
+                  className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-700"
+                />
+                <input
+                  type="text"
+                  value={item.dressCode ?? ""}
+                  onChange={(e) =>
+                    updateItineraryItem(item.id, { dressCode: e.target.value })
+                  }
+                  placeholder="Dress code (e.g. Yellow / Mustard)"
+                  className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-700"
+                />
+              </div>
+
+              {/* Row 5: Guest Tier Access Selector */}
+              <div className="flex items-center justify-between gap-2 pt-1 border-t border-stone-200/60 text-xs">
+                <span className="text-[11px] font-medium text-stone-500">
+                  Guest Invitation Access:
+                </span>
+                <select
+                  value={item.guestTier ?? "all"}
+                  onChange={(e) =>
+                    updateItineraryItem(item.id, {
+                      guestTier: e.target.value as
+                        | "all"
+                        | "three_days"
+                        | "reception_only",
+                    })
+                  }
+                  className="rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-800"
+                >
+                  <option value="all">🌐 All Guests (Everyone)</option>
+                  <option value="three_days">
+                    👑 3-Days Guests Only (Mehndi/Baraat)
+                  </option>
+                  <option value="reception_only">🥂 Reception Only Guests</option>
+                </select>
+              </div>
             </div>
           ))}
         </div>

@@ -13,7 +13,14 @@ export const dynamic = "force-dynamic";
 
 interface GuestInvitePageProps {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ template?: string }>;
+  searchParams?: Promise<{
+    template?: string;
+    access?: string;
+    tier?: string;
+    events?: string;
+    day?: string;
+    invite?: string;
+  }>;
 }
 
 async function resolveEventBySlug(
@@ -125,6 +132,8 @@ export default async function GuestInvitePage({
 }: GuestInvitePageProps) {
   const { slug } = await params;
   const sp = searchParams ? await searchParams : undefined;
+  const guestAccess =
+    sp?.access || sp?.tier || sp?.events || sp?.day || sp?.invite || null;
   const { event, isOwnerDraft } = await resolveEventBySlug(slug, sp?.template);
 
   if (!event) {
@@ -177,6 +186,7 @@ export default async function GuestInvitePage({
       venueMapUrl={event.venue_map_url}
       audioUrl={event.audio_url}
       designData={event.design_data}
+      guestAccess={guestAccess}
       isOwnerDraft={isOwnerDraft}
     />
   );

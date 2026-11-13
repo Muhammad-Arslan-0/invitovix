@@ -53,6 +53,7 @@ interface GuestInviteShellProps {
   venueMapUrl?: string | null;
   audioUrl?: string | null;
   designData: EventDesignData;
+  guestAccess?: string | null;
   isOwnerDraft?: boolean;
 }
 
@@ -67,6 +68,7 @@ export function GuestInviteShell({
   venueMapUrl,
   audioUrl,
   designData,
+  guestAccess,
   isOwnerDraft = false,
 }: GuestInviteShellProps) {
   const playerRef = useRef<InvitationPlayerHandle | null>(null);
@@ -339,6 +341,7 @@ export function GuestInviteShell({
             venueMapUrl={venueMapUrl}
             audioUrl={audioUrl}
             designData={designData}
+            guestAccess={guestAccess}
             hasDraftBanner={isOwnerDraft}
             onPlaybackChange={handlePlaybackChange}
           />

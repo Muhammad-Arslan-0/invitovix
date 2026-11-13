@@ -107,11 +107,21 @@ export const coupleProfileSchema = z.object({
   groomCrop: imageCropTransformSchema.optional(),
 });
 
+export const guestTierSchema = z.enum(["all", "three_days", "reception_only"]);
+export type GuestTier = z.infer<typeof guestTierSchema>;
+
 export const itineraryItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   time: z.string(),
   description: z.string(),
+  dayLabel: z.string().optional(),
+  date: z.string().optional(),
+  venue: z.string().optional(),
+  venueAddress: z.string().optional(),
+  mapUrl: z.string().optional(),
+  dressCode: z.string().optional(),
+  guestTier: guestTierSchema.optional(),
 });
 
 export const galleryPhotoSchema = z.object({

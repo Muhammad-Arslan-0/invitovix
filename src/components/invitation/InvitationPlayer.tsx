@@ -53,6 +53,7 @@ interface InvitationPlayerProps {
   venueMapUrl?: string | null;
   audioUrl?: string | null;
   designData: EventDesignData;
+  guestAccess?: string | null;
   isStudioPreview?: boolean;
   forcedStage?: "sealed" | "opened";
   replayKey?: number;
@@ -76,6 +77,7 @@ export const InvitationPlayer = forwardRef<
     venueMapUrl,
     audioUrl,
     designData,
+    guestAccess,
     isStudioPreview = false,
     forcedStage,
     replayKey = 0,
@@ -356,6 +358,7 @@ export const InvitationPlayer = forwardRef<
                 id="invite-schedule"
                 designData={designData}
                 eventType={eventType}
+                guestAccess={guestAccess}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
 
@@ -384,6 +387,7 @@ export const InvitationPlayer = forwardRef<
                 eventId={eventId}
                 designData={designData}
                 eventType={eventType}
+                guestAccess={guestAccess}
                 isStudioPreview={isStudioPreview}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />

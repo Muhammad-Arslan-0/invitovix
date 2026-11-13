@@ -386,7 +386,7 @@ export function getInvitationTypeMeta(
       eyebrow: isAnniversary ? "Years Of Love" : "Celebrate Together",
       sectionHeading: isAnniversary ? "The Honored Pair" : "Hosts & Guests of Honor",
       itineraryEyebrow: "Order of Events",
-      itineraryHeading: isAnniversary ? "Evening Schedule" : "Party Schedule",
+      itineraryHeading: isAnniversary ? "Celebration Program" : "Party Schedule",
       spotlightSectionLabel: isAnniversary
         ? "Milestone Couple Portraits"
         : "Host & Honoree Portraits",
@@ -427,8 +427,8 @@ export function getInvitationTypeMeta(
     heroPillLabel: "Cordially Invited",
     eyebrow: "With Blessings & Love",
     sectionHeading: "Bride & Groom",
-    itineraryEyebrow: "Order of Events",
-    itineraryHeading: "Evening Schedule",
+    itineraryEyebrow: "Wedding Festivities",
+    itineraryHeading: "Wedding Ceremonies",
     spotlightSectionLabel: "Bride & Groom Portraits",
     spotlightToggleLabel: "Bride & Groom Spotlight",
     person1ShortLabel: "The Bride",

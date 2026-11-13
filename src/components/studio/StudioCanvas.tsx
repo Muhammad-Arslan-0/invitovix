@@ -11,9 +11,11 @@ export const StudioCanvas = memo(function StudioCanvas() {
   const designData = useStudioStore((s) => s.designData);
   const previewDevice = useStudioStore((s) => s.previewDevice);
   const previewStage = useStudioStore((s) => s.previewStage);
+  const previewGuestTier = useStudioStore((s) => s.previewGuestTier);
   const replayCounter = useStudioStore((s) => s.replayCounter);
   const setPreviewDevice = useStudioStore((s) => s.setPreviewDevice);
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
+  const setPreviewGuestTier = useStudioStore((s) => s.setPreviewGuestTier);
   const triggerReplay = useStudioStore((s) => s.triggerReplay);
 
   const isPresentationMode = previewDevice !== "mobile";
@@ -87,6 +89,34 @@ export const StudioCanvas = memo(function StudioCanvas() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Guest Tier Preview Switcher */}
+          <div className="hidden lg:flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setPreviewGuestTier("all")}
+              className={`rounded-lg px-2.5 py-1 font-medium cursor-pointer transition-colors duration-150 ${
+                previewGuestTier === "all"
+                  ? "bg-white text-stone-900 shadow-xs"
+                  : "text-stone-500 hover:text-stone-800"
+              }`}
+              title="Preview invitation as 3-Days Wedding Guest"
+            >
+              All Events (3 Days)
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewGuestTier("reception")}
+              className={`rounded-lg px-2.5 py-1 font-medium cursor-pointer transition-colors duration-150 ${
+                previewGuestTier === "reception"
+                  ? "bg-white text-stone-900 shadow-xs"
+                  : "text-stone-500 hover:text-stone-800"
+              }`}
+              title="Preview invitation as Reception-Only Guest"
+            >
+              Reception Only
+            </button>
           </div>
 
           <button
@@ -177,6 +207,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
                 venueMapUrl={eventMeta.venue_map_url}
                 audioUrl={eventMeta.audio_url}
                 designData={designData}
+                guestAccess={previewGuestTier}
                 isStudioPreview
                 bounded
                 forcedStage={previewStage}
