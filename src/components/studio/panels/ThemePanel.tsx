@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useState } from "react";
-import { ImagePlus, Sparkles, Trash2 } from "lucide-react";
+import { memo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, ImagePlus, Sparkles, Trash2 } from "lucide-react";
 import { TemplateRecord } from "@/types/invitation";
 import { useStudioStore } from "@/store/useStudioStore";
 import {
@@ -41,6 +41,18 @@ export const ThemePanel = memo(function ThemePanel({
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
 
   const [showAllScenes, setShowAllScenes] = useState(false);
+  const templatesScrollRef = useRef<HTMLDivElement | null>(null);
+  const scenesScrollRef = useRef<HTMLDivElement | null>(null);
+
+  function scrollRow(
+    ref: React.RefObject<HTMLDivElement | null>,
+    direction: "left" | "right"
+  ) {
+    if (ref.current) {
+      const scrollAmount = direction === "left" ? -240 : 240;
+      ref.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  }
 
   const { palette, typography, paperTexture, cardArt } = theme;
   const activeBackdropUrl = resolveCardBackdropUrl(cardArt);
@@ -53,22 +65,46 @@ export const ThemePanel = memo(function ThemePanel({
 
   return (
     <div className="space-y-6">
-      {/* Category-Isolated Template Switcher */}
+      {/* Category-Isolated Template Switcher (Horizontal Scroll) */}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 rounded-full px-2.5 py-0.5">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 rounded-full px-2.5 py-0.5 shrink-0">
               {formatCategoryBadge(eventType)}
             </span>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600 truncate">
               {domainConfig.templateLabel} Templates
             </h3>
           </div>
-          <span className="text-[10px] text-stone-400 font-medium">
-            {domainTemplates.length} styles
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] text-stone-400 font-medium hidden sm:inline">
+              {domainTemplates.length} styles
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => scrollRow(templatesScrollRef, "left")}
+                aria-label="Scroll templates left"
+                className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition cursor-pointer shadow-2xs"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollRow(templatesScrollRef, "right")}
+                aria-label="Scroll templates right"
+                className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition cursor-pointer shadow-2xs"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2.5">
+
+        <div
+          ref={templatesScrollRef}
+          className="flex gap-2.5 overflow-x-auto pb-2.5 pt-1 px-0.5 no-scrollbar sm:scrollbar-thin sm:scrollbar-thumb-stone-200 snap-x"
+        >
           {domainTemplates.map((tpl) => {
             const active = templateId === tpl.id;
             const p = tpl.default_config.theme.palette;
@@ -80,14 +116,14 @@ export const ThemePanel = memo(function ThemePanel({
                 key={tpl.id}
                 type="button"
                 onClick={() => applyTemplate(tpl)}
-                className={`relative overflow-hidden rounded-2xl border p-2.5 text-left transition cursor-pointer ${
+                className={`relative w-40 sm:w-44 shrink-0 snap-start overflow-hidden rounded-2xl border p-2.5 text-left transition cursor-pointer ${
                   active
-                    ? "border-stone-900 bg-stone-50 ring-1 ring-stone-900"
+                    ? "border-stone-900 bg-stone-50 ring-2 ring-stone-900/10 shadow-xs"
                     : "border-stone-200 hover:border-stone-300 bg-white"
                 }`}
               >
                 <div
-                  className="h-10 rounded-xl mb-2 relative overflow-hidden border flex items-center justify-between px-2"
+                  className="h-14 rounded-xl mb-2 relative overflow-hidden border flex items-center justify-between px-2.5"
                   style={{
                     backgroundColor: p.background,
                     borderColor: `${p.accent}55`,
@@ -103,26 +139,29 @@ export const ThemePanel = memo(function ThemePanel({
                   )}
                   <div className="relative z-10 flex items-center gap-1">
                     <span
-                      className="w-3 h-3 rounded-full border border-white/60 shadow-2xs"
+                      className="w-3.5 h-3.5 rounded-full border border-white/60 shadow-2xs"
                       style={{ backgroundColor: p.background }}
                     />
                     <span
-                      className="w-3 h-3 rounded-full border border-white/60 shadow-2xs"
+                      className="w-3.5 h-3.5 rounded-full border border-white/60 shadow-2xs"
                       style={{ backgroundColor: p.primary }}
                     />
                     <span
-                      className="w-3 h-3 rounded-full border border-white/60 shadow-2xs"
+                      className="w-3.5 h-3.5 rounded-full border border-white/60 shadow-2xs"
                       style={{ backgroundColor: p.accent }}
                     />
                   </div>
                   <span
-                    className="relative z-10 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-white/85"
+                    className="relative z-10 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-white/85 shadow-2xs"
                     style={{ color: p.primary }}
                   >
                     {formatCategoryBadge(tpl.category)}
                   </span>
                 </div>
-                <p className="text-xs font-medium text-stone-900 line-clamp-1">
+                <p
+                  className="text-xs font-semibold text-stone-900 line-clamp-1"
+                  title={tpl.title}
+                >
                   {tpl.title}
                 </p>
               </button>
@@ -131,18 +170,18 @@ export const ThemePanel = memo(function ThemePanel({
         </div>
       </div>
 
-      {/* Category Scenes & Card Background */}
-      <div className="border-t border-stone-200 pt-5 space-y-3">
+      {/* Category Scenes & Card Background (Horizontal Scroll) */}
+      <div className="border-t border-stone-200 pt-5 space-y-2.5">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5 min-w-0">
             <ImagePlus className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-            <span>{domainConfig.sceneSectionHeading}</span>
+            <span className="truncate">{domainConfig.sceneSectionHeading}</span>
           </h3>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setShowAllScenes((prev) => !prev)}
-              className="text-[10px] font-medium text-stone-500 hover:text-stone-900 cursor-pointer"
+              className="text-[10px] font-medium text-stone-500 hover:text-stone-900 cursor-pointer underline"
             >
               {showAllScenes ? "Category only" : "Show all"}
             </button>
@@ -153,10 +192,31 @@ export const ThemePanel = memo(function ThemePanel({
             >
               Preview
             </button>
+            <div className="flex items-center gap-1 ml-0.5">
+              <button
+                type="button"
+                onClick={() => scrollRow(scenesScrollRef, "left")}
+                aria-label="Scroll backgrounds left"
+                className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition cursor-pointer shadow-2xs"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollRow(scenesScrollRef, "right")}
+                aria-label="Scroll backgrounds right"
+                className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition cursor-pointer shadow-2xs"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div
+          ref={scenesScrollRef}
+          className="flex gap-2.5 overflow-x-auto pb-2.5 pt-1 px-0.5 no-scrollbar sm:scrollbar-thin sm:scrollbar-thumb-stone-200 snap-x"
+        >
           {domainScenes.map((scene) => {
             const active = cardArt.backdropPreset === scene.id;
             return (
@@ -167,14 +227,14 @@ export const ThemePanel = memo(function ThemePanel({
                   setPreviewStage("opened");
                   updateCardArt({ backdropPreset: scene.id });
                 }}
-                className={`group rounded-xl border p-1.5 text-left transition cursor-pointer ${
+                className={`group relative w-32 sm:w-36 shrink-0 snap-start rounded-xl border p-2 text-left transition cursor-pointer ${
                   active
-                    ? "border-stone-900 ring-1 ring-stone-900 bg-stone-50"
+                    ? "border-stone-900 ring-2 ring-stone-900/10 bg-stone-50 shadow-xs"
                     : "border-stone-200 hover:border-stone-300 bg-white"
                 }`}
               >
                 <div
-                  className="h-14 rounded-lg overflow-hidden relative border border-black/5"
+                  className="h-16 rounded-lg overflow-hidden relative border border-black/5"
                   style={{ background: scene.previewGradient }}
                 >
                   {scene.imageUrl && (
@@ -185,8 +245,16 @@ export const ThemePanel = memo(function ThemePanel({
                       className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
                     />
                   )}
+                  {active && (
+                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-stone-900 text-amber-300 flex items-center justify-center text-[9px] font-bold shadow">
+                      ✓
+                    </span>
+                  )}
                 </div>
-                <p className="mt-1.5 text-[10px] font-semibold text-stone-900 leading-tight line-clamp-1">
+                <p
+                  className="mt-1.5 text-[10px] font-semibold text-stone-900 leading-tight line-clamp-1"
+                  title={scene.label}
+                >
                   {scene.label}
                 </p>
                 <p className="text-[9px] text-stone-400 line-clamp-1">
