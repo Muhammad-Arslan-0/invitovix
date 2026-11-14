@@ -128,7 +128,7 @@ export function HeroScene({
 
       {/* Main Headline */}
       <h1
-        className="hero-stagger mt-4 text-4xl sm:text-5xl font-semibold tracking-wide leading-[1.12] max-w-lg"
+        className="hero-stagger mt-4 text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide leading-[1.14] max-w-lg break-words"
         style={{
           color: theme.palette.primary,
           fontFamily: getDisplayFontFamily(theme.typography.displayFont),

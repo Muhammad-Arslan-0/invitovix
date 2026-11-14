@@ -181,7 +181,7 @@ export function EnvelopeStage({
             {content.hostLine}
           </p>
           <h2
-            className="relative z-10 mt-1.5 text-xl sm:text-2xl font-semibold tracking-wide leading-tight"
+            className="relative z-10 mt-1.5 text-xl sm:text-2xl font-semibold tracking-wide leading-tight break-words"
             style={{
               color: theme.palette.primary,
               fontFamily: getDisplayFontFamily(theme.typography.displayFont),

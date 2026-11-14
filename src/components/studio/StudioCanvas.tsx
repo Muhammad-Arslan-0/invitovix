@@ -1,10 +1,13 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { InvitationPlayer } from "@/components/invitation/InvitationPlayer";
+
+const PHONE_WIDTH = 390;
+const PHONE_HEIGHT = 760;
 
 export const StudioCanvas = memo(function StudioCanvas() {
   const eventMeta = useStudioStore((s) => s.eventMeta);
@@ -16,7 +19,59 @@ export const StudioCanvas = memo(function StudioCanvas() {
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
   const triggerReplay = useStudioStore((s) => s.triggerReplay);
 
+  const [scaleMode, setScaleMode] = useState<"fit" | "actual">("fit");
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const updateSize = () => {
+      if (el) {
+        setViewportSize({
+          width: el.clientWidth,
+          height: el.clientHeight,
+        });
+      }
+    };
+
+    updateSize();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => updateSize());
+      observer.observe(el);
+      return () => observer.disconnect();
+    }
+  }, []);
+
+  const computedScale = useMemo(() => {
+    if (scaleMode === "actual") return 1;
+    if (previewDevice !== "mobile") return 1;
+    if (!viewportSize.width || !viewportSize.height) return 1;
+
+    // Buffer to leave comfortable breathing room inside canvas
+    const paddingX = viewportSize.width < 640 ? 16 : 40;
+    const paddingY = viewportSize.height < 640 ? 16 : 40;
+
+    const availableWidth = Math.max(100, viewportSize.width - paddingX);
+    const availableHeight = Math.max(120, viewportSize.height - paddingY);
+
+    const scaleByW = availableWidth / PHONE_WIDTH;
+    const scaleByH = availableHeight / PHONE_HEIGHT;
+
+    // Scale so that it fits within both available width and height
+    const fit = Math.min(scaleByW, scaleByH);
+
+    // Don't upscale past 1.0; clamp minimum to 0.40
+    return Math.min(1, Math.max(0.4, Number(fit.toFixed(3))));
+  }, [scaleMode, previewDevice, viewportSize]);
+
   const isPresentationMode = previewDevice !== "mobile";
+  const isScaledMobile = previewDevice === "mobile" && computedScale !== 1;
   const ambientPhotoUrl =
     designData.content.heroImageUrl ||
     designData.content.couple.brideImageUrl ||
@@ -26,7 +81,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
 
   const frameClasses =
     previewDevice === "mobile"
-      ? "w-[390px] max-w-full rounded-[44px] border-[10px] border-stone-900 shadow-[0_28px_70px_-15px_rgba(24,20,15,0.45)] ring-1 ring-amber-200/30 bg-white"
+      ? "w-[390px] rounded-[44px] border-[10px] border-stone-900 shadow-[0_28px_70px_-15px_rgba(24,20,15,0.45)] ring-1 ring-amber-200/30 bg-white"
       : previewDevice === "tablet"
         ? "w-[720px] max-w-full rounded-[28px] border-[8px] border-stone-800 shadow-[0_24px_60px_-15px_rgba(24,20,15,0.35)] bg-[#100E0C]"
         : "w-full max-w-5xl rounded-2xl border border-stone-800 shadow-2xl bg-[#100E0C]";
@@ -65,8 +120,42 @@ export const StudioCanvas = memo(function StudioCanvas() {
         </div>
 
         {/* Stage & Replay Controls */}
-        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
-          <div className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs">
+        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-1.5 sm:gap-2">
+          {/* Responsive Fit / 100% Zoom Toggle for Mobile Frame */}
+          {previewDevice === "mobile" && (
+            <div
+              role="group"
+              aria-label="Preview Zoom"
+              className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-0.5 text-xs shrink-0"
+            >
+              <button
+                type="button"
+                onClick={() => setScaleMode("fit")}
+                className={`rounded-lg px-2 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                  scaleMode === "fit"
+                    ? "bg-white text-stone-900 shadow-xs font-semibold"
+                    : "text-stone-500 hover:text-stone-800"
+                }`}
+                title="Scale mobile frame to fit screen"
+              >
+                Fit{computedScale < 0.98 ? ` ${Math.round(computedScale * 100)}%` : ""}
+              </button>
+              <button
+                type="button"
+                onClick={() => setScaleMode("actual")}
+                className={`rounded-lg px-2 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                  scaleMode === "actual"
+                    ? "bg-white text-stone-900 shadow-xs font-semibold"
+                    : "text-stone-500 hover:text-stone-800"
+                }`}
+                title="100% full scale"
+              >
+                100%
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs shrink-0">
             {(
               [
                 { id: "sealed", label: "Envelope" },
@@ -79,9 +168,9 @@ export const StudioCanvas = memo(function StudioCanvas() {
                   key={stage.id}
                   type="button"
                   onClick={() => setPreviewStage(stage.id)}
-                  className={`rounded-lg px-3 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                  className={`rounded-lg px-2.5 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
                     active
-                      ? "bg-white text-stone-900 shadow-xs"
+                      ? "bg-white text-stone-900 shadow-xs font-semibold"
                       : "text-stone-500 hover:text-stone-800"
                   }`}
                 >
@@ -98,120 +187,147 @@ export const StudioCanvas = memo(function StudioCanvas() {
             title="Replay seal reveal"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="text-xs">Replay</span>
+            <span className="hidden sm:inline text-xs">Replay</span>
           </button>
         </div>
       </div>
 
-      {/* Scrollable Preview Viewport */}
-      <div className="flex-1 overflow-y-auto p-2.5 sm:p-6 flex justify-center items-start">
+      {/* Scrollable / Interactive Preview Viewport */}
+      <div
+        ref={viewportRef}
+        className="flex-1 overflow-auto p-2 sm:p-5 flex items-center justify-center relative"
+      >
         <div
-          className={`relative overflow-hidden shrink-0 ${frameClasses}`}
           style={{
+            width:
+              previewDevice === "mobile"
+                ? `${Math.round(PHONE_WIDTH * computedScale)}px`
+                : undefined,
             height:
               previewDevice === "mobile"
-                ? "760px"
-                : "calc(100vh - 150px)",
+                ? `${Math.round(PHONE_HEIGHT * computedScale)}px`
+                : undefined,
           }}
+          className={
+            previewDevice === "mobile"
+              ? "relative shrink-0 flex items-center justify-center transition-[width,height] duration-200 ease-out"
+              : "w-full flex items-center justify-center"
+          }
         >
-          {/* Mobile Speaker / Dynamic Island Notch */}
-          {previewDevice === "mobile" && (
-            <div
-              aria-hidden="true"
-              className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 bg-stone-900 rounded-full z-40 pointer-events-none"
-            />
-          )}
-
-          {/* Single persistent container tree so toggling Mobile/Tablet/Desktop never unmounts InvitationPlayer */}
           <div
-            className={
-              isPresentationMode
-                ? "relative h-full w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden"
-                : "h-full w-full"
-            }
+            className={`overflow-hidden shrink-0 ${frameClasses} ${
+              isScaledMobile ? "absolute top-0 left-0" : "relative"
+            }`}
+            style={{
+              width: previewDevice === "mobile" ? `${PHONE_WIDTH}px` : undefined,
+              height:
+                previewDevice === "mobile"
+                  ? `${PHONE_HEIGHT}px`
+                  : "calc(100vh - 150px)",
+              transform: isScaledMobile ? `scale(${computedScale})` : undefined,
+              transformOrigin: "top left",
+              transition: "transform 200ms ease-out",
+            }}
           >
-            {isPresentationMode && (
-              <>
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    backgroundColor: "#100E0C",
-                    backgroundImage: `radial-gradient(circle at 22% 24%, ${designData.theme.palette.primary}66 0%, transparent 50%), radial-gradient(circle at 78% 72%, ${designData.theme.palette.accent}3D 0%, transparent 52%), radial-gradient(circle at 50% 50%, #1F1B17 0%, #090807 100%)`,
-                  }}
-                />
-                {ambientPhotoUrl && (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={ambientPhotoUrl}
-                    alt=""
-                    className="pointer-events-none absolute inset-0 w-full h-full object-cover filter blur-xl opacity-30 scale-105"
-                  />
-                )}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-black/45"
-                />
-              </>
+            {/* Mobile Speaker / Dynamic Island Notch */}
+            {previewDevice === "mobile" && (
+              <div
+                aria-hidden="true"
+                className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 bg-stone-900 rounded-full z-40 pointer-events-none"
+              />
             )}
 
-            {isPresentationMode && previewDevice === "desktop" && (
-              <div className="hidden xl:flex flex-col gap-2 w-44 mr-5 text-left relative z-10 select-none">
-                <div className="rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/12 p-3.5 text-stone-200">
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-amber-300">
-                    Save The Date
-                  </span>
-                  <p className="mt-1 text-sm font-serif font-semibold text-white line-clamp-2">
-                    {designData.content.headline}
-                  </p>
-                  <p className="mt-1 text-[10px] text-stone-400">
-                    Desktop Overview Wing
-                  </p>
-                </div>
-              </div>
-            )}
-
+            {/* Single persistent container tree so toggling Mobile/Tablet/Desktop never unmounts InvitationPlayer */}
             <div
-              key="studio-card-slot"
               className={
                 isPresentationMode
-                  ? "relative z-10 w-full max-w-[400px] h-full rounded-[24px] overflow-hidden border border-white/15 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.8)]"
+                  ? "relative h-full w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden"
                   : "h-full w-full"
               }
             >
-              <InvitationPlayer
-                eventId={eventMeta.id}
-                slug={eventMeta.slug}
-                title={eventMeta.title}
-                eventType={eventMeta.event_type}
-                eventDate={eventMeta.event_date}
-                venueName={eventMeta.venue_name}
-                venueAddress={eventMeta.venue_address}
-                venueMapUrl={eventMeta.venue_map_url}
-                audioUrl={eventMeta.audio_url}
-                designData={designData}
-                isStudioPreview
-                bounded
-                forcedStage={previewStage}
-                replayKey={replayCounter}
-              />
-            </div>
+              {isPresentationMode && (
+                <>
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      backgroundColor: "#100E0C",
+                      backgroundImage: `radial-gradient(circle at 22% 24%, ${designData.theme.palette.primary}66 0%, transparent 50%), radial-gradient(circle at 78% 72%, ${designData.theme.palette.accent}3D 0%, transparent 52%), radial-gradient(circle at 50% 50%, #1F1B17 0%, #090807 100%)`,
+                    }}
+                  />
+                  {ambientPhotoUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ambientPhotoUrl}
+                      alt=""
+                      className="pointer-events-none absolute inset-0 w-full h-full object-cover filter blur-xl opacity-30 scale-105"
+                    />
+                  )}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-black/45"
+                  />
+                </>
+              )}
 
-            {isPresentationMode && previewDevice === "desktop" && (
-              <div className="hidden xl:flex flex-col gap-2 w-44 ml-5 text-left relative z-10 select-none">
-                <div className="rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/12 p-3.5 text-stone-200">
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-amber-300">
-                    Concierge
-                  </span>
-                  <p className="mt-1 text-xs font-medium text-white line-clamp-1">
-                    {eventMeta.venue_name || "Venue Preview"}
-                  </p>
-                  <p className="mt-1 text-[10px] text-stone-400">
-                    Quick RSVP · Maps · Audio
-                  </p>
+              {isPresentationMode && previewDevice === "desktop" && (
+                <div className="hidden xl:flex flex-col gap-2 w-44 mr-5 text-left relative z-10 select-none">
+                  <div className="rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/12 p-3.5 text-stone-200">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-amber-300">
+                      Save The Date
+                    </span>
+                    <p className="mt-1 text-sm font-serif font-semibold text-white line-clamp-2">
+                      {designData.content.headline}
+                    </p>
+                    <p className="mt-1 text-[10px] text-stone-400">
+                      Desktop Overview Wing
+                    </p>
+                  </div>
                 </div>
+              )}
+
+              <div
+                key="studio-card-slot"
+                className={
+                  isPresentationMode
+                    ? "relative z-10 w-full max-w-[400px] h-full rounded-[24px] overflow-hidden border border-white/15 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.8)]"
+                    : "h-full w-full"
+                }
+              >
+                <InvitationPlayer
+                  eventId={eventMeta.id}
+                  slug={eventMeta.slug}
+                  title={eventMeta.title}
+                  eventType={eventMeta.event_type}
+                  eventDate={eventMeta.event_date}
+                  venueName={eventMeta.venue_name}
+                  venueAddress={eventMeta.venue_address}
+                  venueMapUrl={eventMeta.venue_map_url}
+                  audioUrl={eventMeta.audio_url}
+                  designData={designData}
+                  isStudioPreview
+                  bounded
+                  forcedStage={previewStage}
+                  replayKey={replayCounter}
+                />
               </div>
-            )}
+
+              {isPresentationMode && previewDevice === "desktop" && (
+                <div className="hidden xl:flex flex-col gap-2 w-44 ml-5 text-left relative z-10 select-none">
+                  <div className="rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/12 p-3.5 text-stone-200">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-amber-300">
+                      Concierge
+                    </span>
+                    <p className="mt-1 text-xs font-medium text-white line-clamp-1">
+                      {eventMeta.venue_name || "Venue Preview"}
+                    </p>
+                    <p className="mt-1 text-[10px] text-stone-400">
+                      Quick RSVP · Maps · Audio
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
