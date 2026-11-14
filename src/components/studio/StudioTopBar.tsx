@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
+  CopyPlus,
   Globe,
   Loader2,
   Save,
@@ -15,6 +16,8 @@ import { formatCategoryBadge } from "@/lib/templates/categories";
 import { ShareDialog } from "./ShareDialog";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
+import { createClient } from "@/lib/supabase/client";
+import { generateSecureSlug } from "@/lib/utils/slug";
 
 interface StudioTopBarProps {
   onSave: () => Promise<void>;
@@ -30,13 +33,71 @@ export const StudioTopBar = memo(function StudioTopBar({
   const eventTitle = useStudioStore((s) => s.eventMeta.title);
   const eventSlug = useStudioStore((s) => s.eventMeta.slug);
   const eventType = useStudioStore((s) => s.eventMeta.event_type);
+  const eventDate = useStudioStore((s) => s.eventMeta.event_date);
+  const venueName = useStudioStore((s) => s.eventMeta.venue_name);
+  const venueAddress = useStudioStore((s) => s.eventMeta.venue_address);
+  const venueMapUrl = useStudioStore((s) => s.eventMeta.venue_map_url);
+  const templateId = useStudioStore((s) => s.eventMeta.template_id);
+  const audioUrl = useStudioStore((s) => s.eventMeta.audio_url);
+  const designData = useStudioStore((s) => s.designData);
   const isPublished = useStudioStore((s) => s.eventMeta.is_published);
   const isDirty = useStudioStore((s) => s.isDirty);
   const isSaving = useStudioStore((s) => s.isSaving);
   const updateMeta = useStudioStore((s) => s.updateMeta);
 
   const [navTarget, setNavTarget] = useState<"dashboard" | "rsvps" | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  async function handleDuplicate() {
+    if (isDuplicating) return;
+    setIsDuplicating(true);
+    try {
+      if (isDirty) {
+        await onSave();
+      }
+      const supabase = createClient();
+      const userRes = await supabase.auth.getUser();
+      const currentUserId = userRes.data.user?.id;
+      if (!currentUserId) {
+        alert("Please sign in to duplicate this invitation.");
+        return;
+      }
+      const newSlug = generateSecureSlug(10);
+      const newTitle = `${eventTitle} (Copy)`;
+
+      const { data: newEvent, error } = await supabase
+        .from("events")
+        .insert({
+          user_id: currentUserId,
+          template_id: templateId,
+          slug: newSlug,
+          title: newTitle,
+          event_type: eventType,
+          event_date: eventDate,
+          venue_name: venueName,
+          venue_address: venueAddress,
+          venue_map_url: venueMapUrl,
+          audio_url: audioUrl,
+          design_data: designData,
+          is_published: false,
+        })
+        .select("id")
+        .single();
+
+      if (error || !newEvent) {
+        alert(error?.message || "Failed to duplicate invitation.");
+        return;
+      }
+
+      startNavigation();
+      router.push(`/studio/${newEvent.id}`);
+    } catch (err) {
+      console.error("Duplication error:", err);
+    } finally {
+      setIsDuplicating(false);
+    }
+  }
 
   function navigateTo(target: "dashboard" | "rsvps", href: string) {
     setNavTarget(target);
@@ -132,6 +193,21 @@ export const StudioTopBar = memo(function StudioTopBar({
           isPublished={isPublished}
           onTogglePublish={onTogglePublish}
         />
+
+        <button
+          type="button"
+          onClick={handleDuplicate}
+          disabled={isDuplicating || isSaving}
+          title="Duplicate this card for another event or reception-only guests"
+          className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-60 transition cursor-pointer"
+        >
+          {isDuplicating ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <CopyPlus className="w-3.5 h-3.5 text-amber-700" />
+          )}
+          <span>{isDuplicating ? "Duplicating..." : "Duplicate Card"}</span>
+        </button>
 
         <button
           type="button"

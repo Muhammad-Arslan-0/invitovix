@@ -202,7 +202,7 @@ describe("Dual-Viewport Invitation Architecture", () => {
     expect(html).toContain("Back to Studio");
   });
 
-  it("unseals from Right Wing Quick RSVP, opens card view, and renders bottom navigation dock", async () => {
+  it("unseals from Right Wing Quick RSVP, opens card view with clean uninterrupted scroll without bottom nav dock", async () => {
     const { container } = render(
       <GuestInviteShell
         eventId={DEMO_EVENT.id}
@@ -223,9 +223,8 @@ describe("Dual-Viewport Invitation Architecture", () => {
     await waitFor(
       () => {
         expect(
-          screen.getByRole("navigation", { name: /invitation sections/i })
-        ).toBeTruthy();
-        expect(screen.getByRole("button", { name: /^quick rsvp$/i })).toBeTruthy();
+          screen.queryByRole("navigation", { name: /invitation sections/i })
+        ).toBeNull();
         expect(screen.getByRole("button", { name: /mute music/i })).toBeTruthy();
         expect(screen.getByText("Confirm RSVP")).toBeTruthy();
         expect(container.innerHTML).toContain("/brand/invitovix-icon.png");
@@ -239,26 +238,9 @@ describe("Dual-Viewport Invitation Architecture", () => {
       },
       { timeout: 1000 }
     );
-
-    const dock = screen.getByRole("navigation", { name: /invitation sections/i });
-    const rsvpTab = Array.from(dock.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("RSVP")
-    );
-    const coverTab = Array.from(dock.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Cover")
-    );
-    expect(rsvpTab).toBeTruthy();
-    expect(coverTab).toBeTruthy();
-
-    fireEvent.click(rsvpTab!);
-    expect(rsvpTab!.getAttribute("aria-current")).toBe("location");
-
-    fireEvent.click(coverTab!);
-    expect(coverTab!.getAttribute("aria-current")).toBe("location");
-    expect(rsvpTab!.getAttribute("aria-current")).toBeNull();
   });
 
-  it("renders Birthday GuestInviteShell with solo honoree spotlight, Birthday wing badge, and Honoree nav", async () => {
+  it("renders Birthday GuestInviteShell with solo honoree spotlight and Birthday wing badge", async () => {
     const birthdayDemo = resolveDemoEventForPreset("confetti-atelier");
 
     render(
@@ -288,9 +270,8 @@ describe("Dual-Viewport Invitation Architecture", () => {
         expect(screen.getByRole("heading", { name: "Birthday Star" })).toBeTruthy();
         expect(screen.getByText("Party Schedule")).toBeTruthy();
         expect(
-          screen.getByRole("navigation", { name: /invitation sections/i })
-            .textContent
-        ).toContain("Honoree");
+          screen.queryByRole("navigation", { name: /invitation sections/i })
+        ).toBeNull();
       },
       { timeout: 3000 }
     );

@@ -104,19 +104,19 @@ export async function generateMetadata({
       images:
         design.content.heroImageUrl || design.content.couple.brideImageUrl
           ? [
-              {
-                url: (design.content.heroImageUrl ||
-                  design.content.couple.brideImageUrl)!,
-              },
-            ]
+            {
+              url: (design.content.heroImageUrl ||
+                design.content.couple.brideImageUrl)!,
+            },
+          ]
           : [
-              {
-                url: "/brand/invitovix-icon.png",
-                width: 512,
-                height: 512,
-                alt: "Invitovix Crest",
-              },
-            ],
+            {
+              url: "/brand/invitovix-icon.png",
+              width: 512,
+              height: 512,
+              alt: "Invitovix Crest",
+            },
+          ],
     },
     twitter: {
       card: "summary_large_image",

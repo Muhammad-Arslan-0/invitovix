@@ -206,20 +206,10 @@ describe("Dashboard, StudioShell & RSVPs SSR + Multi-Category Isolation", () => 
     expect(screen.getByText("Embossed Wax Seal")).toBeTruthy();
     expect(screen.getByText("Venue Name (Manual)")).toBeTruthy();
 
-    // Confirm all 7 bottom dock items render inside Studio Inside Card view for wedding presets
-    const dock = screen.getByRole("navigation", { name: /invitation sections/i });
-    const dockLabels = Array.from(dock.querySelectorAll("button")).map((b) =>
-      b.textContent?.trim()
-    );
-    expect(dockLabels).toEqual([
-      "Cover",
-      "Couple",
-      "Story",
-      "Events",
-      "Venue",
-      "Gallery",
-      "RSVP",
-    ]);
+    // Confirm bottom nav dock is removed for clean uninterrupted card scroll
+    expect(
+      screen.queryByRole("navigation", { name: /invitation sections/i })
+    ).toBeNull();
 
     // Verify art & Bride/Groom controls update live store cleanly
     fireEvent.click(screen.getByRole("button", { name: /floral bouquet/i }));

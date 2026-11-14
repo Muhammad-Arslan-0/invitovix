@@ -8,6 +8,7 @@ import {
   Calendar,
   Check,
   Copy,
+  CopyPlus,
   ExternalLink,
   Globe,
   Loader2,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/templates/categories";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { hexToRgba } from "@/lib/utils/colors";
+import { generateSecureSlug } from "@/lib/utils/slug";
 import { CreateEventModal } from "./CreateEventModal";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { startNavigation } from "@/components/ui/NavigationProgress";
@@ -116,6 +118,76 @@ export function DashboardClient({
     await navigator.clipboard.writeText(url);
     setCopiedId(event.id);
     setTimeout(() => setCopiedId(null), 1800);
+  }
+
+  async function handleDuplicate(event: EventWithCount) {
+    setBusyId(event.id);
+    try {
+      const supabase = createClient();
+      const { data: sourceEvent, error: fetchErr } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", event.id)
+        .single();
+
+      if (fetchErr || !sourceEvent) {
+        alert("Could not load event data to duplicate.");
+        return;
+      }
+
+      const newSlug = generateSecureSlug(10);
+      const newTitle = `${sourceEvent.title} (Copy)`;
+
+      const { data: newEvent, error: insertErr } = await supabase
+        .from("events")
+        .insert({
+          user_id: sourceEvent.user_id,
+          template_id: sourceEvent.template_id,
+          slug: newSlug,
+          title: newTitle,
+          event_type: sourceEvent.event_type,
+          event_date: sourceEvent.event_date,
+          venue_name: sourceEvent.venue_name,
+          venue_address: sourceEvent.venue_address,
+          venue_map_url: sourceEvent.venue_map_url,
+          audio_url: sourceEvent.audio_url,
+          design_data: sourceEvent.design_data,
+          is_published: false,
+        })
+        .select("*")
+        .single();
+
+      if (insertErr || !newEvent) {
+        alert(insertErr?.message || "Failed to duplicate card.");
+        return;
+      }
+
+      const formattedNewEvent: EventWithCount = {
+        id: newEvent.id,
+        user_id: newEvent.user_id,
+        template_id: newEvent.template_id,
+        slug: newEvent.slug,
+        title: newEvent.title,
+        event_type: newEvent.event_type,
+        event_date: newEvent.event_date,
+        venue_name: newEvent.venue_name,
+        venue_address: newEvent.venue_address,
+        venue_map_url: newEvent.venue_map_url,
+        audio_url: newEvent.audio_url,
+        design_data: newEvent.design_data,
+        is_published: newEvent.is_published,
+        created_at: newEvent.created_at,
+        updated_at: newEvent.updated_at,
+        rsvp_count: 0,
+        attending_guests: 0,
+      };
+
+      setEvents((prev) => [formattedNewEvent, ...prev]);
+    } catch (err) {
+      console.error("Duplicate error:", err);
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function handleTogglePublish(event: EventWithCount) {
@@ -654,6 +726,17 @@ export function DashboardClient({
                                 <span>Copy Link</span>
                               </>
                             )}
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={busyId === event.id}
+                            onClick={() => handleDuplicate(event)}
+                            className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 cursor-pointer transition disabled:opacity-50"
+                            title="Duplicate this card for another event or reception-only guests"
+                          >
+                            <CopyPlus className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Duplicate</span>
                           </button>
 
                           <Link

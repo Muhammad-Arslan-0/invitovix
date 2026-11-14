@@ -18,10 +18,7 @@ import { ParticleLayer } from "./ParticleLayer";
 import { FloatingAudioDisc } from "./FloatingAudioDisc";
 import { CardArtBackdrop } from "./CardArtBackdrop";
 import { CardHeaderCrown, CardOrnamentFrame } from "./CardOrnamentFrame";
-import {
-  InvitationBottomNav,
-  InvitationSectionId,
-} from "./InvitationBottomNav";
+import type { InvitationSectionId } from "./InvitationBottomNav";
 import { HeroScene } from "./scenes/HeroScene";
 import { CoupleScene } from "./scenes/CoupleScene";
 import { StoryCountdownScene } from "./scenes/StoryCountdownScene";
@@ -393,7 +390,7 @@ export const InvitationPlayer = forwardRef<
               />
 
               <footer
-                className="pb-24 pt-2 text-center text-[11px] uppercase tracking-[0.22em] opacity-65"
+                className="pb-8 pt-4 text-center text-[11px] uppercase tracking-[0.22em] opacity-65"
                 style={{ color: theme.palette.mutedText }}
               >
                 <span className="inline-flex items-center justify-center gap-1.5">
@@ -402,17 +399,6 @@ export const InvitationPlayer = forwardRef<
                 </span>
               </footer>
             </div>
-
-            {/* Sticky Bottom Navigation Dock Anchored Inside Card Frame */}
-            <InvitationBottomNav
-              designData={designData}
-              eventType={eventType}
-              isStudioPreview={isStudioPreview}
-              bounded={bounded}
-              scrollContainerRef={scrollContainerRef}
-              isBoundedScroll={isBoundedScroll}
-              onSelectSection={scrollToSection}
-            />
           </motion.div>
         )}
       </AnimatePresence>

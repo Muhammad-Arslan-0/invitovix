@@ -2,8 +2,8 @@
 
 import { useMemo, useState, type RefObject } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, ExternalLink, MapPin, Sparkles } from "lucide-react";
-import { EventDesignData, ItineraryItem } from "@/types/invitation";
+import { Calendar, Clock, ExternalLink, MapPin } from "lucide-react";
+import { EventDesignData } from "@/types/invitation";
 import {
   getBodyFontFamily,
   getDisplayFontFamily,
@@ -18,50 +18,18 @@ interface ItinerarySceneProps {
   scrollRootRef?: RefObject<HTMLDivElement | null>;
 }
 
-function isReceptionItem(item: ItineraryItem): boolean {
-  if (item.guestTier === "reception_only") return true;
-  const t = (item.title + " " + (item.dayLabel ?? "")).toLowerCase();
-  return t.includes("reception") || t.includes("valima") || t.includes("walima");
-}
-
 export function ItineraryScene({
   id = "invite-schedule",
   designData,
   eventType = "wedding",
-  guestAccess: propGuestAccess,
   scrollRootRef,
 }: ItinerarySceneProps) {
   const { theme, content, sections } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
 
-  // Determine effective guest access from prop or browser search params
-  const effectiveAccess = useMemo(() => {
-    if (propGuestAccess) return propGuestAccess.toLowerCase();
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const val = sp.get("access") || sp.get("tier") || sp.get("events") || sp.get("invite");
-      if (val) return val.toLowerCase();
-    }
-    return "all";
-  }, [propGuestAccess]);
+  const visibleItems = content.itinerary;
 
-  const isReceptionGuest = effectiveAccess === "reception" || effectiveAccess === "valima";
-
-  // Filter items according to guest invitation tier
-  const visibleItems = useMemo(() => {
-    if (!isReceptionGuest) {
-      return content.itinerary;
-    }
-    const receptionItems = content.itinerary.filter(isReceptionItem);
-    // If no explicit reception items tagged, show items marked as "all" or fallback to last item
-    if (receptionItems.length > 0) {
-      return receptionItems;
-    }
-    const allItems = content.itinerary.filter((i) => i.guestTier === "all" || !i.guestTier);
-    return allItems.length > 0 ? allItems : content.itinerary.slice(-1);
-  }, [content.itinerary, isReceptionGuest]);
-
-  // Multi-day filter state for 3-day wedding guests
+  // Filter state when the organizer includes multiple distinct day labels (e.g. Day 1, Day 2)
   const [selectedDayFilter, setSelectedDayFilter] = useState<string>("all");
 
   const distinctDays = useMemo(() => {
@@ -86,22 +54,18 @@ export function ItineraryScene({
 
   const isWedding = typeMeta.domain === "wedding";
 
-  // Clean, elegant headings without ever showing "Evening Schedule"
-  const headingTitle = isReceptionGuest
-    ? "Wedding Reception"
-    : isWedding
-      ? distinctDays.length > 1
-        ? "Wedding Ceremonies"
-        : "Ceremonies & Events"
-      : typeMeta.itineraryHeading;
+  // Clean, customizable headings without ever showing "Evening Schedule"
+  const headingTitle = isWedding
+    ? distinctDays.length > 1
+      ? "Wedding Ceremonies"
+      : "Ceremonies & Events"
+    : typeMeta.itineraryHeading;
 
-  const eyebrowTitle = isReceptionGuest
-    ? "You Are Cordially Invited"
-    : isWedding
-      ? distinctDays.length > 1
-        ? "Multi-Day Festivities"
-        : "Wedding Festivities"
-      : typeMeta.itineraryEyebrow;
+  const eyebrowTitle = isWedding
+    ? distinctDays.length > 1
+      ? "Celebration Schedule"
+      : "Wedding Program"
+    : typeMeta.itineraryEyebrow;
 
   return (
     <section id={id} className="scroll-mt-14 px-5 sm:px-7 py-8 max-w-lg mx-auto">
@@ -123,23 +87,8 @@ export function ItineraryScene({
           {headingTitle}
         </h2>
 
-        {/* Reception Only Badge Banner */}
-        {isReceptionGuest && (
-          <div
-            className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-medium shadow-2xs"
-            style={{
-              borderColor: `${theme.palette.accent}55`,
-              backgroundColor: `${theme.palette.surface}F0`,
-              color: theme.palette.primary,
-            }}
-          >
-            <Sparkles className="w-3.5 h-3.5" style={{ color: theme.palette.accent }} />
-            <span>Reception &amp; Dinner Invitation</span>
-          </div>
-        )}
-
-        {/* Multi-Day Navigation Pills (When multiple days like Mehndi, Baraat, Reception exist) */}
-        {!isReceptionGuest && distinctDays.length > 1 && (
+        {/* Multi-Day Navigation Pills (When organizer has distinct days) */}
+        {distinctDays.length > 1 && (
           <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
             <button
               type="button"

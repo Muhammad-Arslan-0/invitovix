@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState, type RefObject } from "react";
+import { useState, type RefObject } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, Minus, Plus, Send, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Minus, Plus, Send } from "lucide-react";
 import {
   AttendingStatus,
   EventDesignData,
@@ -34,58 +34,22 @@ export function RsvpScene({
   eventId,
   designData,
   eventType = "wedding",
-  guestAccess: propGuestAccess,
   isStudioPreview = false,
   scrollRootRef,
 }: RsvpSceneProps) {
   const { theme, content, sections } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
 
-  const effectiveAccess = useMemo(() => {
-    if (propGuestAccess) return propGuestAccess.toLowerCase();
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const val = sp.get("access") || sp.get("tier") || sp.get("events") || sp.get("invite");
-      if (val) return val.toLowerCase();
-    }
-    return "all";
-  }, [propGuestAccess]);
-
-  const isReceptionGuest = effectiveAccess === "reception" || effectiveAccess === "valima";
-
-  const ceremonyOptions = useMemo(() => {
-    if (isReceptionGuest) return [];
-    const list: string[] = [];
-    for (const item of content.itinerary) {
-      const label = item.dayLabel?.trim() || item.title?.trim();
-      if (label && !list.includes(label)) {
-        list.push(label);
-      }
-    }
-    return list;
-  }, [content.itinerary, isReceptionGuest]);
-
   const [guestName, setGuestName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<AttendingStatus>("attending");
   const [guestsCount, setGuestsCount] = useState(1);
-  const [selectedCeremonies, setSelectedCeremonies] = useState<string[]>(() => ceremonyOptions);
   const [notes, setNotes] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-
-  function toggleCeremony(day: string) {
-    setSelectedCeremonies((prev) =>
-      prev.includes(day)
-        ? prev.length > 1
-          ? prev.filter((d) => d !== day)
-          : prev
-        : [...prev, day]
-    );
-  }
 
   if (!sections.showRsvp) return null;
 
@@ -95,20 +59,13 @@ export function RsvpScene({
     e.preventDefault();
     setErrorMsg(null);
 
-    const eventTag = isReceptionGuest
-      ? "[Reception Only]"
-      : selectedCeremonies.length > 0 && ceremonyOptions.length > 1
-        ? `[Attending: ${selectedCeremonies.join(", ")}]`
-        : "";
-    const compiledNotes = [eventTag, notes.trim()].filter(Boolean).join(" ");
-
     const parsed = rsvpSubmissionSchema.safeParse({
       guest_name: guestName,
       email,
       phone,
       attending_status: status,
       guests_count: status === "declined" ? 1 : guestsCount,
-      notes: compiledNotes,
+      notes: notes.trim() || null,
     });
 
     if (!parsed.success) {
@@ -347,55 +304,6 @@ export function RsvpScene({
                 />
               </div>
             </div>
-
-            {/* Multi-day ceremony attendance or reception confirmation */}
-            {status !== "declined" && isReceptionGuest && (
-              <div
-                className="rounded-xl border px-3.5 py-2 text-xs flex items-center gap-2"
-                style={{
-                  borderColor: `${theme.palette.accent}55`,
-                  backgroundColor: `${theme.palette.surface}E0`,
-                  color: theme.palette.primary,
-                }}
-              >
-                <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: theme.palette.accent }} />
-                <span>RSVP response for Reception &amp; Banquet</span>
-              </div>
-            )}
-
-            {status !== "declined" && !isReceptionGuest && ceremonyOptions.length > 1 && (
-              <div className="space-y-1.5">
-                <label
-                  className="block text-xs font-medium"
-                  style={{ color: theme.palette.mutedText }}
-                >
-                  Select Days / Ceremonies You Will Attend:
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ceremonyOptions.map((ceremony) => {
-                    const active = selectedCeremonies.includes(ceremony);
-                    return (
-                      <button
-                        key={ceremony}
-                        type="button"
-                        onClick={() => toggleCeremony(ceremony)}
-                        className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                          active ? "shadow-2xs font-semibold" : "opacity-80"
-                        }`}
-                        style={{
-                          backgroundColor: active ? theme.palette.primary : "transparent",
-                          color: active ? buttonTextColor : theme.palette.text,
-                          borderColor: active ? theme.palette.primary : `${theme.palette.accent}55`,
-                        }}
-                      >
-                        <span>{active ? "✓" : "+"}</span>
-                        <span>{ceremony}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {status !== "declined" && (
               <div
