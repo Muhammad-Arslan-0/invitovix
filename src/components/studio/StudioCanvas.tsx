@@ -19,7 +19,6 @@ export const StudioCanvas = memo(function StudioCanvas() {
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
   const triggerReplay = useStudioStore((s) => s.triggerReplay);
 
-  const [scaleMode, setScaleMode] = useState<"fit" | "actual">("fit");
   const viewportRef = useRef<HTMLDivElement>(null);
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
     width: 0,
@@ -49,7 +48,6 @@ export const StudioCanvas = memo(function StudioCanvas() {
   }, []);
 
   const computedScale = useMemo(() => {
-    if (scaleMode === "actual") return 1;
     if (previewDevice !== "mobile") return 1;
     if (!viewportSize.width || !viewportSize.height) return 1;
 
@@ -68,7 +66,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
 
     // Don't upscale past 1.0; clamp minimum to 0.40
     return Math.min(1, Math.max(0.4, Number(fit.toFixed(3))));
-  }, [scaleMode, previewDevice, viewportSize]);
+  }, [previewDevice, viewportSize]);
 
   const isPresentationMode = previewDevice !== "mobile";
   const isScaledMobile = previewDevice === "mobile" && computedScale !== 1;
@@ -121,40 +119,6 @@ export const StudioCanvas = memo(function StudioCanvas() {
 
         {/* Stage & Replay Controls */}
         <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-1.5 sm:gap-2">
-          {/* Responsive Fit / 100% Zoom Toggle for Mobile Frame */}
-          {previewDevice === "mobile" && (
-            <div
-              role="group"
-              aria-label="Preview Zoom"
-              className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-0.5 text-xs shrink-0"
-            >
-              <button
-                type="button"
-                onClick={() => setScaleMode("fit")}
-                className={`rounded-lg px-2 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
-                  scaleMode === "fit"
-                    ? "bg-white text-stone-900 shadow-xs font-semibold"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-                title="Scale mobile frame to fit screen"
-              >
-                Fit{computedScale < 0.98 ? ` ${Math.round(computedScale * 100)}%` : ""}
-              </button>
-              <button
-                type="button"
-                onClick={() => setScaleMode("actual")}
-                className={`rounded-lg px-2 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
-                  scaleMode === "actual"
-                    ? "bg-white text-stone-900 shadow-xs font-semibold"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-                title="100% full scale"
-              >
-                100%
-              </button>
-            </div>
-          )}
-
           <div className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs shrink-0">
             {(
               [
