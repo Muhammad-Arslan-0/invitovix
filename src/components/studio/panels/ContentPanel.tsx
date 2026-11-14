@@ -2,7 +2,7 @@
 
 import { memo, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { Move, Plus, Trash2, UsersRound } from "lucide-react";
+import { Calendar, Clock, Move, Plus, Trash2, UsersRound } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
@@ -11,6 +11,12 @@ import { ImageCropModal, FrameShapeOption } from "../ImageCropModal";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
 import { createClient } from "@/lib/supabase/client";
 import { CropState, AspectRatioType } from "@/lib/utils/imageOptimization";
+import {
+  parseDateToIso,
+  formatIsoToDisplayDate,
+  parseTimeTo24h,
+  format24hTo12h,
+} from "@/lib/utils/dateTimePickers";
 import { CoupleFrameShape, HeroFrameStyle } from "@/types/invitation";
 
 interface ContentPanelProps {
@@ -48,6 +54,11 @@ export const ContentPanel = memo(function ContentPanel({
     if (Number.isNaN(d.getTime())) return "";
     const offset = d.getTimezoneOffset() * 60000;
     return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+  })();
+
+  const eventYear = (() => {
+    const d = new Date(eventDate);
+    return Number.isNaN(d.getTime()) ? new Date().getFullYear() : d.getFullYear();
   })();
 
   const [adjustTarget, setAdjustTarget] = useState<{
@@ -741,7 +752,7 @@ export const ContentPanel = memo(function ContentPanel({
               key={item.id}
               className="rounded-2xl border border-stone-200 p-3.5 space-y-2.5 bg-stone-50/70 shadow-2xs"
             >
-              {/* Row 1: Day Badge, Date, Time, Remove */}
+              {/* Row 1: Day Badge, Date (with calendar picker), Time (with clock picker), Remove */}
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
@@ -750,32 +761,86 @@ export const ContentPanel = memo(function ContentPanel({
                     updateItineraryItem(item.id, { dayLabel: e.target.value })
                   }
                   placeholder={`Day ${idx + 1}`}
-                  className="w-28 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs font-semibold text-stone-800"
+                  className="w-28 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-800 placeholder:font-normal placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   title="Day Label (e.g. Day 1, Ceremony Day, Reception)"
                 />
-                <input
-                  type="text"
-                  value={item.date ?? ""}
-                  onChange={(e) =>
-                    updateItineraryItem(item.id, { date: e.target.value })
-                  }
-                  placeholder="Date (e.g. Friday, Oct 24)"
-                  className="flex-1 min-w-[140px] rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-700"
-                  title="Date of event"
-                />
-                <input
-                  type="text"
-                  value={item.time}
-                  onChange={(e) =>
-                    updateItineraryItem(item.id, { time: e.target.value })
-                  }
-                  placeholder="Time (e.g. 7:30 PM)"
-                  className="w-24 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-700"
-                />
+
+                <div className="relative flex-1 min-w-[145px] flex items-center">
+                  <input
+                    type="text"
+                    value={item.date ?? ""}
+                    onChange={(e) =>
+                      updateItineraryItem(item.id, { date: e.target.value })
+                    }
+                    placeholder="Date (e.g. Friday, Oct 24)"
+                    className="w-full rounded-lg border border-stone-200 bg-white pl-2.5 pr-8 py-1.5 text-xs text-stone-700 placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    title="Date of event (type or pick from calendar)"
+                  />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 text-stone-400 hover:text-amber-700 transition">
+                    <input
+                      type="date"
+                      aria-label="Pick date from calendar"
+                      value={parseDateToIso(item.date, eventYear)}
+                      onChange={(e) => {
+                        const iso = e.target.value;
+                        if (iso) {
+                          updateItineraryItem(item.id, {
+                            date: formatIsoToDisplayDate(iso),
+                          });
+                        }
+                      }}
+                      onClick={(e) => {
+                        try {
+                          e.currentTarget.showPicker?.();
+                        } catch {}
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                      title="Pick date from calendar"
+                    />
+                    <Calendar className="w-3.5 h-3.5 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="relative w-28 flex items-center">
+                  <input
+                    type="text"
+                    value={item.time}
+                    onChange={(e) =>
+                      updateItineraryItem(item.id, { time: e.target.value })
+                    }
+                    placeholder="Time (e.g. 7:30 PM)"
+                    className="w-full rounded-lg border border-stone-200 bg-white pl-2.5 pr-8 py-1.5 text-xs text-stone-700 placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    title="Time of event (type or pick from clock)"
+                  />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 text-stone-400 hover:text-amber-700 transition">
+                    <input
+                      type="time"
+                      aria-label="Pick time from clock"
+                      value={parseTimeTo24h(item.time)}
+                      onChange={(e) => {
+                        const t24 = e.target.value;
+                        if (t24) {
+                          updateItineraryItem(item.id, {
+                            time: format24hTo12h(t24),
+                          });
+                        }
+                      }}
+                      onClick={(e) => {
+                        try {
+                          e.currentTarget.showPicker?.();
+                        } catch {}
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                      title="Pick time from clock"
+                    />
+                    <Clock className="w-3.5 h-3.5 pointer-events-none" />
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => removeItineraryItem(item.id)}
-                  className="ml-auto text-stone-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                  className="ml-auto text-stone-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"
                   aria-label="Remove ceremony item"
                   title="Remove this event"
                 >
