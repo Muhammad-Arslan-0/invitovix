@@ -21,6 +21,7 @@ const STARTER_HEADLINES = new Set(
 );
 
 export type StudioTab = "theme" | "envelope" | "content" | "motion";
+export type MobileStudioMode = "editor" | "preview";
 export type PreviewDevice = "mobile" | "tablet" | "desktop";
 export type PreviewStage = "sealed" | "opened";
 
@@ -42,6 +43,7 @@ interface StudioState {
   eventMeta: StudioEventMeta;
   designData: EventDesignData;
   activeTab: StudioTab;
+  mobileMode: MobileStudioMode;
   previewDevice: PreviewDevice;
   previewStage: PreviewStage;
   replayCounter: number;
@@ -51,6 +53,7 @@ interface StudioState {
 
   hydrateEvent: (event: EventRecord) => void;
   setActiveTab: (tab: StudioTab) => void;
+  setMobileMode: (mode: MobileStudioMode) => void;
   setPreviewDevice: (device: PreviewDevice) => void;
   setPreviewStage: (stage: PreviewStage) => void;
   triggerReplay: () => void;
@@ -186,6 +189,7 @@ export const useStudioStore = create<StudioState>((set) => ({
   eventMeta: initialMeta,
   designData: DEFAULT_DESIGN_DATA,
   activeTab: "theme",
+  mobileMode: "editor",
   previewDevice: "mobile",
   previewStage: "sealed",
   replayCounter: 0,
@@ -211,10 +215,12 @@ export const useStudioStore = create<StudioState>((set) => ({
       designData: mergeDesignData(event.design_data),
       isDirty: false,
       previewStage: "sealed",
+      mobileMode: "editor",
       lastSavedAt: event.updated_at,
     }),
 
   setActiveTab: (activeTab) => set({ activeTab }),
+  setMobileMode: (mobileMode) => set({ mobileMode }),
   setPreviewDevice: (previewDevice) => set({ previewDevice }),
   setPreviewStage: (previewStage) => set({ previewStage }),
   triggerReplay: () =>

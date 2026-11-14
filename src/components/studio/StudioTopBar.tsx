@@ -108,14 +108,15 @@ export const StudioTopBar = memo(function StudioTopBar({
   }
 
   return (
-    <header className="h-15 border-b border-stone-200 bg-white/95 backdrop-blur-md px-4 flex items-center justify-between gap-3 shrink-0 z-30">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-14 sm:h-15 border-b border-stone-200 bg-white/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 shrink-0 z-30">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
           type="button"
           onClick={() => navigateTo("dashboard", "/dashboard")}
           onMouseEnter={() => router.prefetch("/dashboard")}
           disabled={isPending && navTarget === "dashboard"}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer"
+          aria-label="Back to Dashboard"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2 sm:px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer shrink-0"
         >
           {isPending && navTarget === "dashboard" ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -131,14 +132,14 @@ export const StudioTopBar = memo(function StudioTopBar({
           size="sm"
           rounded="xl"
           decorative
-          className="hidden sm:inline-flex w-7 h-7"
+          className="hidden sm:inline-flex w-7 h-7 shrink-0"
         />
 
         <input
           type="text"
           value={eventTitle}
           onChange={(e) => updateMeta({ title: e.target.value })}
-          className="text-sm font-serif font-semibold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-stone-900 focus:outline-none px-1 py-0.5 truncate max-w-[180px] sm:max-w-xs"
+          className="text-xs sm:text-sm font-serif font-semibold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-stone-900 focus:outline-none px-1 py-0.5 truncate min-w-0 max-w-[120px] sm:max-w-xs"
           aria-label="Invitation Title"
         />
 
@@ -150,7 +151,7 @@ export const StudioTopBar = memo(function StudioTopBar({
         </span>
 
         <span
-          className={`hidden md:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+          className={`hidden md:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium shrink-0 ${
             isDirty
               ? "bg-amber-100 text-amber-800"
               : "bg-emerald-50 text-emerald-700"
@@ -165,7 +166,7 @@ export const StudioTopBar = memo(function StudioTopBar({
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           type="button"
           onClick={() =>
@@ -175,7 +176,8 @@ export const StudioTopBar = memo(function StudioTopBar({
             router.prefetch(`/dashboard/events/${eventId}/rsvps`)
           }
           disabled={isPending && navTarget === "rsvps"}
-          className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer"
+          aria-label="View RSVPs"
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-70 transition-colors cursor-pointer shrink-0"
         >
           {isPending && navTarget === "rsvps" ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -199,7 +201,7 @@ export const StudioTopBar = memo(function StudioTopBar({
           onClick={handleDuplicate}
           disabled={isDuplicating || isSaving}
           title="Duplicate this card for another event or reception-only guests"
-          className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-60 transition cursor-pointer"
+          className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-60 transition cursor-pointer shrink-0"
         >
           {isDuplicating ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -213,26 +215,29 @@ export const StudioTopBar = memo(function StudioTopBar({
           type="button"
           onClick={onTogglePublish}
           disabled={isSaving}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+          aria-label={isPublished ? "Invitation Published" : "Publish Invitation"}
+          title={isPublished ? "Invitation Published" : "Publish Invitation"}
+          className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
             isPublished
               ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs"
               : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>{isPublished ? "Published" : "Publish"}</span>
+          <span className="hidden sm:inline">{isPublished ? "Published" : "Publish"}</span>
         </button>
 
         <button
           type="button"
           onClick={onSave}
           disabled={isSaving || !isDirty}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
+          aria-label="Save changes"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3 sm:px-3.5 py-1.5 text-xs font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs shrink-0"
         >
           {isSaving ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Saving...</span>
+              <span className="hidden sm:inline">Saving...</span>
             </>
           ) : isDirty ? (
             <>
@@ -242,7 +247,7 @@ export const StudioTopBar = memo(function StudioTopBar({
           ) : (
             <>
               <Check className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Saved</span>
+              <span className="hidden sm:inline">Saved</span>
             </>
           )}
         </button>

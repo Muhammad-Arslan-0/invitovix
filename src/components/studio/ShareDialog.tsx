@@ -62,10 +62,12 @@ export function ShareDialog({
       <Dialog.Trigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer"
+          aria-label="Share Invitation Link"
+          title="Share Invitation Link"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer shrink-0"
         >
           <Share2 className="w-3.5 h-3.5" />
-          <span>Share Link</span>
+          <span className="hidden sm:inline">Share Link</span>
         </button>
       </Dialog.Trigger>
 

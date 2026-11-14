@@ -61,8 +61,8 @@ export function EnvelopeStage({
     <div
       className={`relative w-full flex flex-col items-center justify-center overflow-hidden ${
         bounded
-          ? "min-h-full h-full px-4 py-6 sm:px-5 sm:py-8"
-          : "min-h-[680px] h-full px-5 py-10"
+          ? "min-h-full h-full px-4 pt-9 pb-6 sm:px-5 sm:pt-11 sm:pb-8"
+          : "min-h-[680px] h-full px-5 pt-10 pb-8 sm:py-10"
       }`}
       style={{
         backgroundColor: theme.palette.background,
@@ -105,7 +105,7 @@ export function EnvelopeStage({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative z-20 mb-6"
+          className="relative z-20 mb-3.5 sm:mb-5"
         >
           <button
             type="button"
@@ -164,7 +164,7 @@ export function EnvelopeStage({
             backgroundColor: theme.palette.surface,
             borderColor: `${theme.palette.accent}55`,
           }}
-          className="mx-4 rounded-t-2xl border p-6 text-center shadow-lg relative"
+          className="mx-4 rounded-t-2xl border p-4 sm:p-5 text-center shadow-lg relative"
         >
           <div
             aria-hidden="true"
@@ -172,7 +172,7 @@ export function EnvelopeStage({
             style={{ borderColor: theme.palette.accent }}
           />
           <p
-            className="relative z-10 text-[10px] uppercase tracking-[0.24em]"
+            className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.24em]"
             style={{
               color: theme.palette.mutedText,
               fontFamily: getBodyFontFamily(theme.typography.bodyFont),
@@ -181,7 +181,7 @@ export function EnvelopeStage({
             {content.hostLine}
           </p>
           <h2
-            className="relative z-10 mt-2 text-2xl font-semibold tracking-wide"
+            className="relative z-10 mt-1.5 text-xl sm:text-2xl font-semibold tracking-wide leading-tight"
             style={{
               color: theme.palette.primary,
               fontFamily: getDisplayFontFamily(theme.typography.displayFont),
@@ -191,7 +191,7 @@ export function EnvelopeStage({
           </h2>
           {formattedDate && (
             <p
-              className="relative z-10 mt-1 text-base"
+              className="relative z-10 mt-1 text-sm sm:text-base"
               style={{
                 color: theme.palette.accent,
                 fontFamily: getScriptFontFamily(theme.typography.scriptFont),
@@ -217,7 +217,7 @@ export function EnvelopeStage({
             backgroundColor: envelope.envelopeColor,
             borderColor: `${envelope.linerColor}66`,
           }}
-          className={`relative -mt-8 rounded-2xl border shadow-[0_30px_65px_-15px_rgba(0,0,0,0.42)] overflow-hidden cursor-pointer select-none ${
+          className={`relative -mt-6 sm:-mt-8 rounded-2xl border shadow-[0_30px_65px_-15px_rgba(0,0,0,0.42)] overflow-hidden cursor-pointer select-none ${
             envelope.style === "arch-pocket"
               ? "rounded-t-[90px]"
               : envelope.style === "art-deco"
@@ -253,7 +253,7 @@ export function EnvelopeStage({
               clipPath: "polygon(0 0, 100% 0, 50% 100%)",
               background: `linear-gradient(165deg, color-mix(in srgb, ${envelope.envelopeColor} 84%, white) 0%, ${envelope.envelopeColor} 92%)`,
             }}
-            className="relative z-10 h-36 w-full flex items-start justify-center pt-5 shadow-lg"
+            className="relative z-10 h-28 sm:h-34 w-full flex items-start justify-center pt-4 sm:pt-5 shadow-lg"
           >
             <div
               className="text-[10px] uppercase tracking-[0.28em] opacity-85"
@@ -271,7 +271,7 @@ export function EnvelopeStage({
             viewBox="0 0 368 144"
             preserveAspectRatio="none"
             aria-hidden="true"
-            className="pointer-events-none absolute top-0 left-0 w-full h-36 z-10 opacity-45"
+            className="pointer-events-none absolute top-0 left-0 w-full h-28 sm:h-34 z-10 opacity-45"
           >
             <polyline
               points="0,0 184,142 368,0"
@@ -282,12 +282,13 @@ export function EnvelopeStage({
           </svg>
 
           {/* Wax Seal Centerpiece */}
-          <div className="relative z-20 -mt-13 flex flex-col items-center justify-center pb-10 pt-2 px-6 text-center">
+          <div className="relative z-20 -mt-10 sm:-mt-12 flex flex-col items-center justify-center pb-7 sm:pb-9 pt-1 px-4 sm:px-6 text-center">
             {envelope.waxSeal.enabled ? (
               <WaxSeal
                 waxSeal={envelope.waxSeal}
                 onClick={onUnseal}
                 isCracking={isOpening}
+                size="md"
               />
             ) : (
               <motion.button
@@ -305,7 +306,7 @@ export function EnvelopeStage({
               </motion.button>
             )}
 
-            <div className="mt-5 flex items-center justify-center gap-1.5 text-xs tracking-wide opacity-90">
+            <div className="mt-3.5 sm:mt-5 flex items-center justify-center gap-1.5 text-xs tracking-wide opacity-90">
               <Sparkles
                 className="w-3.5 h-3.5 shrink-0"
                 style={{ color: envelope.linerColor }}
@@ -324,7 +325,7 @@ export function EnvelopeStage({
       </motion.div>
 
       <p
-        className="relative z-20 mt-8 text-[11px] tracking-[0.22em] uppercase opacity-60"
+        className="relative z-20 mt-4 sm:mt-6 text-[10px] sm:text-[11px] tracking-[0.22em] uppercase opacity-60"
         style={{ color: theme.palette.mutedText }}
       >
         Crafted with Invitovix

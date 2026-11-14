@@ -34,8 +34,9 @@ export const StudioCanvas = memo(function StudioCanvas() {
   return (
     <div className="flex-1 drafting-grid flex flex-col overflow-hidden">
       {/* Canvas Device & Stage Controls */}
-      <div className="h-12 border-b border-stone-200/90 bg-white/85 backdrop-blur-md px-4 flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-1 rounded-xl bg-stone-100 p-1">
+      <div className="h-12 border-b border-stone-200/90 bg-white/85 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
+        {/* Device Switcher (Mobile/Tablet/Desktop): only shown on desktop/tablet screens */}
+        <div className="hidden md:flex items-center gap-1 rounded-xl bg-stone-100 p-1">
           {(
             [
               { id: "mobile", icon: Smartphone, label: "Mobile" },
@@ -50,7 +51,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
                 key={dev.id}
                 type="button"
                 onClick={() => setPreviewDevice(dev.id)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer ${
                   active
                     ? "bg-white text-stone-900 shadow-xs"
                     : "text-stone-500 hover:text-stone-800"
@@ -63,7 +64,8 @@ export const StudioCanvas = memo(function StudioCanvas() {
           })}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Stage & Replay Controls */}
+        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
           <div className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs">
             {(
               [
@@ -77,7 +79,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
                   key={stage.id}
                   type="button"
                   onClick={() => setPreviewStage(stage.id)}
-                  className={`rounded-lg px-2.5 py-1 font-medium cursor-pointer transition-colors duration-150 ${
+                  className={`rounded-lg px-3 sm:px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${
                     active
                       ? "bg-white text-stone-900 shadow-xs"
                       : "text-stone-500 hover:text-stone-800"
@@ -92,23 +94,34 @@ export const StudioCanvas = memo(function StudioCanvas() {
           <button
             type="button"
             onClick={triggerReplay}
-            className="inline-flex items-center gap-1 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 sm:px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer shrink-0"
             title="Replay seal reveal"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Replay Reveal</span>
+            <span className="text-xs">Replay</span>
           </button>
         </div>
       </div>
 
       {/* Scrollable Preview Viewport */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-6 flex justify-center items-start">
         <div
-          className={`relative overflow-hidden ${frameClasses}`}
+          className={`relative overflow-hidden shrink-0 ${frameClasses}`}
           style={{
-            height: previewDevice === "mobile" ? "760px" : "calc(100vh - 150px)",
+            height:
+              previewDevice === "mobile"
+                ? "760px"
+                : "calc(100vh - 150px)",
           }}
         >
+          {/* Mobile Speaker / Dynamic Island Notch */}
+          {previewDevice === "mobile" && (
+            <div
+              aria-hidden="true"
+              className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 bg-stone-900 rounded-full z-40 pointer-events-none"
+            />
+          )}
+
           {/* Single persistent container tree so toggling Mobile/Tablet/Desktop never unmounts InvitationPlayer */}
           <div
             className={

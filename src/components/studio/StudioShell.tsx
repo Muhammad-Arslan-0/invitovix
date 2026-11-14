@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-import { Mail, Music2, Palette, Type } from "lucide-react";
+import { Eye, Mail, Music2, Palette, SlidersHorizontal, Type } from "lucide-react";
 import { EventRecord, TemplateRecord } from "@/types/invitation";
 import { StudioTab, useStudioStore } from "@/store/useStudioStore";
 import { createClient } from "@/lib/supabase/client";
@@ -27,8 +27,10 @@ export function StudioShell({
 }: StudioShellProps) {
   const hydratedEventId = useStudioStore((s) => s.eventMeta.id);
   const activeTab = useStudioStore((s) => s.activeTab);
+  const mobileMode = useStudioStore((s) => s.mobileMode);
   const hydrateEvent = useStudioStore((s) => s.hydrateEvent);
   const setActiveTab = useStudioStore((s) => s.setActiveTab);
+  const setMobileMode = useStudioStore((s) => s.setMobileMode);
   const updateMeta = useStudioStore((s) => s.updateMeta);
   const setSaving = useStudioStore((s) => s.setSaving);
   const markSaved = useStudioStore((s) => s.markSaved);
@@ -145,9 +147,53 @@ export function StudioShell({
         </div>
       )}
 
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      {/* Mobile Mode Segmented Switcher (Visible on mobile < lg, hidden on desktop lg+) */}
+      <div className="lg:hidden shrink-0 border-b border-stone-200/90 bg-white px-3 py-2 flex items-center justify-center gap-2 z-20">
+        <div
+          role="tablist"
+          aria-label="Studio View Mode"
+          className="inline-flex rounded-xl bg-stone-100 p-1 text-xs font-medium w-full max-w-xs shadow-xs"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mobileMode === "editor"}
+            onClick={() => setMobileMode("editor")}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              mobileMode === "editor"
+                ? "bg-white text-stone-900 shadow-xs"
+                : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-amber-700" />
+            <span>Studio Editor</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mobileMode === "preview"}
+            onClick={() => setMobileMode("preview")}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              mobileMode === "preview"
+                ? "bg-white text-stone-900 shadow-xs"
+                : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5 text-amber-700" />
+            <span>Live Card Preview</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
         {/* Left Inspector Sidebar */}
-        <aside className="w-full lg:w-[370px] xl:w-[400px] border-r border-stone-200 bg-white flex flex-col shrink-0 overflow-hidden max-h-[45vh] lg:max-h-none">
+        <aside
+          className={`w-full lg:w-[370px] xl:w-[400px] border-r border-stone-200 bg-white flex flex-col shrink-0 overflow-hidden ${
+            mobileMode === "preview"
+              ? "hidden lg:flex"
+              : "flex flex-1 lg:flex-none lg:max-h-none"
+          }`}
+        >
           <Tabs.Root
             value={activeTab}
             onValueChange={handleTabChange}
@@ -176,7 +222,7 @@ export function StudioShell({
               })}
             </Tabs.List>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 pb-24 sm:pb-5">
               {visitedTabs.includes("theme") && (
                 <Tabs.Content
                   value="theme"
@@ -218,7 +264,26 @@ export function StudioShell({
         </aside>
 
         {/* Center Live WYSIWYG Preview */}
-        <StudioCanvas />
+        <div
+          className={`flex-1 flex flex-col overflow-hidden ${
+            mobileMode === "editor" ? "hidden lg:flex" : "flex"
+          }`}
+        >
+          <StudioCanvas />
+        </div>
+
+        {/* Mobile floating pill in editor mode to quickly jump to Live Preview without scrolling to top */}
+        {mobileMode === "editor" && (
+          <button
+            type="button"
+            onClick={() => setMobileMode("preview")}
+            aria-label="View Live Preview"
+            className="lg:hidden fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-stone-900 text-white px-4 py-2.5 text-xs font-semibold shadow-2xl border border-stone-700/60 hover:bg-stone-800 transition active:scale-95 cursor-pointer"
+          >
+            <Eye className="w-4 h-4 text-amber-300" />
+            <span>Live Preview</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ interface WaxSealProps {
   waxSeal: EventDesignData["envelope"]["waxSeal"];
   onClick?: () => void;
   isCracking?: boolean;
-  size?: "sm" | "lg";
+  size?: "sm" | "md" | "lg";
 }
 
 export function WaxSeal({
@@ -20,12 +20,26 @@ export function WaxSeal({
 }: WaxSealProps) {
   const uid = useId();
   const gradId = `waxGrad-${size}-${uid}`;
-  const dim = size === "lg" ? "w-26 h-26" : "w-15 h-15";
-  const innerDim = size === "lg" ? "w-[74px] h-[74px]" : "w-10 h-10";
+  const dim =
+    size === "lg"
+      ? "w-26 h-26"
+      : size === "md"
+        ? "w-20 h-20"
+        : "w-15 h-15";
+  const innerDim =
+    size === "lg"
+      ? "w-[74px] h-[74px]"
+      : size === "md"
+        ? "w-14 h-14"
+        : "w-10 h-10";
 
   const renderEmblem = () => {
     const iconClass =
-      size === "lg" ? "w-5 h-5 opacity-95 drop-shadow-xs" : "w-3.5 h-3.5 opacity-95";
+      size === "lg"
+        ? "w-5 h-5 opacity-95 drop-shadow-xs"
+        : size === "md"
+          ? "w-4 h-4 opacity-95 drop-shadow-xs"
+          : "w-3.5 h-3.5 opacity-95";
     switch (waxSeal.emblem) {
       case "crown":
         return <Crown className={iconClass} />;
@@ -101,7 +115,11 @@ export function WaxSeal({
               ? waxSeal.emblem === "monogram"
                 ? "text-lg"
                 : "text-[11px] mt-0.5"
-              : "text-[9px]"
+              : size === "md"
+                ? waxSeal.emblem === "monogram"
+                  ? "text-sm"
+                  : "text-[10px] mt-0.5"
+                : "text-[9px]"
           }`}
           style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
         >
