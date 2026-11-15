@@ -12,6 +12,7 @@ import {
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { WaxSeal } from "./WaxSeal";
 import { LottieAccent } from "./LottieAccent";
+import { BlessingHeader } from "./BlessingHeader";
 
 interface EnvelopeStageProps {
   designData: EventDesignData;
@@ -171,6 +172,18 @@ export function EnvelopeStage({
             className="pointer-events-none absolute inset-2 rounded-t-xl border opacity-35"
             style={{ borderColor: theme.palette.accent }}
           />
+          {content.blessingHeader?.enabled && (
+            <div className="relative z-10 mb-1 max-w-[280px] mx-auto">
+              <BlessingHeader
+                blessingHeader={content.blessingHeader}
+                primaryColor={theme.palette.primary}
+                accentColor={theme.palette.accent}
+                textColor={theme.palette.text}
+                mutedTextColor={theme.palette.mutedText}
+                size="compact"
+              />
+            </div>
+          )}
           <p
             className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.24em]"
             style={{

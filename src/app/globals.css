@@ -31,6 +31,16 @@
   --font-lora: "Lora", Georgia, serif;
   --font-eb-garamond: "EB Garamond", Georgia, serif;
   --font-spectral: "Spectral", Georgia, serif;
+  --font-amiri: "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+  --font-aref-ruqaa: "Aref Ruqaa", "Amiri", serif;
+}
+
+.font-arabic {
+  font-family: var(--font-amiri), "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", serif;
+}
+
+.font-ruqaa {
+  font-family: var(--font-aref-ruqaa), "Aref Ruqaa", "Amiri", serif;
 }
 
 @theme inline {

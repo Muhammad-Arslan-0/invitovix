@@ -176,6 +176,36 @@ export const galleryPhotoSchema = z.object({
   caption: z.string(),
 });
 
+export const blessingHeaderPresetEnum = [
+  "none",
+  "bismillah-classic",
+  "bismillah-compact",
+  "ayat-ar-rum",
+  "ayat-pairs",
+  "dua-barakallah",
+  "dua-rabbana",
+  "ayat-garments",
+  "custom",
+] as const;
+
+export const blessingHeaderSchema = z.object({
+  enabled: z.boolean().default(false),
+  preset: z.enum(blessingHeaderPresetEnum).default("none"),
+  arabicText: z.string().default("بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"),
+  translation: z
+    .string()
+    .default("In the name of Allah, the Most Gracious, the Most Merciful"),
+  reference: z.string().default("Surah Al-Fatihah 1:1"),
+  showTranslation: z.boolean().default(true),
+  showOrnament: z.boolean().default(true),
+  style: z
+    .enum(["calligraphy", "traditional", "minimal"])
+    .default("calligraphy"),
+});
+
+export type BlessingHeaderConfig = z.infer<typeof blessingHeaderSchema>;
+export type BlessingHeaderPreset = (typeof blessingHeaderPresetEnum)[number];
+
 export const eventDesignDataSchema = z.object({
   theme: z.object({
     presetId: z.string(),
@@ -197,6 +227,7 @@ export const eventDesignDataSchema = z.object({
     promptText: z.string(),
   }),
   content: z.object({
+    blessingHeader: blessingHeaderSchema.optional(),
     hostLine: z.string(),
     headline: z.string(),
     subtitle: z.string(),

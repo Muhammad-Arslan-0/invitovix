@@ -17,7 +17,12 @@ import {
   parseTimeTo24h,
   format24hTo12h,
 } from "@/lib/utils/dateTimePickers";
-import { CoupleFrameShape, HeroFrameStyle } from "@/types/invitation";
+import {
+  CoupleFrameShape,
+  HeroFrameStyle,
+  BlessingHeaderPreset,
+} from "@/types/invitation";
+import { getBlessingPresetById } from "@/lib/constants/islamicBlessings";
 
 interface ContentPanelProps {
   userId: string;
@@ -244,6 +249,264 @@ export const ContentPanel = memo(function ContentPanel({
             Jump to Card
           </button>
         </div>
+
+        {/* Sacred Header & Islamic Blessings Section */}
+        {(() => {
+          const blessing = content.blessingHeader || {
+            enabled: false,
+            preset: "none",
+            arabicText: "بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+            translation:
+              "In the name of Allah, the Most Gracious, the Most Merciful",
+            reference: "Surah Al-Fatihah 1:1",
+            showTranslation: true,
+            showOrnament: true,
+            style: "calligraphy" as const,
+          };
+
+          const handlePresetSelect = (presetId: string) => {
+            if (presetId === "none") {
+              updateContent({
+                blessingHeader: {
+                  ...blessing,
+                  enabled: false,
+                  preset: "none",
+                },
+              });
+              return;
+            }
+            if (presetId === "custom") {
+              updateContent({
+                blessingHeader: {
+                  ...blessing,
+                  enabled: true,
+                  preset: "custom",
+                },
+              });
+              return;
+            }
+            const found = getBlessingPresetById(presetId);
+            if (found) {
+              updateContent({
+                blessingHeader: {
+                  ...blessing,
+                  enabled: true,
+                  preset: found.id as BlessingHeaderPreset,
+                  arabicText: found.arabicText,
+                  translation: found.translation,
+                  reference: found.reference,
+                },
+              });
+            }
+          };
+
+          return (
+            <div className="rounded-2xl border border-amber-900/15 bg-gradient-to-b from-amber-50/50 to-stone-50/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-800 text-xs font-arabic border border-amber-300/40">
+                    ﷽
+                  </span>
+                  <div>
+                    <h4 className="text-xs font-semibold text-stone-900">
+                      Bismillah & Quranic Ayats
+                    </h4>
+                    <p className="text-[10px] text-stone-500">
+                      Sacred opening, marriage verses & sunnah du&apos;as
+                    </p>
+                  </div>
+                </div>
+                <Switch.Root
+                  checked={blessing.enabled}
+                  onCheckedChange={(checked) => {
+                    updateContent({
+                      blessingHeader: {
+                        ...blessing,
+                        enabled: checked,
+                        preset:
+                          checked &&
+                          (blessing.preset === "none" || !blessing.preset)
+                            ? "bismillah-classic"
+                            : blessing.preset,
+                      },
+                    });
+                  }}
+                  className="relative h-5 w-9 rounded-full bg-stone-300 transition-colors data-[state=checked]:bg-amber-600 focus:outline-none cursor-pointer"
+                >
+                  <Switch.Thumb className="block h-3.5 w-3.5 translate-x-1 rounded-full bg-white transition-transform data-[state=checked]:translate-x-4.5 shadow-xs" />
+                </Switch.Root>
+              </div>
+
+              {blessing.enabled && (
+                <div className="space-y-3 pt-2 border-t border-amber-900/10">
+                  {/* Preset Selector */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                      Sacred Verse / Preset
+                    </label>
+                    <select
+                      value={blessing.preset}
+                      onChange={(e) => handlePresetSelect(e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-800 focus:border-amber-700 focus:outline-none cursor-pointer"
+                    >
+                      <option value="bismillah-classic">
+                        🕊️ Bismillah Ar-Rahman Ar-Rahim (Classic)
+                      </option>
+                      <option value="ayat-ar-rum">
+                        📖 Surah Ar-Rum 30:21 (Love & Tranquility)
+                      </option>
+                      <option value="ayat-pairs">
+                        🌙 Surah An-Naba 78:8 (Created in Pairs)
+                      </option>
+                      <option value="dua-barakallah">
+                        💍 Sunnah Wedding Du&apos;a (Barakallahu Laka)
+                      </option>
+                      <option value="dua-rabbana">
+                        🤲 Surah Al-Furqan 25:74 (Comfort of the Eyes)
+                      </option>
+                      <option value="ayat-garments">
+                        🪡 Surah Al-Baqarah 2:187 (Garments for Each Other)
+                      </option>
+                      <option value="bismillah-compact">
+                        ✨ Bismillah (Compact Inscription)
+                      </option>
+                      <option value="custom">✍️ Custom Verse / Du&apos;a</option>
+                    </select>
+                  </div>
+
+                  {/* Live Preview Card */}
+                  <div className="rounded-xl border border-amber-200/80 bg-white/95 p-3 text-center shadow-xs">
+                    <span className="text-[10px] uppercase tracking-wider text-amber-800/70 font-medium block mb-1">
+                      Live Header Preview
+                    </span>
+                    <p
+                      dir="rtl"
+                      lang="ar"
+                      className="font-arabic text-xl sm:text-2xl text-stone-900 leading-relaxed font-normal"
+                    >
+                      {blessing.arabicText}
+                    </p>
+                    {blessing.showTranslation && blessing.translation && (
+                      <p className="mt-1.5 text-[11px] text-stone-600 italic font-serif leading-snug">
+                        &ldquo;{blessing.translation}&rdquo;
+                      </p>
+                    )}
+                    {blessing.reference && (
+                      <span className="mt-1 inline-block text-[9px] uppercase tracking-widest text-amber-700/80 font-medium">
+                        — {blessing.reference}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Customization Options */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <label className="flex items-center gap-2 text-[11px] text-stone-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={blessing.showTranslation}
+                        onChange={(e) =>
+                          updateContent({
+                            blessingHeader: {
+                              ...blessing,
+                              showTranslation: e.target.checked,
+                            },
+                          })
+                        }
+                        className="rounded border-stone-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                      />
+                      <span>Show Translation</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-stone-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={blessing.showOrnament}
+                        onChange={(e) =>
+                          updateContent({
+                            blessingHeader: {
+                              ...blessing,
+                              showOrnament: e.target.checked,
+                            },
+                          })
+                        }
+                        className="rounded border-stone-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                      />
+                      <span>Show Emblem/Seal</span>
+                    </label>
+                  </div>
+
+                  {/* Editable Arabic Text Field */}
+                  <div>
+                    <label className="block text-[11px] text-stone-600 mb-1">
+                      Arabic Text (with Tashkeel / Harakat)
+                    </label>
+                    <textarea
+                      dir="rtl"
+                      rows={2}
+                      value={blessing.arabicText}
+                      onChange={(e) =>
+                        updateContent({
+                          blessingHeader: {
+                            ...blessing,
+                            arabicText: e.target.value,
+                            preset: "custom",
+                          },
+                        })
+                      }
+                      className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-arabic text-stone-900 focus:border-amber-700 focus:outline-none"
+                      placeholder="بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
+                    />
+                  </div>
+
+                  {/* Editable Translation */}
+                  {blessing.showTranslation && (
+                    <div>
+                      <label className="block text-[11px] text-stone-600 mb-1">
+                        English Translation
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={blessing.translation}
+                        onChange={(e) =>
+                          updateContent({
+                            blessingHeader: {
+                              ...blessing,
+                              translation: e.target.value,
+                              preset: "custom",
+                            },
+                          })
+                        }
+                        className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-800 focus:border-amber-700 focus:outline-none"
+                        placeholder="In the name of Allah..."
+                      />
+                    </div>
+                  )}
+
+                  {/* Editable Reference */}
+                  <div>
+                    <label className="block text-[11px] text-stone-600 mb-1">
+                      Surah / Du&apos;a Reference (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={blessing.reference}
+                      onChange={(e) =>
+                        updateContent({
+                          blessingHeader: {
+                            ...blessing,
+                            reference: e.target.value,
+                            preset: "custom",
+                          },
+                        })
+                      }
+                      className="w-full rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-800 focus:border-amber-700 focus:outline-none"
+                      placeholder="e.g. Surah Ar-Rum 30:21"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <div>
           <label className="block text-xs text-stone-600 mb-1">Host Line</label>

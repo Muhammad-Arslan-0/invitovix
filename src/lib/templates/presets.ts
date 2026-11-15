@@ -241,6 +241,17 @@ export const LEGACY_COUPLE_FALLBACK: CoupleProfile = {
   groomImageUrl: null,
 };
 
+export const DEFAULT_BLESSING_HEADER = {
+  enabled: false,
+  preset: "none" as const,
+  arabicText: "بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+  translation: "In the name of Allah, the Most Gracious, the Most Merciful",
+  reference: "Surah Al-Fatihah 1:1",
+  showTranslation: true,
+  showOrnament: true,
+  style: "calligraphy" as const,
+};
+
 export function resolveCardBackdropUrl(
   cardArt: Partial<CardArtConfig> | null | undefined
 ): string | null {
@@ -332,6 +343,18 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
         promptText: "Tap the gold wax seal to unseal your invitation",
       },
       content: {
+        blessingHeader: {
+          enabled: true,
+          preset: "ayat-ar-rum",
+          arabicText:
+            "وَمِنْ ءَايَٰتِهِۦٓ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَٰجًۭا لِّتَسْكُنُوٓا۟ إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةًۭ وَرَحْمَةً",
+          translation:
+            "And among His signs is that He created for you mates from among yourselves, that you may dwell in tranquility with them, and He has put love and mercy between your hearts.",
+          reference: "Surah Ar-Rum 30:21",
+          showTranslation: true,
+          showOrnament: true,
+          style: "calligraphy",
+        },
         hostLine: "Together with their beloved families",
         headline: "Amina & Zayan",
         subtitle:
@@ -2965,6 +2988,12 @@ export function mergeDesignData(raw: unknown): EventDesignData {
     content: {
       ...DEFAULT_DESIGN_DATA.content,
       ...stripNullish(candidate.content),
+      blessingHeader: candidate.content?.blessingHeader
+        ? {
+            ...DEFAULT_BLESSING_HEADER,
+            ...stripNullish(candidate.content.blessingHeader),
+          }
+        : DEFAULT_BLESSING_HEADER,
       heroImageUrl:
         typeof candidate.content?.heroImageUrl === "string"
           ? candidate.content.heroImageUrl

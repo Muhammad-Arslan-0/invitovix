@@ -9,6 +9,7 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
+import { BlessingHeader } from "@/components/invitation/BlessingHeader";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
 import { PortraitFrame } from "../PortraitFrame";
 
@@ -115,9 +116,26 @@ export function HeroScene({
         <span>{typeMeta.heroPillLabel}</span>
       </div>
 
+      {/* Sacred Islamic Header / Bismillah / Ayat */}
+      {content.blessingHeader?.enabled && (
+        <div className="hero-stagger mt-5 w-full">
+          <BlessingHeader
+            blessingHeader={content.blessingHeader}
+            primaryColor={theme.palette.primary}
+            accentColor={theme.palette.accent}
+            surfaceColor={theme.palette.surface}
+            textColor={theme.palette.text}
+            mutedTextColor={theme.palette.mutedText}
+            size="hero"
+          />
+        </div>
+      )}
+
       {/* Host Line */}
       <p
-        className="hero-stagger mt-7 text-[11px] sm:text-xs uppercase tracking-[0.2em] max-w-[290px] sm:max-w-sm leading-relaxed"
+        className={`hero-stagger ${
+          content.blessingHeader?.enabled ? "mt-4" : "mt-7"
+        } text-[11px] sm:text-xs uppercase tracking-[0.2em] max-w-[290px] sm:max-w-sm leading-relaxed`}
         style={{
           color: theme.palette.mutedText,
           fontFamily: getBodyFontFamily(theme.typography.bodyFont),
