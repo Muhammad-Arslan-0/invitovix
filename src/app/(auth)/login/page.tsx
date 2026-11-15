@@ -30,11 +30,16 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(
-    searchParams.get("error") === "auth_callback_failed"
-      ? "Verification failed or link expired. Please try again."
-      : null
-  );
+  const [error, setError] = useState<string | null>(() => {
+    const err = searchParams.get("error");
+    if (err === "auth_callback_failed") {
+      return "Verification failed or link expired. Please try again.";
+    }
+    if (err === "link_expired") {
+      return "Your password reset link is invalid or has expired. Please request a new one.";
+    }
+    return null;
+  });
   const [confirmationSent, setConfirmationSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -240,9 +245,19 @@ function LoginForm() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-stone-700">
+                    Password
+                  </label>
+                  {mode === "signin" && (
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs font-medium text-amber-700 hover:text-amber-800 transition hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
                 <input
                   type="password"
                   required
