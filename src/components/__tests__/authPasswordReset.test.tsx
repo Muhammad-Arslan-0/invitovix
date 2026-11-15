@@ -25,6 +25,8 @@ const resetPasswordForEmailMock = vi.fn();
 const updateUserMock = vi.fn();
 const getSessionMock = vi.fn();
 const onAuthStateChangeMock = vi.fn();
+const exchangeCodeForSessionMock = vi.fn();
+const verifyOtpMock = vi.fn();
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
@@ -35,6 +37,8 @@ vi.mock("@/lib/supabase/client", () => ({
       updateUser: updateUserMock,
       getSession: getSessionMock,
       onAuthStateChange: onAuthStateChangeMock,
+      exchangeCodeForSession: exchangeCodeForSessionMock,
+      verifyOtp: verifyOtpMock,
     },
   }),
 }));
@@ -55,6 +59,8 @@ describe("Authentication & Password Reset Suite", () => {
     updateUserMock.mockReset();
     getSessionMock.mockReset();
     onAuthStateChangeMock.mockReset();
+    exchangeCodeForSessionMock.mockReset();
+    verifyOtpMock.mockReset();
 
     searchParamsMock = new URLSearchParams();
 
@@ -126,7 +132,7 @@ describe("Authentication & Password Reset Suite", () => {
         expect(resetPasswordForEmailMock).toHaveBeenCalledWith(
           "amina@example.com",
           expect.objectContaining({
-            redirectTo: expect.stringContaining("/auth/callback?next=/reset-password"),
+            redirectTo: expect.stringContaining("/reset-password"),
           })
         );
       });
@@ -240,6 +246,17 @@ describe("Authentication & Password Reset Suite", () => {
         expect(
           screen.getByRole("link", { name: /request new reset link/i })
         ).toBeTruthy();
+      });
+    });
+
+    it("exchanges code for session if code query parameter is present", async () => {
+      searchParamsMock = new URLSearchParams("code=valid-pkce-code");
+      exchangeCodeForSessionMock.mockResolvedValue({ data: {}, error: null });
+
+      render(<ResetPasswordPage />);
+
+      await waitFor(() => {
+        expect(exchangeCodeForSessionMock).toHaveBeenCalledWith("valid-pkce-code");
       });
     });
   });

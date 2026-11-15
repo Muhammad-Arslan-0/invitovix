@@ -40,9 +40,16 @@ export async function GET(request: Request) {
     }
   }
 
-  // If password reset recovery link expired, redirect back to forgot-password with clear error
+  // If password reset recovery link, forward directly to /reset-password
+  // preserving query params (like code, token_hash, etc.) so client can authenticate
   if (next === "/reset-password") {
-    return NextResponse.redirect(`${origin}/forgot-password?error=link_expired`);
+    const forwardUrl = new URL(`${origin}/reset-password`);
+    searchParams.forEach((val, key) => {
+      if (key !== "next") {
+        forwardUrl.searchParams.set(key, val);
+      }
+    });
+    return NextResponse.redirect(forwardUrl.toString());
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);

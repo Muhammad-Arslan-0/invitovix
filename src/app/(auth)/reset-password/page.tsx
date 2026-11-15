@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -22,6 +22,7 @@ import { BrandMark } from "@/components/ui/BrandMark";
 
 function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isConfigured } = getSupabaseEnv();
 
   const [checkingSession, setCheckingSession] = useState(true);
@@ -41,16 +42,16 @@ function ResetPasswordForm() {
     let mounted = true;
     const supabase = createClient();
 
-    // Check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      if (session) {
-        setHasSession(true);
-      }
+    // Check if URL has error params from Supabase (e.g. error_description=Email+link+expired)
+    const urlError =
+      searchParams.get("error_description") || searchParams.get("error");
+    if (urlError) {
+      setError(decodeURIComponent(urlError.replace(/\+/g, " ")));
       setCheckingSession(false);
-    });
+      return;
+    }
 
-    // Listen for auth state change (e.g. PASSWORD_RECOVERY event or token hydration)
+    // Listen for auth state change (e.g. PASSWORD_RECOVERY event or token hydration from hash)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -61,11 +62,80 @@ function ResetPasswordForm() {
       }
     });
 
+    const code = searchParams.get("code");
+    const tokenHash = searchParams.get("token_hash");
+    const otpType = searchParams.get("type");
+
+    async function initializeSession() {
+      // 1. If auth code is present in URL (PKCE redirect), exchange on client
+      if (code) {
+        try {
+          const { error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code);
+          if (!exchangeError && mounted) {
+            setHasSession(true);
+            setCheckingSession(false);
+            return;
+          }
+        } catch {
+          // Fall through to getSession check
+        }
+      }
+
+      // 2. If token_hash and type=recovery are present, verify OTP
+      if (tokenHash && otpType === "recovery") {
+        try {
+          const { error: otpError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "recovery",
+          });
+          if (!otpError && mounted) {
+            setHasSession(true);
+            setCheckingSession(false);
+            return;
+          }
+        } catch {
+          // Fall through
+        }
+      }
+
+      // 3. Check existing session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!mounted) return;
+      if (session) {
+        setHasSession(true);
+        setCheckingSession(false);
+        return;
+      }
+
+      // 4. Check if a hash fragment token exists (implicit recovery flow)
+      const hasHashRecovery =
+        typeof window !== "undefined" &&
+        (window.location.hash.includes("access_token") ||
+          window.location.hash.includes("type=recovery"));
+
+      if (!hasHashRecovery) {
+        setCheckingSession(false);
+        return;
+      }
+
+      // If hash fragment is present, allow onAuthStateChange a moment to hydrate
+      setTimeout(() => {
+        if (mounted) {
+          setCheckingSession(false);
+        }
+      }, 500);
+    }
+
+    initializeSession();
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
