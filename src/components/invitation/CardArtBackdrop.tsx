@@ -19,9 +19,10 @@ export const CardArtBackdrop = memo(function CardArtBackdrop({
 
   const opacity = Math.min(0.65, Math.max(0.08, theme.cardArt.backdropOpacity));
   const bg = theme.palette.background;
+  const isCustom = theme.cardArt.backdropPreset === "custom";
   const posClass = bounded
     ? "absolute inset-0"
-    : "absolute inset-x-0 top-0 h-[100dvh] min-h-[640px] max-h-[920px]";
+    : "fixed inset-0 md:absolute md:inset-0";
 
   return (
     <div
@@ -35,7 +36,9 @@ export const CardArtBackdrop = memo(function CardArtBackdrop({
         src={backdropUrl}
         alt=""
         style={{ opacity, objectPosition: "top center" }}
-        className="w-full h-full object-cover object-top transition-opacity duration-500"
+        className={`w-full h-full ${
+          isCustom ? "object-cover object-center" : "object-fill"
+        } transition-opacity duration-500`}
       />
 
       {/* Center breathing vignette & edge fade so invitation typography stays crisp */}

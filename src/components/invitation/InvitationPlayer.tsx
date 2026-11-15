@@ -79,7 +79,7 @@ export const InvitationPlayer = forwardRef<
     isStudioPreview = false,
     forcedStage,
     replayKey = 0,
-    bounded = false,
+    bounded = true,
     hasDraftBanner = false,
     onPlaybackChange,
   },

@@ -189,7 +189,7 @@ function GuestInviteShellInner({
     <div
       dir={isRTL ? "rtl" : "ltr"}
       lang={language}
-      className={`relative min-h-screen w-full overflow-x-hidden md:bg-[#100E0C] md:text-stone-100 flex flex-col ${
+      className={`relative h-[100dvh] w-full overflow-hidden md:bg-[#100E0C] md:text-stone-100 flex flex-col ${
         language === "ur" ? "font-nastaleeq" : ""
       }`}
       data-testid="guest-invite-shell"
@@ -244,12 +244,12 @@ function GuestInviteShellInner({
       )}
 
       {/* 2. Dual-Viewport Presentation Stage */}
-      <div className="relative z-10 flex-1 w-full flex items-center justify-center md:py-6 md:px-4 min-[1200px]:px-6">
+      <div className="relative z-10 flex-1 w-full flex items-center justify-center md:py-6 md:px-4 min-[1200px]:px-6 overflow-hidden">
         {/* Left Companion Wing (>= 1200px Desktop) */}
         <aside
           aria-label="Event Overview"
           data-testid="desktop-left-wing"
-          className="hidden min-[1200px]:flex flex-col gap-4 w-60 min-[1360px]:w-72 shrink-0 min-[1200px]:mr-6 min-[1360px]:mr-8"
+          className="hidden min-[1200px]:flex flex-col gap-4 w-60 min-[1360px]:w-72 shrink-0 min-[1200px]:mr-6 min-[1360px]:mr-8 max-h-[min(850px,calc(100dvh-3.5rem))] overflow-y-auto no-scrollbar"
         >
           <div className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/12 p-5 shadow-2xl">
             <div className="flex items-center justify-between gap-2">
@@ -359,7 +359,7 @@ function GuestInviteShellInner({
         <main
           aria-label="Interactive Invitation"
           data-testid="guest-card-frame"
-          className="relative w-full md:w-[410px] lg:w-[420px] shrink-0 min-h-screen md:min-h-[640px] md:h-[min(850px,calc(100dvh-3.5rem))] md:rounded-[28px] overflow-hidden md:border md:border-white/15 md:shadow-[0_32px_90px_-14px_rgba(0,0,0,0.8)]"
+          className="relative w-full md:w-[410px] lg:w-[420px] shrink-0 h-full md:min-h-[640px] md:h-[min(850px,calc(100dvh-3.5rem))] md:rounded-[28px] overflow-hidden md:border md:border-white/15 md:shadow-[0_32px_90px_-14px_rgba(0,0,0,0.8)]"
         >
           {/* Subtle top specular bezel glint on desktop/tablet */}
           <div
@@ -381,6 +381,7 @@ function GuestInviteShellInner({
             designData={effectiveDesignData}
             guestAccess={guestAccess}
             hasDraftBanner={isOwnerDraft}
+            bounded
             onPlaybackChange={handlePlaybackChange}
           />
         </main>
@@ -389,7 +390,7 @@ function GuestInviteShellInner({
         <aside
           aria-label="Quick Actions & Venue"
           data-testid="desktop-right-wing"
-          className="hidden min-[1200px]:flex flex-col gap-4 w-60 min-[1360px]:w-72 shrink-0 min-[1200px]:ml-6 min-[1360px]:ml-8"
+          className="hidden min-[1200px]:flex flex-col gap-4 w-60 min-[1360px]:w-72 shrink-0 min-[1200px]:ml-6 min-[1360px]:ml-8 max-h-[min(850px,calc(100dvh-3.5rem))] overflow-y-auto no-scrollbar"
         >
           {/* Concierge Quick RSVP & Venue Snippet */}
           <div className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/12 p-5 shadow-2xl space-y-4">
