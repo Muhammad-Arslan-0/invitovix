@@ -343,6 +343,7 @@ export const STARTER_TEMPLATES: TemplateRecord[] = [
         promptText: "Tap the gold wax seal to unseal your invitation",
       },
       content: {
+        language: "en",
         blessingHeader: {
           enabled: true,
           preset: "ayat-ar-rum",
@@ -2988,6 +2989,12 @@ export function mergeDesignData(raw: unknown): EventDesignData {
     content: {
       ...DEFAULT_DESIGN_DATA.content,
       ...stripNullish(candidate.content),
+      language:
+        typeof candidate.content?.language === "string"
+          ? candidate.content.language
+          : typeof (candidate as { language?: string }).language === "string"
+            ? (candidate as { language?: string }).language
+            : "en",
       blessingHeader: candidate.content?.blessingHeader
         ? {
             ...DEFAULT_BLESSING_HEADER,

@@ -70,13 +70,25 @@ export function CardLanguageProvider({
   venueAddress = "",
   initialLang,
 }: CardLanguageProviderProps) {
-  const [language, setLanguageState] = useState<LanguageCode>(() => {
-    if (initialLang) {
-      const meta = getLanguageMeta(initialLang);
-      return meta.code;
-    }
-    return DEFAULT_LANGUAGE_CODE;
-  });
+  const resolveLanguage = useCallback(
+    (data?: EventDesignData, forced?: string | null): LanguageCode => {
+      if (forced) {
+        return getLanguageMeta(forced).code;
+      }
+      const configuredLang =
+        data?.content?.language ||
+        (data as { language?: string })?.language;
+      if (configuredLang) {
+        return getLanguageMeta(configuredLang).code;
+      }
+      return DEFAULT_LANGUAGE_CODE;
+    },
+    []
+  );
+
+  const [language, setLanguageState] = useState<LanguageCode>(() =>
+    resolveLanguage(initialDesignData, initialLang)
+  );
 
   const [dynamicTranslations, setDynamicTranslations] = useState<
     Record<string, string>
@@ -84,41 +96,22 @@ export function CardLanguageProvider({
   const [isTranslating, setIsTranslating] = useState(false);
   const requestedTextsRef = useRef<Set<string>>(new Set());
 
-  // Check URL query parameters and localStorage on mount
+  // React to creator updating language in Studio
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlLang = urlParams.get("lang") || urlParams.get("locale");
-      if (urlLang) {
-        const meta = getLanguageMeta(urlLang);
-        setLanguageState(meta.code);
-        return;
-      }
-
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const meta = getLanguageMeta(stored);
-        setLanguageState(meta.code);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+    const nextLang = resolveLanguage(initialDesignData, initialLang);
+    setLanguageState(nextLang);
+  }, [
+    initialDesignData?.content?.language,
+    (initialDesignData as { language?: string })?.language,
+    initialLang,
+    resolveLanguage,
+  ]);
 
   const languageMeta = useMemo(() => getLanguageMeta(language), [language]);
   const isRTL = useMemo(() => isRtlLanguage(language), [language]);
 
   const setLanguage = useCallback((code: LanguageCode) => {
     setLanguageState(code);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem(STORAGE_KEY, code);
-      } catch {
-        // ignore
-      }
-    }
   }, []);
 
   // UI Translation lookup with parameter interpolation

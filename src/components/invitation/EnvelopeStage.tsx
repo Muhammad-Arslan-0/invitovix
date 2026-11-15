@@ -14,7 +14,6 @@ import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { WaxSeal } from "./WaxSeal";
 import { LottieAccent } from "./LottieAccent";
 import { BlessingHeader } from "./BlessingHeader";
-import { LanguageSelector } from "./LanguageSelector";
 
 interface EnvelopeStageProps {
   designData: EventDesignData;
@@ -96,21 +95,14 @@ export function EnvelopeStage({
         }}
       />
 
-      {/* Top Controls: Language Switcher + Audio Preference Pill */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-50 mb-3.5 sm:mb-5 flex items-center justify-center gap-2 flex-wrap"
-      >
-        <LanguageSelector
-          variant="envelope"
-          accentColor={theme.palette.accent}
-          surfaceColor={theme.palette.surface}
-          textColor={theme.palette.text}
-        />
-
-        {audio.enabled && (
+      {/* Top Controls: Audio Preference Pill */}
+      {audio.enabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-50 mb-3.5 sm:mb-5 flex items-center justify-center gap-2 flex-wrap"
+        >
           <button
             type="button"
             onClick={onToggleStartMuted}
@@ -138,8 +130,8 @@ export function EnvelopeStage({
               </>
             )}
           </button>
-        )}
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Envelope Container with 3D perspective */}
       <motion.div

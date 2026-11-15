@@ -5,6 +5,7 @@ import * as Switch from "@radix-ui/react-switch";
 import {
   Calendar,
   Clock,
+  Globe,
   Move,
   Plus,
   Sparkles,
@@ -12,6 +13,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
+import { SUPPORTED_LANGUAGES } from "@/lib/i18n/languages";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
 import {
   getInvitationTypeMeta,
@@ -56,6 +58,7 @@ export const ContentPanel = memo(function ContentPanel({
 
   const updateMeta = useStudioStore((s) => s.updateMeta);
   const updateContent = useStudioStore((s) => s.updateContent);
+  const updateLanguage = useStudioStore((s) => s.updateLanguage);
   const updateCouple = useStudioStore((s) => s.updateCouple);
   const updateSections = useStudioStore((s) => s.updateSections);
   const addItineraryItem = useStudioStore((s) => s.addItineraryItem);
@@ -188,6 +191,38 @@ export const ContentPanel = memo(function ContentPanel({
 
   return (
     <div className="space-y-6">
+      {/* Card Language Configuration */}
+      <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/80 via-white to-stone-50/80 p-4 space-y-2.5 shadow-xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-amber-700" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-950">
+              Card Language
+            </h3>
+          </div>
+          <span className="text-[10px] font-semibold text-amber-800 bg-amber-100/90 border border-amber-300/60 px-2 py-0.5 rounded-full">
+            Creator Set
+          </span>
+        </div>
+        <p className="text-[11px] text-stone-600 leading-relaxed">
+          Choose the language for this card. All ceremony titles, countdown labels, dates, and RSVP forms will automatically display in this language for all guests.
+        </p>
+        <div>
+          <select
+            value={content.language || "en"}
+            onChange={(e) => updateLanguage(e.target.value)}
+            aria-label="Card Language"
+            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-800 shadow-xs focus:border-stone-900 focus:outline-none cursor-pointer"
+          >
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.nativeName} ({lang.name})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Core Event Metadata */}
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">

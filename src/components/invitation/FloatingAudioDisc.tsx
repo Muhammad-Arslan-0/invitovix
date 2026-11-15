@@ -3,7 +3,6 @@
 import { Disc3, RotateCcw, VolumeX } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
 import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
-import { LanguageSelector } from "./LanguageSelector";
 
 interface FloatingAudioDiscProps {
   designData: EventDesignData;
@@ -31,13 +30,6 @@ export function FloatingAudioDisc({
     <div
       className={`${posClass} right-3.5 z-50 flex items-center gap-1.5 pointer-events-none`}
     >
-      <LanguageSelector
-        variant="floating"
-        accentColor={theme.palette.accent}
-        surfaceColor={theme.palette.surface}
-        textColor={theme.palette.text}
-      />
-
       <button
         type="button"
         onClick={onReplay}

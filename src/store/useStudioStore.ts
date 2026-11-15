@@ -83,6 +83,7 @@ interface StudioState {
   ) => void;
 
   updateContent: (patch: Partial<EventDesignData["content"]>) => void;
+  updateLanguage: (language: string) => void;
   updateCouple: (
     patch: Partial<EventDesignData["content"]["couple"]>
   ) => void;
@@ -373,6 +374,18 @@ export const useStudioStore = create<StudioState>((set) => ({
       designData: {
         ...s.designData,
         content: { ...s.designData.content, ...patch },
+      },
+      isDirty: true,
+    })),
+
+  updateLanguage: (language) =>
+    set((s) => ({
+      designData: {
+        ...s.designData,
+        content: {
+          ...s.designData.content,
+          language,
+        },
       },
       isDirty: true,
     })),

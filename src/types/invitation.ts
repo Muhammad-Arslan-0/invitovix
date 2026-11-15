@@ -227,6 +227,7 @@ export const eventDesignDataSchema = z.object({
     promptText: z.string(),
   }),
   content: z.object({
+    language: z.string().optional(),
     blessingHeader: blessingHeaderSchema.optional(),
     hostLine: z.string(),
     headline: z.string(),

@@ -1,11 +1,12 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Lock, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
+import { Globe, Lock, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { InvitationPlayer } from "@/components/invitation/InvitationPlayer";
 import { CardLanguageProvider } from "@/lib/i18n/CardLanguageContext";
+import { SUPPORTED_LANGUAGES } from "@/lib/i18n/languages";
 
 const DEVICE_SPECS = {
   mobile: {
@@ -31,6 +32,7 @@ export const StudioCanvas = memo(function StudioCanvas() {
   const setPreviewDevice = useStudioStore((s) => s.setPreviewDevice);
   const setPreviewStage = useStudioStore((s) => s.setPreviewStage);
   const triggerReplay = useStudioStore((s) => s.triggerReplay);
+  const updateLanguage = useStudioStore((s) => s.updateLanguage);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
@@ -131,8 +133,25 @@ export const StudioCanvas = memo(function StudioCanvas() {
           })}
         </div>
 
-        {/* Stage & Replay Controls */}
+        {/* Stage, Language & Replay Controls */}
         <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-1.5 sm:gap-2">
+          {/* Creator Language Selector */}
+          <div className="flex items-center gap-1.5 rounded-xl bg-stone-100 px-2 sm:px-2.5 py-1 text-xs shrink-0">
+            <Globe className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+            <select
+              value={designData.content.language || "en"}
+              onChange={(e) => updateLanguage(e.target.value)}
+              aria-label="Set card language"
+              className="bg-transparent text-xs font-medium text-stone-800 focus:outline-none cursor-pointer pr-1"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.flag} {lang.nativeName}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex items-center gap-0.5 rounded-xl bg-stone-100 p-1 text-xs shrink-0">
             {(
               [

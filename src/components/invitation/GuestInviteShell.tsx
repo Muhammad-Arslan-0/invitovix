@@ -42,7 +42,6 @@ import {
   CardLanguageProvider,
   useCardLanguage,
 } from "@/lib/i18n/CardLanguageContext";
-import { LanguageSelector } from "./LanguageSelector";
 import {
   InvitationPlaybackSnapshot,
   InvitationPlayer,
@@ -325,11 +324,6 @@ function GuestInviteShellInner({
                 )}
               </div>
             )}
-
-            {/* Language Selector in Left Companion Wing */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <LanguageSelector variant="wing" />
-            </div>
 
             <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-2">
               <a

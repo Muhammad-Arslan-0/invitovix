@@ -353,7 +353,7 @@ describe("Card Multi-Language Translation Suite", () => {
   });
 
   describe("GuestInviteShell Full Card Translation on Receiver Side", () => {
-    it("renders English card by default and shows language selector options", () => {
+    it("renders English card by default and does not show language selector to receiver", () => {
       render(
         <GuestInviteShell
           eventId={DEMO_EVENT.id}
@@ -372,12 +372,21 @@ describe("Card Multi-Language Translation Suite", () => {
       // Default English texts
       expect(screen.getAllByText(/Save The Date/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Invitation/i).length).toBeGreaterThan(0);
+      // Receiver side does not have language selector buttons
       expect(
-        screen.getAllByRole("button", { name: /Select Language/i }).length
-      ).toBeGreaterThan(0);
+        screen.queryByRole("button", { name: /Select Language/i })
+      ).toBeNull();
     });
 
-    it("translates full card view to Urdu when selected by receiver", async () => {
+    it("translates full card view to Urdu when creator sets card language to Urdu", async () => {
+      const urduDesign = {
+        ...DEMO_EVENT.design_data,
+        content: {
+          ...DEMO_EVENT.design_data.content,
+          language: "ur",
+        },
+      };
+
       render(
         <GuestInviteShell
           eventId={DEMO_EVENT.id}
@@ -389,24 +398,14 @@ describe("Card Multi-Language Translation Suite", () => {
           venueAddress={DEMO_EVENT.venue_address}
           venueMapUrl={DEMO_EVENT.venue_map_url}
           audioUrl={DEMO_EVENT.audio_url}
-          designData={DEMO_EVENT.design_data}
+          designData={urduDesign}
         />
       );
 
-      // Open language selector
-      const langBtns = screen.getAllByRole("button", { name: /Select Language/i });
-      fireEvent.click(langBtns[0]);
+      // Check that Left Wing has rendered in Urdu
+      expect(screen.getByText("تاریخ یاد رکھیں")).toBeTruthy();
 
-      // Pick Urdu
-      const urduOptions = screen.getAllByRole("button", { name: /اردو/i });
-      fireEvent.click(urduOptions[0]);
-
-      // Check that Left Wing has updated to Urdu
-      await waitFor(() => {
-        expect(screen.getByText("تاریخ یاد رکھیں")).toBeTruthy();
-      });
-
-      // Check envelope fold has updated to Urdu
+      // Check envelope fold has rendered in Urdu
       expect(screen.getByText("دعوت نامہ")).toBeTruthy();
 
       // Check headline translated
@@ -427,9 +426,20 @@ describe("Card Multi-Language Translation Suite", () => {
 
       // Check right wing Concierge actions
       expect(screen.getByText("کھولیں اور جواب دیں")).toBeTruthy();
+
+      // Verify no receiver language switcher
+      expect(screen.queryByRole("button", { name: /Select Language/i })).toBeNull();
     });
 
-    it("translates card view to French when selected by receiver", async () => {
+    it("translates card view to French when creator sets card language to French", async () => {
+      const frenchDesign = {
+        ...DEMO_EVENT.design_data,
+        content: {
+          ...DEMO_EVENT.design_data.content,
+          language: "fr",
+        },
+      };
+
       render(
         <GuestInviteShell
           eventId={DEMO_EVENT.id}
@@ -441,21 +451,13 @@ describe("Card Multi-Language Translation Suite", () => {
           venueAddress={DEMO_EVENT.venue_address}
           venueMapUrl={DEMO_EVENT.venue_map_url}
           audioUrl={DEMO_EVENT.audio_url}
-          designData={DEMO_EVENT.design_data}
+          designData={frenchDesign}
         />
       );
 
-      const langBtns = screen.getAllByRole("button", { name: /Select Language/i });
-      fireEvent.click(langBtns[0]);
-
-      const frOptions = screen.getAllByRole("button", { name: /Français/i });
-      fireEvent.click(frOptions[0]);
-
-      await waitFor(() => {
-        expect(screen.getByText("Réservez la Date")).toBeTruthy();
-      });
-
+      expect(screen.getByText("Réservez la Date")).toBeTruthy();
       expect(screen.getByText("Ouvrir et Confirmer")).toBeTruthy();
+      expect(screen.queryByRole("button", { name: /Select Language/i })).toBeNull();
     });
 
     it("respects initialLang prop when provided in direct link", () => {
@@ -481,7 +483,15 @@ describe("Card Multi-Language Translation Suite", () => {
       expect(screen.getByText("فتح وتأكيد الحضور")).toBeTruthy();
     });
 
-    it("translates card view to Indonesian when selected by receiver", async () => {
+    it("translates card view to Indonesian when creator sets card language to Indonesian", async () => {
+      const idDesign = {
+        ...DEMO_EVENT.design_data,
+        content: {
+          ...DEMO_EVENT.design_data.content,
+          language: "id",
+        },
+      };
+
       render(
         <GuestInviteShell
           eventId={DEMO_EVENT.id}
@@ -493,22 +503,14 @@ describe("Card Multi-Language Translation Suite", () => {
           venueAddress={DEMO_EVENT.venue_address}
           venueMapUrl={DEMO_EVENT.venue_map_url}
           audioUrl={DEMO_EVENT.audio_url}
-          designData={DEMO_EVENT.design_data}
+          designData={idDesign}
         />
       );
 
-      const langBtns = screen.getAllByRole("button", { name: /Select Language/i });
-      fireEvent.click(langBtns[0]);
-
-      const idOptions = screen.getAllByRole("button", { name: /Bahasa Indonesia/i });
-      fireEvent.click(idOptions[0]);
-
-      await waitFor(() => {
-        expect(screen.getByText("Simpan Tanggalnya")).toBeTruthy();
-      });
-
+      expect(screen.getByText("Simpan Tanggalnya")).toBeTruthy();
       expect(screen.getByText("Undangan")).toBeTruthy();
       expect(screen.getByText("Buka & RSVP")).toBeTruthy();
+      expect(screen.queryByRole("button", { name: /Select Language/i })).toBeNull();
     });
   });
 });
