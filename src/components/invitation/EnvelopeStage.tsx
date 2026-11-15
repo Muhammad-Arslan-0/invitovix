@@ -80,7 +80,8 @@ export function EnvelopeStage({
           <img
             src={coverBackdropUrl}
             alt=""
-            className="w-full h-full object-cover opacity-20 blur-sm scale-105"
+            style={{ objectPosition: "top center" }}
+            className="w-full h-full object-cover object-top opacity-20 blur-sm scale-100 transition-opacity duration-500"
           />
           <div
             className="absolute inset-0"

@@ -180,7 +180,8 @@ export function GuestInviteShell({
           <img
             src={ambientPhotoUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover filter blur-3xl opacity-35 scale-110 transition-all duration-1000"
+            style={{ objectPosition: "top center" }}
+            className="absolute inset-0 w-full h-full object-cover object-top filter blur-3xl opacity-35 scale-105 transition-all duration-1000"
           />
         )}
         <div className="absolute inset-0 bg-black/48" />
@@ -321,7 +322,7 @@ export function GuestInviteShell({
         <main
           aria-label="Interactive Invitation"
           data-testid="guest-card-frame"
-          className="relative w-full md:w-[440px] lg:w-[460px] shrink-0 min-h-screen md:min-h-[580px] md:h-[min(860px,calc(100dvh-4.5rem))] md:rounded-[28px] overflow-hidden md:border md:border-white/15 md:shadow-[0_32px_90px_-14px_rgba(0,0,0,0.8)]"
+          className="relative w-full md:w-[410px] lg:w-[420px] shrink-0 min-h-screen md:min-h-[640px] md:h-[min(850px,calc(100dvh-3.5rem))] md:rounded-[28px] overflow-hidden md:border md:border-white/15 md:shadow-[0_32px_90px_-14px_rgba(0,0,0,0.8)]"
         >
           {/* Subtle top specular bezel glint on desktop/tablet */}
           <div

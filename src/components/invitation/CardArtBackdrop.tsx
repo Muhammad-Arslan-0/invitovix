@@ -32,8 +32,8 @@ export const CardArtBackdrop = memo(function CardArtBackdrop({
       <img
         src={backdropUrl}
         alt=""
-        style={{ opacity }}
-        className="w-full h-full object-cover object-center transition-opacity duration-500"
+        style={{ opacity, objectPosition: "top center" }}
+        className="w-full h-full object-cover object-top transition-opacity duration-500"
       />
 
       {/* Center breathing vignette & edge fade so invitation typography stays crisp */}
