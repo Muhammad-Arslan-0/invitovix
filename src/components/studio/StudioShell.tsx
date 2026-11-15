@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-import { Eye, Mail, Music2, Palette, SlidersHorizontal, Type } from "lucide-react";
+import { Eye, FolderOpen, Mail, Music2, Palette, SlidersHorizontal, Type } from "lucide-react";
 import { EventRecord, TemplateRecord } from "@/types/invitation";
 import { StudioTab, useStudioStore } from "@/store/useStudioStore";
 import { createClient } from "@/lib/supabase/client";
@@ -205,7 +205,7 @@ export function StudioShell({
                   { id: "theme", label: "Theme", icon: Palette },
                   { id: "envelope", label: "Seal", icon: Mail },
                   { id: "content", label: "Content", icon: Type },
-                  { id: "motion", label: "Audio", icon: Music2 },
+                  { id: "motion", label: "Assets", icon: FolderOpen },
                 ] as const
               ).map((tab) => {
                 const Icon = tab.icon;
@@ -213,6 +213,7 @@ export function StudioShell({
                   <Tabs.Trigger
                     key={tab.id}
                     value={tab.id}
+                    aria-label={tab.id === "motion" ? "Audio & Assets" : tab.label}
                     className="flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-medium text-stone-500 data-[state=active]:bg-white data-[state=active]:text-stone-900 data-[state=active]:shadow-xs transition-colors duration-150 cursor-pointer"
                   >
                     <Icon className="w-3.5 h-3.5" />

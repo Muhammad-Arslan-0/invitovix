@@ -12,6 +12,8 @@ import {
   CropState,
 } from "@/lib/utils/imageOptimization";
 import { ImageCropModal, FrameShapeOption } from "./ImageCropModal";
+import { AssetPickerModal } from "./AssetPickerModal";
+import { AssetItem } from "@/lib/storage/assetManager";
 
 export interface UploadedMediaExtra {
   originalUrl?: string;
@@ -65,6 +67,9 @@ export function MediaUploader({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Asset Picker Modal state
+  const [assetPickerOpen, setAssetPickerOpen] = useState(false);
+
   // Cropper modal state
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [pendingCropData, setPendingCropData] = useState<{
@@ -74,8 +79,7 @@ export function MediaUploader({
     originalSizeBytes: number;
   } | null>(null);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function processSelectedFile(file: File) {
     if (!file) return;
 
     // Validate size & type
@@ -113,6 +117,7 @@ export function MediaUploader({
           fileName: file.name,
           originalSizeBytes: file.size,
         });
+        setAssetPickerOpen(false);
         setCropModalOpen(true);
       } catch {
         setUploading(false);
@@ -122,7 +127,51 @@ export function MediaUploader({
     }
 
     // Direct upload (e.g. audio or when cropping is disabled)
+    setAssetPickerOpen(false);
     await uploadDirect(file, file.name);
+  }
+
+  function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      processSelectedFile(file);
+    }
+  }
+
+  async function handleSelectExistingAsset(asset: AssetItem) {
+    setAssetPickerOpen(false);
+
+    if (folder === "audio") {
+      onUploaded(asset.publicUrl, asset.name);
+      return;
+    }
+
+    if (folder === "images" && !enableCrop) {
+      onUploaded(asset.publicUrl, asset.name, { originalUrl: asset.publicUrl });
+      return;
+    }
+
+    // If image and cropping is enabled, fetch and open cropper so user can adjust framing
+    try {
+      setUploading(true);
+      const res = await fetch(asset.publicUrl);
+      if (!res.ok) throw new Error("Fetch failed");
+      const blob = await res.blob();
+      const dataUrl = await fileToDataUrl(blob);
+      setUploading(false);
+
+      setPendingCropData({
+        compressedBlob: blob,
+        dataUrl,
+        fileName: asset.name,
+        originalSizeBytes: asset.sizeBytes,
+      });
+      setCropModalOpen(true);
+    } catch {
+      setUploading(false);
+      // Fallback: apply directly without crop step
+      onUploaded(asset.publicUrl, asset.name, { originalUrl: asset.publicUrl });
+    }
   }
 
   async function uploadDirect(blobOrFile: Blob | File, originalName: string) {
@@ -240,19 +289,19 @@ export function MediaUploader({
         ref={inputRef}
         type="file"
         accept={accept}
-        onChange={handleFileChange}
+        onChange={handleFileInputChange}
         className="hidden"
       />
       <button
         type="button"
         disabled={uploading}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => setAssetPickerOpen(true)}
         className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 px-3 py-2.5 text-xs font-medium text-stone-700 transition disabled:opacity-60 cursor-pointer"
       >
         {uploading ? (
           <>
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            <span>Uploading...</span>
+            <span>Processing...</span>
           </>
         ) : (
           <>
@@ -263,6 +312,22 @@ export function MediaUploader({
       </button>
 
       {error && <p className="mt-1.5 text-[11px] text-rose-600">{error}</p>}
+
+      {/* Asset Picker Modal (Select from Library or Upload New) */}
+      {assetPickerOpen && (
+        <AssetPickerModal
+          open={assetPickerOpen}
+          onOpenChange={setAssetPickerOpen}
+          userId={userId}
+          eventId={eventId}
+          folder={folder}
+          title={label}
+          accept={accept}
+          uploading={uploading}
+          onSelectAsset={handleSelectExistingAsset}
+          onUploadFile={processSelectedFile}
+        />
+      )}
 
       {/* Interactive Crop & Reposition Modal */}
       {cropModalOpen && pendingCropData && (
