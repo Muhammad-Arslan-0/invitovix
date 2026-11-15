@@ -18,6 +18,14 @@ import {
   getTemplatesByDomain,
   resolveCardBackdropUrl,
 } from "@/lib/templates/presets";
+import {
+  DISPLAY_FONT_OPTIONS,
+  SCRIPT_FONT_OPTIONS,
+  BODY_FONT_OPTIONS,
+  getDisplayFontFamily,
+  getBodyFontFamily,
+  getScriptFontFamily,
+} from "@/lib/utils/fonts";
 import { MediaUploader } from "../MediaUploader";
 
 interface ThemePanelProps {
@@ -489,15 +497,29 @@ export const ThemePanel = memo(function ThemePanel({
       </div>
 
       {/* Typography */}
-      <div className="space-y-3 border-t border-stone-200 pt-5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-          Typography Pairing
-        </h3>
+      <div className="space-y-4 border-t border-stone-200 pt-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Typography Pairing
+          </h3>
+          <span className="text-[10px] text-stone-400 font-medium">
+            30+ Premier Google Fonts
+          </span>
+        </div>
 
+        {/* Display Heading Font */}
         <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Display Heading Font
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-stone-700">
+              Display Heading Font
+            </label>
+            <span
+              className="text-xs font-semibold text-amber-800"
+              style={{ fontFamily: getDisplayFontFamily(typography.displayFont) }}
+            >
+              Aa
+            </span>
+          </div>
           <select
             value={typography.displayFont}
             onChange={(e) =>
@@ -505,38 +527,42 @@ export const ThemePanel = memo(function ThemePanel({
                 displayFont: e.target.value as typeof typography.displayFont,
               })
             }
-            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
+            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-800 focus:border-stone-900 focus:outline-none shadow-2xs font-medium"
           >
-            <option value="cinzel">Cinzel (Royal Serif)</option>
-            <option value="playfair">Playfair Display (Editorial)</option>
-            <option value="cormorant">Cormorant Garamond (Classic)</option>
-            <option value="syne">Syne (Modern Bold)</option>
+            <optgroup label="Royal &amp; Editorial Serif">
+              {DISPLAY_FONT_OPTIONS.filter((f) => f.category === "serif").map(
+                (opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.name} — {opt.vibe}
+                  </option>
+                )
+              )}
+            </optgroup>
+            <optgroup label="Modern &amp; Architectural Sans">
+              {DISPLAY_FONT_OPTIONS.filter((f) => f.category === "sans").map(
+                (opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.name} — {opt.vibe}
+                  </option>
+                )
+              )}
+            </optgroup>
           </select>
         </div>
 
+        {/* Script / Accent Font */}
         <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Body Copy Font
-          </label>
-          <select
-            value={typography.bodyFont}
-            onChange={(e) =>
-              updateTypography({
-                bodyFont: e.target.value as typeof typography.bodyFont,
-              })
-            }
-            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
-          >
-            <option value="cormorant">Cormorant Garamond</option>
-            <option value="jakarta">Plus Jakarta Sans</option>
-            <option value="dm-sans">DM Sans</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-stone-600 mb-1">
-            Script / Accent Font
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-stone-700">
+              Script / Accent Font
+            </label>
+            <span
+              className="text-sm font-semibold text-amber-800"
+              style={{ fontFamily: getScriptFontFamily(typography.scriptFont) }}
+            >
+              Love &amp; Grace
+            </span>
+          </div>
           <select
             value={typography.scriptFont}
             onChange={(e) =>
@@ -544,11 +570,91 @@ export const ThemePanel = memo(function ThemePanel({
                 scriptFont: e.target.value as typeof typography.scriptFont,
               })
             }
-            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
+            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-800 focus:border-stone-900 focus:outline-none shadow-2xs font-medium"
           >
-            <option value="great-vibes">Great Vibes (Calligraphy)</option>
-            <option value="cormorant">Cormorant Italic</option>
+            {SCRIPT_FONT_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.name} — {opt.vibe}
+              </option>
+            ))}
           </select>
+        </div>
+
+        {/* Body Copy Font */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-stone-700">
+              Body Copy Font
+            </label>
+            <span
+              className="text-xs text-stone-500 font-medium"
+              style={{ fontFamily: getBodyFontFamily(typography.bodyFont) }}
+            >
+              Details &amp; Schedule
+            </span>
+          </div>
+          <select
+            value={typography.bodyFont}
+            onChange={(e) =>
+              updateTypography({
+                bodyFont: e.target.value as typeof typography.bodyFont,
+              })
+            }
+            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-800 focus:border-stone-900 focus:outline-none shadow-2xs font-medium"
+          >
+            <optgroup label="Contemporary Clean Sans">
+              {BODY_FONT_OPTIONS.filter((f) => f.category === "sans").map(
+                (opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.name} — {opt.vibe}
+                  </option>
+                )
+              )}
+            </optgroup>
+            <optgroup label="Classical Fine Serif">
+              {BODY_FONT_OPTIONS.filter((f) => f.category === "serif").map(
+                (opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.name} — {opt.vibe}
+                  </option>
+                )
+              )}
+            </optgroup>
+          </select>
+        </div>
+
+        {/* Live Typography Specimen Card */}
+        <div className="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-3.5 space-y-2 shadow-2xs">
+          <div className="flex items-center justify-between text-[10px] text-stone-500 font-semibold uppercase tracking-wider">
+            <span>Live Specimen Pairing</span>
+            <span className="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full font-semibold">
+              Live Preview
+            </span>
+          </div>
+          <div className="text-center py-2.5 px-3 bg-white rounded-xl border border-amber-100/70 shadow-2xs space-y-1">
+            <p
+              className="text-lg sm:text-xl font-semibold text-stone-900 leading-tight"
+              style={{
+                fontFamily: getDisplayFontFamily(typography.displayFont),
+              }}
+            >
+              Amina &amp; Zayan
+            </p>
+            <p
+              className="text-base text-amber-800"
+              style={{
+                fontFamily: getScriptFontFamily(typography.scriptFont),
+              }}
+            >
+              Together with their beloved families
+            </p>
+            <p
+              className="text-xs text-stone-600 mt-1"
+              style={{ fontFamily: getBodyFontFamily(typography.bodyFont) }}
+            >
+              Request the honor of your presence · Saturday, October 24
+            </p>
+          </div>
         </div>
       </div>
 

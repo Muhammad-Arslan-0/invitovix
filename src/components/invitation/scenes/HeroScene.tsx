@@ -152,7 +152,7 @@ export function HeroScene({
           color: theme.palette.text,
           fontFamily: getScriptFontFamily(theme.typography.scriptFont),
           fontSize:
-            theme.typography.scriptFont === "great-vibes" ? "1.6rem" : "1.15rem",
+            theme.typography.scriptFont === "cormorant" ? "1.15rem" : "1.6rem",
         }}
       >
         {content.subtitle}

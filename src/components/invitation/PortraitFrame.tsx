@@ -1,7 +1,12 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { CoupleFrameShape, HeroFrameStyle } from "@/types/invitation";
+import {
+  CoupleFrameShape,
+  HeroFrameStyle,
+  DisplayFont,
+  ScriptFont,
+} from "@/types/invitation";
 import { getDisplayFontFamily, getScriptFontFamily } from "@/lib/utils/fonts";
 
 export type AnyPortraitShape = CoupleFrameShape | HeroFrameStyle;
@@ -17,8 +22,8 @@ interface PortraitFrameProps {
   accentColor: string;
   surfaceColor: string;
   textColor: string;
-  displayFont: "cinzel" | "cormorant" | "playfair" | "syne";
-  scriptFont: "great-vibes" | "cormorant";
+  displayFont: DisplayFont;
+  scriptFont: ScriptFont;
   tilt?: "left" | "right" | "none";
   size?: "hero" | "couple";
   isStudioPreview?: boolean;
@@ -122,7 +127,7 @@ export function PortraitFrame({
             style={{
               color: "#2C221E",
               fontFamily: getScriptFontFamily(scriptFont),
-              fontSize: scriptFont === "great-vibes" ? "1.25rem" : "0.95rem",
+              fontSize: scriptFont === "cormorant" ? "0.95rem" : "1.25rem",
             }}
           >
             {caption}

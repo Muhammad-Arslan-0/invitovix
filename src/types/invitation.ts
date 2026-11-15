@@ -10,11 +10,55 @@ export const paletteSchema = z.object({
   mutedText: z.string(),
 });
 
+export const displayFontEnum = [
+  "cinzel",
+  "playfair",
+  "cormorant",
+  "bodoni",
+  "prata",
+  "marcellus",
+  "italiana",
+  "cinzel-decorative",
+  "abril",
+  "syne",
+  "montserrat",
+  "tenor",
+  "raleway",
+  "oswald",
+] as const;
+
+export const bodyFontEnum = [
+  "jakarta",
+  "dm-sans",
+  "inter",
+  "outfit",
+  "cormorant",
+  "lora",
+  "eb-garamond",
+  "montserrat",
+  "spectral",
+] as const;
+
+export const scriptFontEnum = [
+  "great-vibes",
+  "pinyon-script",
+  "alex-brush",
+  "parisienne",
+  "allura",
+  "sacramento",
+  "playball",
+  "cormorant",
+] as const;
+
 export const typographySchema = z.object({
-  displayFont: z.enum(["cinzel", "cormorant", "playfair", "syne"]),
-  bodyFont: z.enum(["jakarta", "dm-sans", "cormorant"]),
-  scriptFont: z.enum(["great-vibes", "cormorant"]),
+  displayFont: z.enum(displayFontEnum),
+  bodyFont: z.enum(bodyFontEnum),
+  scriptFont: z.enum(scriptFontEnum),
 });
+
+export type DisplayFont = (typeof displayFontEnum)[number];
+export type BodyFont = (typeof bodyFontEnum)[number];
+export type ScriptFont = (typeof scriptFontEnum)[number];
 
 export const cardArtMotifSchema = z.enum([
   "none",

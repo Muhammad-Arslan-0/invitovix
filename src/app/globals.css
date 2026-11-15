@@ -4,12 +4,33 @@
   --background: #fcfaf7;
   --foreground: #171717;
   --font-cinzel: "Cinzel", Georgia, serif;
+  --font-cinzel-decorative: "Cinzel Decorative", "Cinzel", Georgia, serif;
   --font-cormorant: "Cormorant Garamond", Georgia, serif;
   --font-great-vibes: "Great Vibes", cursive;
   --font-playfair: "Playfair Display", Georgia, serif;
   --font-jakarta: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-syne: "Syne", ui-sans-serif, system-ui, sans-serif;
   --font-dm-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-prata: "Prata", Georgia, serif;
+  --font-bodoni: "Bodoni Moda", Didot, "Bodoni MT", Georgia, serif;
+  --font-marcellus: "Marcellus", Georgia, serif;
+  --font-italiana: "Italiana", Georgia, serif;
+  --font-abril: "Abril Fatface", Georgia, serif;
+  --font-montserrat: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-tenor: "Tenor Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-raleway: "Raleway", ui-sans-serif, system-ui, sans-serif;
+  --font-oswald: "Oswald", ui-sans-serif, system-ui, sans-serif;
+  --font-pinyon: "Pinyon Script", cursive;
+  --font-alex-brush: "Alex Brush", cursive;
+  --font-parisienne: "Parisienne", cursive;
+  --font-allura: "Allura", cursive;
+  --font-sacramento: "Sacramento", cursive;
+  --font-playball: "Playball", cursive;
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-outfit: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-lora: "Lora", Georgia, serif;
+  --font-eb-garamond: "EB Garamond", Georgia, serif;
+  --font-spectral: "Spectral", Georgia, serif;
 }
 
 @theme inline {
