@@ -138,10 +138,10 @@ export function EnvelopeStage({
 
       {/* Envelope Container with 3D perspective */}
       <motion.div
-        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        initial={{ opacity: 0, y: 18, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        style={{ perspective: 1200 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ perspective: 1200, willChange: "transform, opacity" }}
         className="relative z-20 w-full max-w-[368px]"
       >
         {/* Lottie burst played upon unseal */}
@@ -158,12 +158,13 @@ export function EnvelopeStage({
         <motion.div
           initial={{ y: 26, opacity: 0.92 }}
           animate={
-            isOpening ? { y: -96, opacity: 1, scale: 1.03 } : { y: 14, opacity: 0.97 }
+            isOpening ? { y: -96, opacity: 1, scale: 1.02 } : { y: 14, opacity: 0.97 }
           }
-          transition={{ duration: 1.0, delay: isOpening ? 0.22 : 0, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.52, delay: isOpening ? 0.06 : 0, ease: [0.16, 1, 0.3, 1] }}
           style={{
             backgroundColor: theme.palette.surface,
             borderColor: `${theme.palette.accent}55`,
+            willChange: isOpening ? "transform, opacity" : "auto",
           }}
           className="mx-4 rounded-t-2xl border p-4 sm:p-5 text-center shadow-lg relative"
         >
@@ -257,12 +258,15 @@ export function EnvelopeStage({
           <motion.div
             animate={
               isOpening
-                ? { rotateX: 165, opacity: 0.15 }
+                ? { rotateX: 165, opacity: 0.1 }
                 : { rotateX: 0, opacity: 1 }
             }
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.46, ease: [0.16, 1, 0.3, 1] }}
             style={{
               transformOrigin: "top center",
+              transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
+              willChange: isOpening ? "transform, opacity" : "auto",
               clipPath: "polygon(0 0, 100% 0, 50% 100%)",
               background: `linear-gradient(165deg, color-mix(in srgb, ${envelope.envelopeColor} 84%, white) 0%, ${envelope.envelopeColor} 92%)`,
             }}

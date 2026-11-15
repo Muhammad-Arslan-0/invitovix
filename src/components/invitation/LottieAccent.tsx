@@ -10,6 +10,20 @@ const DotLottieReact = dynamic(
   { ssr: false }
 );
 
+// Pre-warm the lottie runtime bundle during browser idle time so unseal has 0ms latency
+if (typeof window !== "undefined") {
+  const prewarm = () => {
+    import("@lottiefiles/dotlottie-react").catch(() => {});
+  };
+  if ("requestIdleCallback" in window) {
+    (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(
+      prewarm
+    );
+  } else {
+    setTimeout(prewarm, 1000);
+  }
+}
+
 class LottieErrorBoundary extends Component<
   { children: ReactNode },
   { hasError: boolean }

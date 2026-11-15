@@ -53,17 +53,19 @@ export function HeroScene({
       gsap.from(".hero-stagger", {
         y: yOffset,
         opacity: 0,
-        duration: 0.9,
-        stagger: 0.12,
-        ease: "power3.out",
+        duration: 0.52,
+        stagger: 0.05,
+        ease: "power2.out",
+        force3D: true,
         clearProps: "transform",
       });
 
       gsap.from(".hero-line", {
         scaleX: 0,
-        duration: 0.85,
-        delay: 0.35,
+        duration: 0.5,
+        delay: 0.18,
         ease: "power2.out",
+        force3D: true,
       });
     }, el);
 

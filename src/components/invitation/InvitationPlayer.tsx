@@ -182,7 +182,7 @@ export const InvitationPlayer = forwardRef<
     setStage("opening");
     setTimeout(() => {
       setStage("opened");
-    }, 1250);
+    }, 620);
   }, [stage, designData.audio, startMuted, audioUrl]);
 
   const handleToggleMute = useCallback(() => {
@@ -250,8 +250,12 @@ export const InvitationPlayer = forwardRef<
         {stage !== "opened" ? (
           <motion.div
             key="envelope-view"
-            exit={{ opacity: 0, scale: isStudioPreview ? 1 : 1.03 }}
-            transition={{ duration: isStudioPreview ? 0.08 : 0.45 }}
+            exit={{ opacity: 0, scale: isStudioPreview ? 1 : 1.015 }}
+            transition={{
+              duration: isStudioPreview ? 0.08 : 0.22,
+              ease: "easeOut",
+            }}
+            style={{ willChange: "transform, opacity" }}
             className={`flex-1 flex flex-col ${
               bounded
                 ? "h-full overflow-y-auto no-scrollbar"
@@ -271,12 +275,13 @@ export const InvitationPlayer = forwardRef<
         ) : (
           <motion.div
             key="card-view"
-            initial={isStudioPreview ? { opacity: 0 } : { opacity: 0, y: 24 }}
+            initial={isStudioPreview ? { opacity: 0 } : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: isStudioPreview ? 0.12 : 0.75,
-              ease: [0.22, 1, 0.36, 1],
+              duration: isStudioPreview ? 0.12 : 0.42,
+              ease: [0.16, 1, 0.3, 1],
             }}
+            style={{ willChange: "transform, opacity" }}
             className={`relative flex-1 flex flex-col ${
               bounded ? "h-full overflow-hidden" : "min-h-screen md:min-h-0 md:h-full md:overflow-hidden"
             }`}
@@ -351,43 +356,51 @@ export const InvitationPlayer = forwardRef<
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
 
-              <ItineraryScene
-                id="invite-schedule"
-                designData={designData}
-                eventType={eventType}
-                guestAccess={guestAccess}
-                scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
-              />
+              <div className="scene-lazy-paint">
+                <ItineraryScene
+                  id="invite-schedule"
+                  designData={designData}
+                  eventType={eventType}
+                  guestAccess={guestAccess}
+                  scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
+                />
+              </div>
 
-              <VenueScene
-                id="invite-venue"
-                designData={designData}
-                title={title}
-                slug={slug}
-                eventDate={eventDate}
-                venueName={venueName}
-                venueAddress={venueAddress}
-                venueMapUrl={venueMapUrl}
-                scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
-              />
+              <div className="scene-lazy-paint">
+                <VenueScene
+                  id="invite-venue"
+                  designData={designData}
+                  title={title}
+                  slug={slug}
+                  eventDate={eventDate}
+                  venueName={venueName}
+                  venueAddress={venueAddress}
+                  venueMapUrl={venueMapUrl}
+                  scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
+                />
+              </div>
 
-              <GalleryScene
-                id="invite-gallery"
-                designData={designData}
-                eventType={eventType}
-                isStudioPreview={isStudioPreview}
-                scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
-              />
+              <div className="scene-lazy-paint">
+                <GalleryScene
+                  id="invite-gallery"
+                  designData={designData}
+                  eventType={eventType}
+                  isStudioPreview={isStudioPreview}
+                  scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
+                />
+              </div>
 
-              <RsvpScene
-                id="invite-rsvp"
-                eventId={eventId}
-                designData={designData}
-                eventType={eventType}
-                guestAccess={guestAccess}
-                isStudioPreview={isStudioPreview}
-                scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
-              />
+              <div className="scene-lazy-paint">
+                <RsvpScene
+                  id="invite-rsvp"
+                  eventId={eventId}
+                  designData={designData}
+                  eventType={eventType}
+                  guestAccess={guestAccess}
+                  isStudioPreview={isStudioPreview}
+                  scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
+                />
+              </div>
 
               <footer
                 className="pb-8 pt-4 text-center text-[11px] uppercase tracking-[0.22em] opacity-65"

@@ -43,6 +43,22 @@
   font-family: var(--font-aref-ruqaa), "Aref Ruqaa", "Amiri", serif;
 }
 
+/* Performance & smooth 60fps GPU acceleration for interactive invitation transitions */
+.gpu-layer {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Offload off-screen scene rendering during unseal sequence */
+.scene-lazy-paint {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 320px;
+}
+
 @theme inline {
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-cinzel);

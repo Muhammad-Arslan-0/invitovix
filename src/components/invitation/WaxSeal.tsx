@@ -58,26 +58,30 @@ export function WaxSeal({
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ scale: 1.07, rotate: -2 }}
-      whileTap={{ scale: 0.93 }}
+      whileHover={{ scale: 1.06, rotate: -1.5 }}
+      whileTap={{ scale: 0.94 }}
       animate={
         isCracking
-          ? { scale: [1, 1.22, 0.35], opacity: [1, 1, 0], rotate: [0, -10, 16] }
-          : {
-              boxShadow: [
-                `0 12px 30px rgba(0,0,0,0.38), 0 0 0 0 ${waxSeal.color}66`,
-                `0 16px 36px rgba(0,0,0,0.44), 0 0 0 14px ${waxSeal.color}00`,
-              ],
-            }
+          ? { scale: [1, 1.16, 0.35], opacity: [1, 1, 0], rotate: [0, -8, 14] }
+          : undefined
       }
-      transition={
-        isCracking
-          ? { duration: 0.55, ease: "easeOut" }
-          : { duration: 2.3, repeat: Infinity, ease: "easeOut" }
-      }
+      transition={{ duration: 0.38, ease: "easeOut" }}
+      style={{ willChange: isCracking ? "transform, opacity" : "auto" }}
       className={`relative ${dim} rounded-full flex items-center justify-center cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
       aria-label="Tap wax seal to open invitation"
     >
+      {/* Hardware-accelerated pulse beacon behind the seal without JS repaint */}
+      {!isCracking && (
+        <span
+          className="absolute inset-0 rounded-full animate-ping opacity-25 pointer-events-none"
+          style={{
+            backgroundColor: waxSeal.color,
+            animationDuration: "3s",
+            willChange: "transform, opacity",
+          }}
+          aria-hidden="true"
+        />
+      )}
       {/* Organic stamped scalloped wax outer silhouette */}
       <svg
         viewBox="0 0 120 120"
