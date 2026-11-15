@@ -379,7 +379,9 @@ export const CardOrnamentFrame = memo(function CardOrnamentFrame({
 }: CardOrnamentFrameProps) {
   const { palette, cardArt } = theme;
   const { motif, borderStyle } = cardArt;
-  const posClass = bounded ? "absolute inset-0" : "fixed md:absolute inset-0";
+  const posClass = bounded
+    ? "absolute inset-0"
+    : "absolute inset-x-0 top-0 h-[100dvh] min-h-[640px] max-h-[920px]";
 
   if (motif === "none" && borderStyle === "none") return null;
 

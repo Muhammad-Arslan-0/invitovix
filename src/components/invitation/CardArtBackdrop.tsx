@@ -19,7 +19,9 @@ export const CardArtBackdrop = memo(function CardArtBackdrop({
 
   const opacity = Math.min(0.65, Math.max(0.08, theme.cardArt.backdropOpacity));
   const bg = theme.palette.background;
-  const posClass = bounded ? "absolute inset-0" : "fixed md:absolute inset-0";
+  const posClass = bounded
+    ? "absolute inset-0"
+    : "absolute inset-x-0 top-0 h-[100dvh] min-h-[640px] max-h-[920px]";
 
   return (
     <div
