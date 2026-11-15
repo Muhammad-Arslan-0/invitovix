@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { Play, Square } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
@@ -22,6 +22,12 @@ export const MotionAudioPanel = memo(function MotionAudioPanel({
   const updateAudio = useStudioStore((s) => s.updateAudio);
   const updateMeta = useStudioStore((s) => s.updateMeta);
   const [testingAudio, setTestingAudio] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      audioEngine.stopAndUnload();
+    };
+  }, []);
 
   function handleTestAudio() {
     if (testingAudio) {
