@@ -10,9 +10,11 @@ import {
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { WaxSeal } from "./WaxSeal";
 import { LottieAccent } from "./LottieAccent";
 import { BlessingHeader } from "./BlessingHeader";
+import { LanguageSelector } from "./LanguageSelector";
 
 interface EnvelopeStageProps {
   designData: EventDesignData;
@@ -33,6 +35,7 @@ export function EnvelopeStage({
   onUnseal,
   bounded = false,
 }: EnvelopeStageProps) {
+  const { t, isRTL, formatDate, language } = useCardLanguage();
   const { theme, envelope, content, motion: motionCfg, audio } = designData;
   const isOpening = stage === "opening";
   const [mounted, setMounted] = useState(false);
@@ -47,19 +50,11 @@ export function EnvelopeStage({
     setMounted(true);
   }, []);
 
-  const formattedDate = (() => {
-    const d = new Date(eventDate);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      ...(mounted ? {} : { timeZone: "UTC" }),
-    });
-  })();
+  const formattedDate = formatDate(eventDate);
 
   return (
     <div
+      dir={isRTL ? "rtl" : "ltr"}
       className={`relative w-full flex flex-col items-center justify-center overflow-hidden ${
         bounded
           ? "min-h-full h-full px-4 pt-9 pb-6 sm:px-5 sm:pt-11 sm:pb-8"
@@ -101,14 +96,21 @@ export function EnvelopeStage({
         }}
       />
 
-      {/* Audio preference pill at top */}
-      {audio.enabled && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-20 mb-3.5 sm:mb-5"
-        >
+      {/* Top Controls: Language Switcher + Audio Preference Pill */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-50 mb-3.5 sm:mb-5 flex items-center justify-center gap-2 flex-wrap"
+      >
+        <LanguageSelector
+          variant="envelope"
+          accentColor={theme.palette.accent}
+          surfaceColor={theme.palette.surface}
+          textColor={theme.palette.text}
+        />
+
+        {audio.enabled && (
           <button
             type="button"
             onClick={onToggleStartMuted}
@@ -122,7 +124,7 @@ export function EnvelopeStage({
             {startMuted ? (
               <>
                 <VolumeX className="w-3.5 h-3.5" />
-                <span>Opens silently</span>
+                <span>{t("opensSilently")}</span>
               </>
             ) : (
               <>
@@ -130,12 +132,14 @@ export function EnvelopeStage({
                   className="w-3.5 h-3.5"
                   style={{ color: theme.palette.accent }}
                 />
-                <span>With music · {audio.trackTitle}</span>
+                <span>
+                  {t("withMusic")} · {audio.trackTitle}
+                </span>
               </>
             )}
           </button>
-        </motion.div>
-      )}
+        )}
+      </motion.div>
 
       {/* Envelope Container with 3D perspective */}
       <motion.div
@@ -143,7 +147,7 @@ export function EnvelopeStage({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         style={{ perspective: 1200, willChange: "transform, opacity" }}
-        className="relative z-20 w-full max-w-[368px]"
+        className="relative z-10 w-full max-w-[368px]"
       >
         {/* Lottie burst played upon unseal */}
         {isOpening && motionCfg.lottieAccent !== "none" && (
@@ -190,7 +194,7 @@ export function EnvelopeStage({
             className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.24em]"
             style={{
               color: theme.palette.mutedText,
-              fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+              fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
             }}
           >
             {content.hostLine}
@@ -199,7 +203,7 @@ export function EnvelopeStage({
             className="relative z-10 mt-1.5 text-xl sm:text-2xl font-semibold tracking-wide leading-tight break-words"
             style={{
               color: theme.palette.primary,
-              fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+              fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
             }}
           >
             {content.headline}
@@ -209,7 +213,7 @@ export function EnvelopeStage({
               className="relative z-10 mt-1 text-sm sm:text-base"
               style={{
                 color: theme.palette.accent,
-                fontFamily: getScriptFontFamily(theme.typography.scriptFont),
+                fontFamily: getScriptFontFamily(theme.typography.scriptFont, language),
               }}
             >
               {formattedDate}
@@ -277,10 +281,10 @@ export function EnvelopeStage({
               className="text-[10px] uppercase tracking-[0.28em] opacity-85"
               style={{
                 color: envelope.linerColor,
-                fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+                fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
               }}
             >
-              Invitation
+              {t("invitation")}
             </div>
           </motion.div>
 
@@ -320,7 +324,7 @@ export function EnvelopeStage({
                 }}
                 className="px-6 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-semibold shadow-xl cursor-pointer"
               >
-                Open Invitation
+                {t("openInvitation")}
               </motion.button>
             )}
 
@@ -332,10 +336,10 @@ export function EnvelopeStage({
               <span
                 style={{
                   color: "#FAF6EE",
-                  fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                  fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
                 }}
               >
-                {isOpening ? "Unsealing..." : envelope.promptText}
+                {isOpening ? t("unsealing") : (envelope.promptText || t("tapToOpen"))}
               </span>
             </div>
           </div>
@@ -346,7 +350,7 @@ export function EnvelopeStage({
         className="relative z-20 mt-4 sm:mt-6 text-[10px] sm:text-[11px] tracking-[0.22em] uppercase opacity-60"
         style={{ color: theme.palette.mutedText }}
       >
-        Crafted with Invitovix
+        {t("craftedWith")}
       </p>
     </div>
   );

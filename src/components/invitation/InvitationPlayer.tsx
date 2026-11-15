@@ -13,6 +13,7 @@ import { EventDesignData } from "@/types/invitation";
 import { audioEngine } from "@/lib/audio/audioEngine";
 import { getPaperTextureClass } from "@/lib/utils/fonts";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { EnvelopeStage } from "./EnvelopeStage";
 import { ParticleLayer } from "./ParticleLayer";
 import { FloatingAudioDisc } from "./FloatingAudioDisc";
@@ -84,6 +85,19 @@ export const InvitationPlayer = forwardRef<
   },
   ref
 ) {
+  const {
+    t,
+    isRTL,
+    language,
+    translatedDesignData,
+    translatedVenueName,
+    translatedVenueAddress,
+  } = useCardLanguage();
+  const effectiveDesignData =
+    translatedDesignData?.theme?.palette ? translatedDesignData : designData;
+  const effectiveVenueName = translatedVenueName || venueName;
+  const effectiveVenueAddress = translatedVenueAddress || venueAddress;
+
   const [stage, setStage] = useState<"sealed" | "opening" | "opened">(
     forcedStage ?? "sealed"
   );
@@ -150,7 +164,7 @@ export const InvitationPlayer = forwardRef<
     [isBoundedScroll]
   );
 
-  // Flush queued section jump once the card-view DOM (after AnimatePresence exit) actually mounts
+  // Flush queued section jump once the card-view DOM mounts
   const flushPendingScroll = useCallback(() => {
     if (!pendingSectionRef.current) return;
     const targetId = pendingSectionRef.current;
@@ -164,15 +178,15 @@ export const InvitationPlayer = forwardRef<
     if (stage !== "sealed") return;
 
     // Synchronous audio unlock inside user gesture handler
-    if (designData.audio.enabled && !startMuted) {
+    if (effectiveDesignData.audio.enabled && !startMuted) {
       const resolvedSrc =
-        audioUrl && designData.audio.trackId === "custom"
+        audioUrl && effectiveDesignData.audio.trackId === "custom"
           ? audioUrl
-          : audioEngine.resolveSource(designData.audio);
+          : audioEngine.resolveSource(effectiveDesignData.audio);
       if (resolvedSrc) {
         audioEngine.setMuted(false);
         setIsMuted(false);
-        audioEngine.unlockAndPlay(resolvedSrc, designData.audio.volume);
+        audioEngine.unlockAndPlay(resolvedSrc, effectiveDesignData.audio.volume);
       }
     } else {
       setIsMuted(true);
@@ -183,24 +197,24 @@ export const InvitationPlayer = forwardRef<
     setTimeout(() => {
       setStage("opened");
     }, 620);
-  }, [stage, designData.audio, startMuted, audioUrl]);
+  }, [stage, effectiveDesignData.audio, startMuted, audioUrl]);
 
   const handleToggleMute = useCallback(() => {
-    if (!designData.audio.enabled) return;
+    if (!effectiveDesignData.audio.enabled) return;
     const nextMuted = audioEngine.toggleMute();
     setIsMuted(nextMuted);
 
     // If user opened silently and now unmutes, start audio on this click gesture
     if (!nextMuted) {
       const resolvedSrc =
-        audioUrl && designData.audio.trackId === "custom"
+        audioUrl && effectiveDesignData.audio.trackId === "custom"
           ? audioUrl
-          : audioEngine.resolveSource(designData.audio);
+          : audioEngine.resolveSource(effectiveDesignData.audio);
       if (resolvedSrc) {
-        audioEngine.unlockAndPlay(resolvedSrc, designData.audio.volume);
+        audioEngine.unlockAndPlay(resolvedSrc, effectiveDesignData.audio.volume);
       }
     }
-  }, [designData.audio, audioUrl]);
+  }, [effectiveDesignData.audio, audioUrl]);
 
   const handleReplay = useCallback(() => {
     audioEngine.stopAndUnload();
@@ -233,14 +247,16 @@ export const InvitationPlayer = forwardRef<
     [handleUnseal, handleToggleMute, handleReplay, navigateToSection]
   );
 
-  const { theme, motion: motionCfg } = designData;
+  const { theme, motion: motionCfg } = effectiveDesignData;
   const textureClass = getPaperTextureClass(theme.paperTexture);
 
   return (
     <div
+      dir={isRTL ? "rtl" : "ltr"}
+      lang={language}
       className={`relative w-full overflow-hidden flex flex-col ${
         bounded ? "h-full" : "min-h-screen md:min-h-0 md:h-full"
-      } ${textureClass}`}
+      } ${textureClass} ${language === "ur" ? "font-nastaleeq" : ""}`}
       style={{
         backgroundColor: theme.palette.background,
         color: theme.palette.text,
@@ -263,7 +279,7 @@ export const InvitationPlayer = forwardRef<
             }`}
           >
             <EnvelopeStage
-              designData={designData}
+              designData={effectiveDesignData}
               eventDate={eventDate}
               stage={stage}
               startMuted={startMuted}
@@ -275,6 +291,7 @@ export const InvitationPlayer = forwardRef<
         ) : (
           <motion.div
             key="card-view"
+            dir={isRTL ? "rtl" : "ltr"}
             initial={isStudioPreview ? { opacity: 0 } : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -296,9 +313,9 @@ export const InvitationPlayer = forwardRef<
               primaryColor={theme.palette.primary}
             />
 
-            {/* Floating Rotating Music Disc & Replay Control */}
+            {/* Floating Controls: Language, Rotating Music Disc & Replay */}
             <FloatingAudioDisc
-              designData={designData}
+              designData={effectiveDesignData}
               isMuted={isMuted}
               onToggleMute={handleToggleMute}
               onReplay={handleReplay}
@@ -334,16 +351,16 @@ export const InvitationPlayer = forwardRef<
                 <CardHeaderCrown theme={theme} />
                 <HeroScene
                   id="invite-hero"
-                  designData={designData}
+                  designData={effectiveDesignData}
                   eventType={eventType}
                   eventDate={eventDate}
-                  venueName={venueName}
+                  venueName={effectiveVenueName}
                 />
               </div>
 
               <CoupleScene
                 id="invite-couple"
-                designData={designData}
+                designData={effectiveDesignData}
                 eventType={eventType}
                 isStudioPreview={isStudioPreview}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
@@ -351,7 +368,7 @@ export const InvitationPlayer = forwardRef<
 
               <StoryCountdownScene
                 id="invite-story"
-                designData={designData}
+                designData={effectiveDesignData}
                 eventDate={eventDate}
                 scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
               />
@@ -359,7 +376,7 @@ export const InvitationPlayer = forwardRef<
               <div className="scene-lazy-paint">
                 <ItineraryScene
                   id="invite-schedule"
-                  designData={designData}
+                  designData={effectiveDesignData}
                   eventType={eventType}
                   guestAccess={guestAccess}
                   scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
@@ -369,12 +386,12 @@ export const InvitationPlayer = forwardRef<
               <div className="scene-lazy-paint">
                 <VenueScene
                   id="invite-venue"
-                  designData={designData}
+                  designData={effectiveDesignData}
                   title={title}
                   slug={slug}
                   eventDate={eventDate}
-                  venueName={venueName}
-                  venueAddress={venueAddress}
+                  venueName={effectiveVenueName}
+                  venueAddress={effectiveVenueAddress}
                   venueMapUrl={venueMapUrl}
                   scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
                 />
@@ -383,7 +400,7 @@ export const InvitationPlayer = forwardRef<
               <div className="scene-lazy-paint">
                 <GalleryScene
                   id="invite-gallery"
-                  designData={designData}
+                  designData={effectiveDesignData}
                   eventType={eventType}
                   isStudioPreview={isStudioPreview}
                   scrollRootRef={isBoundedScroll ? scrollContainerRef : undefined}
@@ -394,7 +411,7 @@ export const InvitationPlayer = forwardRef<
                 <RsvpScene
                   id="invite-rsvp"
                   eventId={eventId}
-                  designData={designData}
+                  designData={effectiveDesignData}
                   eventType={eventType}
                   guestAccess={guestAccess}
                   isStudioPreview={isStudioPreview}
@@ -408,7 +425,7 @@ export const InvitationPlayer = forwardRef<
               >
                 <span className="inline-flex items-center justify-center gap-1.5">
                   <BrandMark size="2xs" rounded="md" decorative />
-                  <span>Powered by Invitovix</span>
+                  <span>{t("poweredBy")}</span>
                 </span>
               </footer>
             </div>

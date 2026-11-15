@@ -9,6 +9,7 @@ import {
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { PortraitFrame } from "../PortraitFrame";
 import { OrnamentalDivider } from "../CardOrnamentFrame";
 
@@ -27,6 +28,7 @@ export function CoupleScene({
   isStudioPreview = false,
   scrollRootRef,
 }: CoupleSceneProps) {
+  const { t, isRTL, language } = useCardLanguage();
   const { theme, content, sections } = designData;
   if (!sections.showCouple) return null;
 
@@ -37,13 +39,57 @@ export function CoupleScene({
     (!couple.groomName.trim() && typeMeta.isSoloDefault);
   const isSplit = !isSolo && couple.layout === "editorial-split";
 
-  const person1Name = couple.brideName || typeMeta.person1ShortLabel;
-  const person2Name = couple.groomName || typeMeta.person2ShortLabel;
+  const person1Name =
+    couple.brideName ||
+    (language !== "en" && typeMeta.domain === "wedding"
+      ? t("bride")
+      : typeMeta.person1ShortLabel);
+  const person2Name =
+    couple.groomName ||
+    (language !== "en" && typeMeta.domain === "wedding"
+      ? t("groom")
+      : typeMeta.person2ShortLabel);
+
+  const eyebrow =
+    language !== "en"
+      ? isSolo
+        ? typeMeta.domain === "birthday"
+          ? t("theHonoree")
+          : t("honoredGuest")
+        : t("theCouple")
+      : typeMeta.eyebrow;
+
+  const sectionHeading =
+    language !== "en"
+      ? isSolo
+        ? typeMeta.domain === "birthday"
+          ? t("celebratingWithYou")
+          : t("keynoteAndProgram")
+        : t("groomAndBride")
+      : typeMeta.sectionHeading;
+
+  const person1Badge =
+    language !== "en" && typeMeta.domain === "wedding"
+      ? t("theBride")
+      : typeMeta.person1BadgeLabel;
+  const person2Badge =
+    language !== "en" && typeMeta.domain === "wedding"
+      ? t("theGroom")
+      : typeMeta.person2BadgeLabel;
+  const person1ShortRole =
+    language !== "en" && typeMeta.domain === "wedding"
+      ? t("bride")
+      : typeMeta.person1ShortLabel;
+  const person2ShortRole =
+    language !== "en" && typeMeta.domain === "wedding"
+      ? t("groom")
+      : typeMeta.person2ShortLabel;
 
   return (
     <motion.section
       id={id}
       data-testid="couple-scene"
+      dir={isRTL ? "rtl" : "ltr"}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{
@@ -65,16 +111,16 @@ export function CoupleScene({
           className="text-[10px] sm:text-[11px] uppercase tracking-[0.26em]"
           style={{ color: theme.palette.accent }}
         >
-          {typeMeta.eyebrow}
+          {eyebrow}
         </p>
         <h2
           className="mt-1 text-2xl sm:text-3xl font-semibold"
           style={{
             color: theme.palette.primary,
-            fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+            fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
           }}
         >
-          {typeMeta.sectionHeading}
+          {sectionHeading}
         </h2>
       </div>
 
@@ -91,8 +137,8 @@ export function CoupleScene({
             <PortraitFrame
               imageUrl={couple.brideImageUrl}
               alt={person1Name}
-              roleBadge={typeMeta.person1BadgeLabel}
-              caption={typeMeta.person1ShortLabel}
+              roleBadge={person1Badge}
+              caption={person1ShortRole}
               shape={couple.frameShape}
               primaryColor={theme.palette.primary}
               accentColor={theme.palette.accent}
@@ -101,6 +147,7 @@ export function CoupleScene({
               displayFont={theme.typography.displayFont}
               scriptFont={theme.typography.scriptFont}
               isStudioPreview={isStudioPreview}
+              language={language}
             />
           </div>
           {couple.crestText && (
@@ -120,7 +167,7 @@ export function CoupleScene({
             className="mt-2.5 text-2xl font-semibold leading-snug"
             style={{
               color: theme.palette.primary,
-              fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+              fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
             }}
           >
             {person1Name}
@@ -130,7 +177,7 @@ export function CoupleScene({
               className="mt-1.5 text-xs sm:text-sm leading-relaxed max-w-xs"
               style={{
                 color: theme.palette.mutedText,
-                fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
               }}
             >
               {couple.brideRole}
@@ -143,18 +190,18 @@ export function CoupleScene({
             {
               key: "bride",
               name: person1Name,
-              badge: typeMeta.person1BadgeLabel,
-              shortRole: typeMeta.person1ShortLabel,
-              role: couple.brideRole || typeMeta.person1ShortLabel,
+              badge: person1Badge,
+              shortRole: person1ShortRole,
+              role: couple.brideRole || person1ShortRole,
               imageUrl: couple.brideImageUrl,
               tilt: "left" as const,
             },
             {
               key: "groom",
               name: person2Name,
-              badge: typeMeta.person2BadgeLabel,
-              shortRole: typeMeta.person2ShortLabel,
-              role: couple.groomRole || typeMeta.person2ShortLabel,
+              badge: person2Badge,
+              shortRole: person2ShortRole,
+              role: couple.groomRole || person2ShortRole,
               imageUrl: couple.groomImageUrl,
               tilt: "right" as const,
             },
@@ -184,6 +231,7 @@ export function CoupleScene({
                   scriptFont={theme.typography.scriptFont}
                   tilt={partner.tilt}
                   isStudioPreview={isStudioPreview}
+                  language={language}
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -198,7 +246,8 @@ export function CoupleScene({
                   style={{
                     color: theme.palette.primary,
                     fontFamily: getDisplayFontFamily(
-                      theme.typography.displayFont
+                      theme.typography.displayFont,
+                      language
                     ),
                   }}
                 >
@@ -209,7 +258,7 @@ export function CoupleScene({
                     className="mt-1.5 text-xs sm:text-sm leading-relaxed"
                     style={{
                       color: theme.palette.mutedText,
-                      fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                      fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
                     }}
                   >
                     {partner.role}
@@ -234,7 +283,7 @@ export function CoupleScene({
                 <PortraitFrame
                   imageUrl={couple.brideImageUrl}
                   alt={person1Name}
-                  roleBadge={typeMeta.person1BadgeLabel}
+                  roleBadge={person1Badge}
                   caption={person1Name}
                   shape={couple.frameShape}
                   primaryColor={theme.palette.primary}
@@ -245,6 +294,7 @@ export function CoupleScene({
                   scriptFont={theme.typography.scriptFont}
                   tilt="left"
                   isStudioPreview={isStudioPreview}
+                  language={language}
                 />
               </div>
               <h3
@@ -252,7 +302,8 @@ export function CoupleScene({
                 style={{
                   color: theme.palette.primary,
                   fontFamily: getDisplayFontFamily(
-                    theme.typography.displayFont
+                    theme.typography.displayFont,
+                    language
                   ),
                 }}
               >
@@ -263,7 +314,7 @@ export function CoupleScene({
                   className="mt-1 text-[11px] sm:text-xs leading-snug max-w-[150px]"
                   style={{
                     color: theme.palette.mutedText,
-                    fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                    fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
                   }}
                 >
                   {couple.brideRole}
@@ -282,7 +333,7 @@ export function CoupleScene({
                   backgroundColor: theme.palette.surface,
                   borderColor: `${theme.palette.accent}88`,
                   color: theme.palette.accent,
-                  fontFamily: getScriptFontFamily(theme.typography.scriptFont),
+                  fontFamily: getScriptFontFamily(theme.typography.scriptFont, language),
                   fontSize: "1.15rem",
                 }}
               >
@@ -296,7 +347,7 @@ export function CoupleScene({
                 <PortraitFrame
                   imageUrl={couple.groomImageUrl}
                   alt={person2Name}
-                  roleBadge={typeMeta.person2BadgeLabel}
+                  roleBadge={person2Badge}
                   caption={person2Name}
                   shape={couple.frameShape}
                   primaryColor={theme.palette.primary}
@@ -307,6 +358,7 @@ export function CoupleScene({
                   scriptFont={theme.typography.scriptFont}
                   tilt="right"
                   isStudioPreview={isStudioPreview}
+                  language={language}
                 />
               </div>
               <h3
@@ -314,7 +366,8 @@ export function CoupleScene({
                 style={{
                   color: theme.palette.primary,
                   fontFamily: getDisplayFontFamily(
-                    theme.typography.displayFont
+                    theme.typography.displayFont,
+                    language
                   ),
                 }}
               >
@@ -325,7 +378,7 @@ export function CoupleScene({
                   className="mt-1 text-[11px] sm:text-xs leading-snug max-w-[150px]"
                   style={{
                     color: theme.palette.mutedText,
-                    fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                    fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
                   }}
                 >
                   {couple.groomRole}

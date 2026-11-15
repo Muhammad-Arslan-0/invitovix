@@ -17,6 +17,7 @@ import {
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { LottieAccent } from "../LottieAccent";
 
 interface RsvpSceneProps {
@@ -37,6 +38,7 @@ export function RsvpScene({
   isStudioPreview = false,
   scrollRootRef,
 }: RsvpSceneProps) {
+  const { t, isRTL } = useCardLanguage();
   const { theme, content, sections } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
 
@@ -69,7 +71,7 @@ export function RsvpScene({
     });
 
     if (!parsed.success) {
-      setErrorMsg(parsed.error.issues[0]?.message ?? "Please check your details");
+      setErrorMsg(parsed.error.issues[0]?.message ?? t("pleaseCheckDetails"));
       return;
     }
 
@@ -97,14 +99,14 @@ export function RsvpScene({
       });
 
       if (error) {
-        setErrorMsg(error.message || "Could not submit RSVP. Please try again.");
+        setErrorMsg(error.message || t("pleaseCheckDetails"));
         return;
       }
 
       setSubmitted(true);
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Unexpected error submitting RSVP."
+        err instanceof Error ? err.message : t("pleaseCheckDetails")
       );
     } finally {
       setSubmitting(false);
@@ -113,9 +115,16 @@ export function RsvpScene({
 
   const buttonTextColor = getContrastTextColor(theme.palette.primary);
 
+  const attendingOptions = [
+    { id: "attending" as const, label: t("joyfullyAccepts") },
+    { id: "tentative" as const, label: t("tentative") },
+    { id: "declined" as const, label: t("regrets") },
+  ];
+
   return (
     <motion.section
       id={id}
+      dir={isRTL ? "rtl" : "ltr"}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{
@@ -149,17 +158,19 @@ export function RsvpScene({
                 fontFamily: getDisplayFontFamily(theme.typography.displayFont),
               }}
             >
-              Thank You, {guestName}!
+              {t("thankYou")}, {guestName}!
             </h3>
             <p
               className="mt-2 text-sm relative z-10 max-w-xs mx-auto"
               style={{ color: theme.palette.mutedText }}
             >
               {status === "attending"
-                ? `Your RSVP for ${guestsCount} guest${guestsCount > 1 ? "s" : ""} is confirmed.`
+                ? guestsCount === 1
+                  ? t("rsvpConfirmedSingle")
+                  : t("rsvpConfirmedPlural", { count: guestsCount })
                 : status === "tentative"
-                  ? "We have noted your tentative response."
-                  : "Thank you for letting us know — you will be missed."}
+                  ? t("tentativeNoted")
+                  : t("regretsNoted")}
             </p>
             {(isStudioPreview || eventId === DEMO_EVENT.id) && (
               <button
@@ -172,7 +183,7 @@ export function RsvpScene({
                 className="relative z-10 mt-5 text-xs underline underline-offset-4 cursor-pointer"
                 style={{ color: theme.palette.accent }}
               >
-                Submit another demo response
+                {t("submitAnotherDemo")}
               </button>
             )}
           </div>
@@ -183,7 +194,7 @@ export function RsvpScene({
                 className="text-[11px] uppercase tracking-[0.25em]"
                 style={{ color: theme.palette.accent }}
               >
-                Response Card
+                {t("responseCard")}
               </p>
               <h2
                 className="mt-1 text-2xl sm:text-3xl font-semibold"
@@ -192,7 +203,7 @@ export function RsvpScene({
                   fontFamily: getDisplayFontFamily(theme.typography.displayFont),
                 }}
               >
-                {content.rsvpHeadline || "Kindly Reply"}
+                {content.rsvpHeadline || t("kindlyReply")}
               </h2>
               {content.rsvpDeadline && (
                 <p
@@ -209,13 +220,7 @@ export function RsvpScene({
 
             {/* Attending Status Segmented Pills */}
             <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  { id: "attending", label: "Joyfully Accepts" },
-                  { id: "tentative", label: "Tentative" },
-                  { id: "declined", label: "Regrets" },
-                ] as const
-              ).map((opt) => {
+              {attendingOptions.map((opt) => {
                 const active = status === opt.id;
                 return (
                   <button
@@ -244,14 +249,14 @@ export function RsvpScene({
                 className="block text-xs font-medium mb-1"
                 style={{ color: theme.palette.mutedText }}
               >
-                Full Name *
+                {t("fullName")} *
               </label>
               <input
                 type="text"
                 required
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                placeholder={typeMeta.rsvpNamePlaceholder}
+                placeholder={t("fullNamePlaceholder")}
                 style={{
                   borderColor: `${theme.palette.accent}44`,
                   backgroundColor: theme.palette.background,
@@ -267,13 +272,13 @@ export function RsvpScene({
                   className="block text-xs font-medium mb-1"
                   style={{ color: theme.palette.mutedText }}
                 >
-                  Email
+                  {t("emailAddress")}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="guest@example.com"
+                  placeholder={t("emailPlaceholder")}
                   style={{
                     borderColor: `${theme.palette.accent}44`,
                     backgroundColor: theme.palette.background,
@@ -288,13 +293,13 @@ export function RsvpScene({
                   className="block text-xs font-medium mb-1"
                   style={{ color: theme.palette.mutedText }}
                 >
-                  Phone / WhatsApp
+                  {t("phoneNumber")}
                 </label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 555 0199"
+                  placeholder={t("phonePlaceholder")}
                   style={{
                     borderColor: `${theme.palette.accent}44`,
                     backgroundColor: theme.palette.background,
@@ -317,7 +322,7 @@ export function RsvpScene({
                   className="text-xs font-medium"
                   style={{ color: theme.palette.text }}
                 >
-                  Number of Guests
+                  {t("guestCount")}
                 </span>
                 <div className="flex items-center gap-3">
                   <button
@@ -352,13 +357,13 @@ export function RsvpScene({
                 className="block text-xs font-medium mb-1"
                 style={{ color: theme.palette.mutedText }}
               >
-                Dietary Notes or Wishes
+                {t("notesOrDietary")}
               </label>
               <textarea
                 rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any allergies, song requests, or warm wishes..."
+                placeholder={t("notesPlaceholder")}
                 style={{
                   borderColor: `${theme.palette.accent}44`,
                   backgroundColor: theme.palette.background,
@@ -379,18 +384,18 @@ export function RsvpScene({
                 backgroundColor: theme.palette.primary,
                 color: buttonTextColor,
               }}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold shadow-lg transition hover:opacity-95 disabled:opacity-60 cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-semibold shadow-md transition hover:opacity-95 disabled:opacity-60 cursor-pointer"
             >
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Sending RSVP...</span>
+                  <span>{t("submitting")}</span>
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
                   <span>
-                    {isStudioPreview ? "Preview RSVP Submit" : "Confirm RSVP"}
+                    {isStudioPreview ? "Preview RSVP Submit" : t("sendRsvp")}
                   </span>
                 </>
               )}
@@ -401,4 +406,3 @@ export function RsvpScene({
     </motion.section>
   );
 }
-

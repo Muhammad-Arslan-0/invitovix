@@ -31,10 +31,18 @@ import {
   getDisplayFontFamily,
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
-import { formatCategoryBadge } from "@/lib/templates/categories";
+import {
+  formatCategoryBadge,
+  resolveSubtitle,
+} from "@/lib/templates/categories";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { useCountdown } from "@/hooks/useCountdown";
 import { VenuePreviewMap } from "@/components/maps/VenuePreviewMap";
+import {
+  CardLanguageProvider,
+  useCardLanguage,
+} from "@/lib/i18n/CardLanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 import {
   InvitationPlaybackSnapshot,
   InvitationPlayer,
@@ -55,9 +63,10 @@ interface GuestInviteShellProps {
   designData: EventDesignData;
   guestAccess?: string | null;
   isOwnerDraft?: boolean;
+  initialLang?: string | null;
 }
 
-export function GuestInviteShell({
+function GuestInviteShellInner({
   eventId,
   slug,
   title,
@@ -71,6 +80,22 @@ export function GuestInviteShell({
   guestAccess,
   isOwnerDraft = false,
 }: GuestInviteShellProps) {
+  const {
+    t,
+    isRTL,
+    language,
+    formatDate,
+    formatTime,
+    translatedDesignData,
+    translatedVenueName,
+    translatedVenueAddress,
+  } = useCardLanguage();
+
+  const effectiveDesignData =
+    translatedDesignData?.theme?.palette ? translatedDesignData : designData;
+  const effectiveVenueName = translatedVenueName || venueName;
+  const effectiveVenueAddress = translatedVenueAddress || venueAddress;
+
   const playerRef = useRef<InvitationPlayerHandle | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isWidescreen, setIsWidescreen] = useState(false);
@@ -100,7 +125,7 @@ export function GuestInviteShell({
 
   const countdown = useCountdown(eventDate);
 
-  const { theme, content, sections, audio } = designData;
+  const { theme, content, sections, audio } = effectiveDesignData;
   const ambientPhotoUrl =
     content.heroImageUrl ||
     content.couple.brideImageUrl ||
@@ -108,17 +133,23 @@ export function GuestInviteShell({
     resolveCardBackdropUrl(theme.cardArt) ||
     null;
   const coords = parseCoordinatesFromMapUrl(venueMapUrl);
-  const mapsUrl = buildMapsUrl(venueName, venueAddress, venueMapUrl);
+  const mapsUrl = buildMapsUrl(effectiveVenueName, effectiveVenueAddress, venueMapUrl);
   const osmUrl = coords ? buildOsmLinkUrl(coords.lat, coords.lng) : null;
   const accentBtnText = getContrastTextColor(theme.palette.accent);
+
+  const effectiveSubtitle = resolveSubtitle(
+    content.subtitle,
+    content.itinerary,
+    eventType
+  );
 
   const calendarInput = {
     title: content.headline || title,
     startDateIso: eventDate,
     durationHours: 4,
-    venueName,
-    venueAddress,
-    description: content.subtitle,
+    venueName: effectiveVenueName,
+    venueAddress: effectiveVenueAddress,
+    description: effectiveSubtitle,
     url:
       mounted && typeof window !== "undefined"
         ? `${window.location.origin}/e/${slug}`
@@ -126,22 +157,19 @@ export function GuestInviteShell({
   };
   const googleCalUrl = buildGoogleCalendarUrl(calendarInput);
 
-  const dateObj = new Date(eventDate);
-  const validDate = !Number.isNaN(dateObj.getTime());
+  const validDate = !Number.isNaN(new Date(eventDate).getTime());
   const dateDisplay = validDate
-    ? dateObj.toLocaleDateString("en-US", {
+    ? formatDate(eventDate, {
         weekday: "short",
         month: "long",
         day: "numeric",
         year: "numeric",
-        ...(mounted ? {} : { timeZone: "UTC" }),
       })
-    : "Save the Date";
+    : t("saveTheDate");
   const timeDisplay = validDate
-    ? dateObj.toLocaleTimeString("en-US", {
+    ? formatTime(eventDate, {
         hour: "numeric",
         minute: "2-digit",
-        ...(mounted ? {} : { timeZone: "UTC" }),
       })
     : "";
 
@@ -159,7 +187,11 @@ export function GuestInviteShell({
 
   return (
     <div
-      className="relative min-h-screen w-full overflow-x-hidden md:bg-[#100E0C] md:text-stone-100 flex flex-col"
+      dir={isRTL ? "rtl" : "ltr"}
+      lang={language}
+      className={`relative min-h-screen w-full overflow-x-hidden md:bg-[#100E0C] md:text-stone-100 flex flex-col ${
+        language === "ur" ? "font-nastaleeq" : ""
+      }`}
       data-testid="guest-invite-shell"
     >
       {/* 1. Desktop & Tablet Ambient Blurred Backdrop (hidden on Mobile < 768px) */}
@@ -222,7 +254,7 @@ export function GuestInviteShell({
           <div className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/12 p-5 shadow-2xl">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] tracking-[0.22em] uppercase text-amber-300/90 font-semibold">
-                Save The Date
+                {t("saveTheDate")}
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-400/15 text-amber-200 border border-amber-400/30">
                 <Sparkles className="w-2.5 h-2.5" />
@@ -232,26 +264,26 @@ export function GuestInviteShell({
 
             <p
               className="mt-3 text-[11px] uppercase tracking-[0.18em] text-stone-400 line-clamp-2"
-              style={{ fontFamily: getBodyFontFamily(theme.typography.bodyFont) }}
+              style={{ fontFamily: getBodyFontFamily(theme.typography.bodyFont, language) }}
             >
               {content.hostLine}
             </p>
             <h2
               className="mt-1.5 text-2xl font-semibold text-white leading-tight"
               style={{
-                fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+                fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
               }}
             >
               {content.headline}
             </h2>
-            {content.subtitle && (
+            {effectiveSubtitle && (
               <p
                 className="mt-1.5 text-sm text-amber-200/85 leading-snug line-clamp-2"
                 style={{
-                  fontFamily: getScriptFontFamily(theme.typography.scriptFont),
+                  fontFamily: getScriptFontFamily(theme.typography.scriptFont, language),
                 }}
               >
-                {content.subtitle}
+                {effectiveSubtitle}
               </p>
             )}
 
@@ -263,19 +295,19 @@ export function GuestInviteShell({
             {sections.showCountdown && (
               <div className="mt-4 pt-4 border-t border-white/10">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2">
-                  {countdown.isPast ? "Event Status" : "Countdown"}
+                  {countdown.isPast ? t("eventStatus") : t("countdown")}
                 </p>
                 {countdown.isPast ? (
                   <p className="text-xs font-medium text-amber-200">
-                    The celebration is underway!
+                    {t("celebrationUnderway")}
                   </p>
                 ) : (
                   <div className="grid grid-cols-4 gap-1.5 text-center">
                     {[
-                      { label: "Days", val: countdown.days },
-                      { label: "Hrs", val: countdown.hours },
-                      { label: "Min", val: countdown.minutes },
-                      { label: "Sec", val: countdown.seconds },
+                      { label: t("days"), val: countdown.days },
+                      { label: t("hrs"), val: countdown.hours },
+                      { label: t("min"), val: countdown.minutes },
+                      { label: t("sec"), val: countdown.seconds },
                     ].map((unit) => (
                       <div
                         key={unit.label}
@@ -294,6 +326,11 @@ export function GuestInviteShell({
               </div>
             )}
 
+            {/* Language Selector in Left Companion Wing */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <LanguageSelector variant="wing" />
+            </div>
+
             <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-2">
               <a
                 href={googleCalUrl}
@@ -302,7 +339,7 @@ export function GuestInviteShell({
                 className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-2.5 py-2 text-[11px] font-medium text-stone-100 transition"
               >
                 <CalendarPlus className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <span>Google Cal</span>
+                <span>{t("googleCal")}</span>
               </a>
               <button
                 type="button"
@@ -312,7 +349,7 @@ export function GuestInviteShell({
                 className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-2.5 py-2 text-[11px] font-medium text-stone-100 transition cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <span>.ICS</span>
+                <span>{t("ics")}</span>
               </button>
             </div>
           </div>
@@ -337,11 +374,11 @@ export function GuestInviteShell({
             title={title}
             eventType={eventType}
             eventDate={eventDate}
-            venueName={venueName}
-            venueAddress={venueAddress}
+            venueName={effectiveVenueName}
+            venueAddress={effectiveVenueAddress}
             venueMapUrl={venueMapUrl}
             audioUrl={audioUrl}
-            designData={designData}
+            designData={effectiveDesignData}
             guestAccess={guestAccess}
             hasDraftBanner={isOwnerDraft}
             onPlaybackChange={handlePlaybackChange}
@@ -359,7 +396,7 @@ export function GuestInviteShell({
             {sections.showRsvp && (
               <div>
                 <p className="text-[10px] tracking-[0.22em] uppercase text-amber-300/90 font-semibold">
-                  Concierge
+                  {t("concierge")}
                 </p>
                 <button
                   type="button"
@@ -372,7 +409,7 @@ export function GuestInviteShell({
                 >
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>
-                    {playback.stage === "opened" ? "Quick RSVP" : "Open & RSVP"}
+                    {playback.stage === "opened" ? t("quickRsvp") : t("openAndRsvp")}
                   </span>
                 </button>
               </div>
@@ -386,14 +423,14 @@ export function GuestInviteShell({
               >
                 <p className="text-[10px] tracking-[0.22em] uppercase text-stone-400 font-semibold flex items-center gap-1.5">
                   <MapPin className="w-3 h-3 text-amber-300" />
-                  <span>Location</span>
+                  <span>{t("location")}</span>
                 </p>
                 <h3 className="mt-1.5 text-sm font-semibold text-white leading-snug">
-                  {venueName}
+                  {effectiveVenueName}
                 </h3>
-                {venueAddress && (
+                {effectiveVenueAddress && (
                   <p className="mt-1 text-xs text-stone-400 leading-relaxed line-clamp-2">
-                    {venueAddress}
+                    {effectiveVenueAddress}
                   </p>
                 )}
 
@@ -401,7 +438,7 @@ export function GuestInviteShell({
                   <div className="mt-3">
                     <VenuePreviewMap
                       coordinates={coords}
-                      venueName={venueName}
+                      venueName={effectiveVenueName}
                       pinColor={theme.palette.primary}
                       accentColor={theme.palette.accent}
                       heightClass="h-28"
@@ -417,7 +454,7 @@ export function GuestInviteShell({
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 px-3 py-2 text-xs font-medium text-white transition"
                   >
                     <ExternalLink className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                    <span>Open in Google Maps</span>
+                    <span>{t("openInGoogleMaps")}</span>
                   </a>
                   {osmUrl && (
                     <button
@@ -426,7 +463,7 @@ export function GuestInviteShell({
                       className="inline-flex items-center justify-center gap-1.5 text-[11px] text-stone-300 hover:text-amber-200 transition cursor-pointer"
                     >
                       <Compass className="w-3 h-3" />
-                      <span>Inspect Venue Inside Card</span>
+                      <span>{t("inspectVenueInsideCard")}</span>
                     </button>
                   )}
                 </div>
@@ -443,10 +480,10 @@ export function GuestInviteShell({
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-stone-400">
-                    {audio.enabled ? "Soundtrack" : "Presentation"}
+                    {audio.enabled ? t("soundtrack") : t("presentation")}
                   </p>
                   <p className="text-xs font-medium text-white truncate">
-                    {audio.enabled ? audio.trackTitle : "Silent Mode"}
+                    {audio.enabled ? audio.trackTitle : t("silentMode")}
                   </p>
                 </div>
               </div>
@@ -458,26 +495,26 @@ export function GuestInviteShell({
                   className="inline-flex items-center gap-1 rounded-lg border border-white/15 bg-white/10 hover:bg-white/15 px-2.5 py-1.5 text-[11px] font-medium text-white transition cursor-pointer shrink-0"
                   aria-label={
                     playback.stage === "sealed"
-                      ? "Unseal with music"
+                      ? t("play")
                       : playback.isMuted
-                        ? "Unmute soundtrack"
-                        : "Mute soundtrack"
+                        ? t("unmuteSoundtrack")
+                        : t("muteSoundtrack")
                   }
                 >
                   {playback.stage !== "opened" ? (
                     <>
                       <Volume2 className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Play</span>
+                      <span>{t("play")}</span>
                     </>
                   ) : playback.isMuted ? (
                     <>
                       <VolumeX className="w-3.5 h-3.5 text-stone-400" />
-                      <span>Muted</span>
+                      <span>{t("muted")}</span>
                     </>
                   ) : (
                     <>
                       <Volume2 className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                      <span>Playing</span>
+                      <span>{t("playing")}</span>
                     </>
                   )}
                 </button>
@@ -491,7 +528,7 @@ export function GuestInviteShell({
                 className="mt-3 pt-3 border-t border-white/10 w-full inline-flex items-center justify-center gap-1.5 text-[11px] text-stone-300 hover:text-white transition cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Replay Wax-Seal Envelope</span>
+                <span>{t("replayWaxSeal")}</span>
               </button>
             )}
           </div>
@@ -501,3 +538,15 @@ export function GuestInviteShell({
   );
 }
 
+export function GuestInviteShell(props: GuestInviteShellProps) {
+  return (
+    <CardLanguageProvider
+      initialDesignData={props.designData}
+      venueName={props.venueName}
+      venueAddress={props.venueAddress}
+      initialLang={props.initialLang}
+    >
+      <GuestInviteShellInner {...props} />
+    </CardLanguageProvider>
+  );
+}

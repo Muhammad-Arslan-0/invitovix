@@ -10,7 +10,8 @@ import {
   getScriptFontFamily,
 } from "@/lib/utils/fonts";
 import { BlessingHeader } from "@/components/invitation/BlessingHeader";
-import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { getInvitationTypeMeta, resolveSubtitle } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 import { PortraitFrame } from "../PortraitFrame";
 
 interface HeroSceneProps {
@@ -28,10 +29,17 @@ export function HeroScene({
   eventDate,
   venueName,
 }: HeroSceneProps) {
+  const { t, isRTL, formatDate, formatTime, language } = useCardLanguage();
   const typeMeta = getInvitationTypeMeta(eventType);
   const containerRef = useRef<HTMLElement | null>(null);
   const { theme, content, motion: motionCfg } = designData;
   const [mounted, setMounted] = useState(false);
+
+  const effectiveSubtitle = resolveSubtitle(
+    content.subtitle,
+    content.itinerary,
+    eventType
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -72,22 +80,19 @@ export function HeroScene({
     return () => ctx.revert();
   }, [motionCfg.preset]);
 
-  const dateObj = new Date(eventDate);
-  const validDate = !Number.isNaN(dateObj.getTime());
+  const validDate = !Number.isNaN(new Date(eventDate).getTime());
   const dateDisplay = validDate
-    ? dateObj.toLocaleDateString("en-US", {
+    ? formatDate(eventDate, {
         weekday: "long",
         month: "long",
         day: "numeric",
         year: "numeric",
-        ...(mounted ? {} : { timeZone: "UTC" }),
       })
-    : "Save the Date";
+    : t("saveTheDate");
   const timeDisplay = validDate
-    ? dateObj.toLocaleTimeString("en-US", {
+    ? formatTime(eventDate, {
         hour: "numeric",
         minute: "2-digit",
-        ...(mounted ? {} : { timeZone: "UTC" }),
       })
     : "";
 
@@ -96,10 +101,20 @@ export function HeroScene({
     theme.cardArt.motif === "marigold-garland" ||
     theme.cardArt.motif === "celestial-stars";
 
+  const heroPillLabel =
+    typeMeta.domain === "wedding"
+      ? t("weddingInvitation")
+      : typeMeta.domain === "birthday"
+        ? t("birthdayCelebration")
+        : typeMeta.domain === "gala"
+          ? t("galaSummit")
+          : t("celebrationSuite");
+
   return (
     <section
       id={id}
       ref={containerRef}
+      dir={isRTL ? "rtl" : "ltr"}
       className={`scroll-mt-4 relative z-20 px-7 sm:px-8 ${
         hasTopMotif ? "pt-16 sm:pt-18" : "pt-12"
       } pb-8 text-center flex flex-col items-center`}
@@ -111,11 +126,11 @@ export function HeroScene({
           borderColor: `${theme.palette.accent}55`,
           color: theme.palette.accent,
           backgroundColor: `${theme.palette.surface}D8`,
-          fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+          fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
         }}
       >
         <Sparkles className="w-3 h-3" />
-        <span>{typeMeta.heroPillLabel}</span>
+        <span>{heroPillLabel}</span>
       </div>
 
       {/* Sacred Islamic Header / Bismillah / Ayat */}
@@ -140,7 +155,7 @@ export function HeroScene({
         } text-[11px] sm:text-xs uppercase tracking-[0.2em] max-w-[290px] sm:max-w-sm leading-relaxed`}
         style={{
           color: theme.palette.mutedText,
-          fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+          fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
         }}
       >
         {content.hostLine}
@@ -151,7 +166,7 @@ export function HeroScene({
         className="hero-stagger mt-4 text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide leading-[1.14] max-w-lg break-words"
         style={{
           color: theme.palette.primary,
-          fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+          fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
         }}
       >
         {content.headline}
@@ -166,17 +181,19 @@ export function HeroScene({
       />
 
       {/* Subtitle */}
-      <p
-        className="hero-stagger mt-5 text-base sm:text-lg max-w-md leading-relaxed"
-        style={{
-          color: theme.palette.text,
-          fontFamily: getScriptFontFamily(theme.typography.scriptFont),
-          fontSize:
-            theme.typography.scriptFont === "cormorant" ? "1.15rem" : "1.6rem",
-        }}
-      >
-        {content.subtitle}
-      </p>
+      {effectiveSubtitle && (
+        <p
+          className="hero-stagger mt-5 text-base sm:text-lg max-w-md leading-relaxed"
+          style={{
+            color: theme.palette.text,
+            fontFamily: getScriptFontFamily(theme.typography.scriptFont, language),
+            fontSize:
+              theme.typography.scriptFont === "cormorant" ? "1.15rem" : "1.6rem",
+          }}
+        >
+          {effectiveSubtitle}
+        </p>
+      )}
 
       {/* Optional Hero Portrait / Cover Image */}
       {content.heroImageUrl && (
@@ -193,6 +210,7 @@ export function HeroScene({
             displayFont={theme.typography.displayFont}
             scriptFont={theme.typography.scriptFont}
             size="hero"
+            language={language}
           />
         </div>
       )}
@@ -220,7 +238,7 @@ export function HeroScene({
               className="text-[10px] uppercase tracking-[0.2em]"
               style={{ color: theme.palette.mutedText }}
             >
-              Date &amp; Time
+              {t("dateAndTime")}
             </p>
             <p
               className="text-xs sm:text-sm font-medium mt-0.5 leading-snug"
@@ -254,7 +272,7 @@ export function HeroScene({
               className="text-[10px] uppercase tracking-[0.2em]"
               style={{ color: theme.palette.mutedText }}
             >
-              Venue
+              {t("venue")}
             </p>
             <p
               className="text-xs sm:text-sm font-medium mt-0.5 leading-snug"
@@ -268,4 +286,3 @@ export function HeroScene({
     </section>
   );
 }
-

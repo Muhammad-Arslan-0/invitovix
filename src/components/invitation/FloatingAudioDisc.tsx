@@ -2,6 +2,8 @@
 
 import { Disc3, RotateCcw, VolumeX } from "lucide-react";
 import { EventDesignData } from "@/types/invitation";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 
 interface FloatingAudioDiscProps {
   designData: EventDesignData;
@@ -21,13 +23,21 @@ export function FloatingAudioDisc({
   hasDraftBanner = false,
 }: FloatingAudioDiscProps) {
   const { theme, audio } = designData;
+  const { t, language } = useCardLanguage();
   const topClass = hasDraftBanner ? "top-12 md:top-3.5" : "top-3.5";
   const posClass = bounded ? `absolute ${topClass}` : `fixed md:absolute ${topClass}`;
 
   return (
     <div
-      className={`${posClass} right-3.5 z-40 flex items-center gap-1.5 pointer-events-none`}
+      className={`${posClass} right-3.5 z-50 flex items-center gap-1.5 pointer-events-none`}
     >
+      <LanguageSelector
+        variant="floating"
+        accentColor={theme.palette.accent}
+        surfaceColor={theme.palette.surface}
+        textColor={theme.palette.text}
+      />
+
       <button
         type="button"
         onClick={onReplay}
@@ -37,11 +47,11 @@ export function FloatingAudioDisc({
           borderColor: `${theme.palette.accent}55`,
           color: theme.palette.text,
         }}
-        title="Replay envelope reveal"
-        aria-label="Replay envelope reveal"
+        title={t("replayWaxSeal")}
+        aria-label={t("replayWaxSeal")}
       >
         <RotateCcw className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Replay</span>
+        <span className="hidden sm:inline">{t("replay")}</span>
       </button>
 
       {audio.enabled && (
@@ -56,10 +66,18 @@ export function FloatingAudioDisc({
           }}
           title={
             isMuted
-              ? `Play ${audio.trackTitle}`
-              : `Playing: ${audio.trackTitle} (click to mute)`
+              ? `${t("play")} ${audio.trackTitle}`
+              : `${t("playing")}: ${audio.trackTitle} (${t("muteSoundtrack")})`
           }
-          aria-label={isMuted ? "Unmute music" : "Mute music"}
+          aria-label={
+            isMuted
+              ? language === "en"
+                ? "Unmute music"
+                : t("unmuteSoundtrack")
+              : language === "en"
+                ? "Mute music"
+                : t("muteSoundtrack")
+          }
         >
           {isMuted ? (
             <VolumeX
@@ -84,4 +102,3 @@ export function FloatingAudioDisc({
     </div>
   );
 }
-

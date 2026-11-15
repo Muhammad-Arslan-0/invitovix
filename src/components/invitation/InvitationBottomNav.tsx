@@ -20,6 +20,8 @@ import {
 import { EventDesignData } from "@/types/invitation";
 import { getContrastTextColor } from "@/lib/utils/colors";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
+import { TranslationKey } from "@/lib/i18n/translations";
 
 export type InvitationSectionId =
   | "invite-hero"
@@ -49,32 +51,53 @@ interface InvitationBottomNavProps {
 export function getVisibleInvitationSections(
   designData: EventDesignData,
   isStudioPreview = false,
-  eventType = "wedding"
+  eventType = "wedding",
+  t?: (key: TranslationKey) => string
 ): NavItem[] {
   const { sections, content } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
   const items: NavItem[] = [
-    { id: "invite-hero", label: "Cover", icon: Sparkles },
+    { id: "invite-hero", label: t ? t("cover") : "Cover", icon: Sparkles },
   ];
 
   if (sections.showCouple) {
     items.push({
       id: "invite-couple",
-      label: typeMeta.bottomNavSpotlightLabel,
+      label: t
+        ? typeMeta.domain === "wedding"
+          ? t("couple")
+          : typeMeta.bottomNavSpotlightLabel
+        : typeMeta.bottomNavSpotlightLabel,
       icon: UsersRound,
     });
   }
   if (sections.showCountdown || content.storyQuote) {
-    items.push({ id: "invite-story", label: "Story", icon: Heart });
+    items.push({
+      id: "invite-story",
+      label: t ? t("story") : "Story",
+      icon: Heart,
+    });
   }
   if (sections.showItinerary && content.itinerary.length > 0) {
-    items.push({ id: "invite-schedule", label: "Events", icon: CalendarClock });
+    items.push({
+      id: "invite-schedule",
+      label: t ? t("events") : "Events",
+      icon: CalendarClock,
+    });
   }
   if (sections.showVenue) {
-    items.push({ id: "invite-venue", label: "Venue", icon: MapPin });
+    items.push({
+      id: "invite-venue",
+      label: t ? t("venue") : "Venue",
+      icon: MapPin,
+    });
   }
   if (sections.showGallery && (content.gallery.length > 0 || isStudioPreview)) {
-    items.push({ id: "invite-gallery", label: "Gallery", icon: Images });
+    items.push({
+      id: "invite-gallery",
+      label: t ? t("gallery") : "Gallery",
+      icon: Images,
+    });
   }
   if (sections.showRsvp) {
     items.push({ id: "invite-rsvp", label: "RSVP", icon: MailCheck });
@@ -93,9 +116,10 @@ export function InvitationBottomNav({
   onSelectSection,
 }: InvitationBottomNavProps) {
   const { theme } = designData;
+  const { t } = useCardLanguage();
   const items = useMemo(
-    () => getVisibleInvitationSections(designData, isStudioPreview, eventType),
-    [designData, isStudioPreview, eventType]
+    () => getVisibleInvitationSections(designData, isStudioPreview, eventType, t),
+    [designData, isStudioPreview, eventType, t]
   );
 
   const [activeId, setActiveId] = useState<InvitationSectionId>("invite-hero");

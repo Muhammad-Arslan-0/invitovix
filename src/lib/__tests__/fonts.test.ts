@@ -102,4 +102,18 @@ describe("Typography & Font System", () => {
     // @ts-expect-error test unknown texture fallback
     expect(getPaperTextureClass("none")).toBe("");
   });
+
+  it("resolves Noori Nastaleeq font family for Urdu language translations", () => {
+    const urDisplay = getDisplayFontFamily("cinzel", "ur");
+    expect(urDisplay).toContain("Noori Nastaleeq");
+    expect(urDisplay).toContain("Noto Nastaliq Urdu");
+
+    const urBody = getBodyFontFamily("jakarta", "ur");
+    expect(urBody).toContain("Noori Nastaleeq");
+    expect(urBody).toContain("Noto Nastaliq Urdu");
+
+    const urScript = getScriptFontFamily("great-vibes", "ur");
+    expect(urScript).toContain("Noori Nastaleeq");
+    expect(urScript).toContain("Noto Nastaliq Urdu");
+  });
 });

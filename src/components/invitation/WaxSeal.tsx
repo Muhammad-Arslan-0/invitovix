@@ -125,7 +125,10 @@ export function WaxSeal({
                   : "text-[10px] mt-0.5"
                 : "text-[9px]"
           }`}
-          style={{ fontFamily: "var(--font-cinzel), Georgia, serif" }}
+          style={{
+            fontFamily:
+              "var(--font-cinzel), 'Jameel Noori Nastaleeq', 'Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Aref Ruqaa', 'Amiri', 'Noto Sans Devanagari', 'Noto Sans Bengali', Georgia, serif",
+          }}
         >
           {waxSeal.monogram || "INV"}
         </span>

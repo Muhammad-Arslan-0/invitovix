@@ -25,6 +25,7 @@ import {
   formatCategoryBadge,
   getDomainConfig,
   getInvitationTypeMeta,
+  resolveSubtitle,
 } from "@/lib/templates/categories";
 import {
   getTemplatesByDomain,
@@ -118,6 +119,11 @@ export function CreateEventModal({
   ) {
     const baseDesign = mergeDesignData(selectedTemplate!.default_config);
     baseDesign.content.headline = title.trim();
+    baseDesign.content.subtitle = resolveSubtitle(
+      baseDesign.content.subtitle,
+      baseDesign.content.itinerary,
+      selectedTemplate!.category
+    );
 
     return supabase
       .from("events")

@@ -2,10 +2,21 @@
 
 import { memo, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { Calendar, Clock, Move, Plus, Trash2, UsersRound } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Move,
+  Plus,
+  Sparkles,
+  Trash2,
+  UsersRound,
+} from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { COUPLE_FRAME_OPTIONS } from "@/lib/templates/presets";
-import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import {
+  getInvitationTypeMeta,
+  resolveSubtitle,
+} from "@/lib/templates/categories";
 import { MediaUploader } from "../MediaUploader";
 import { ImageCropModal, FrameShapeOption } from "../ImageCropModal";
 import { VenueLocationPicker } from "@/components/maps/VenueLocationPicker";
@@ -534,13 +545,70 @@ export const ContentPanel = memo(function ContentPanel({
         </div>
 
         <div>
-          <label className="block text-xs text-stone-600 mb-1">Subtitle</label>
+          <div className="flex items-center justify-between gap-1 mb-1">
+            <label className="block text-xs font-semibold text-stone-700">
+              Ceremony Invitation Phrase
+            </label>
+            {content.itinerary && content.itinerary.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const auto = resolveSubtitle(
+                    undefined,
+                    content.itinerary,
+                    eventType
+                  );
+                  updateContent({ subtitle: auto });
+                }}
+                className="text-[10px] text-amber-700 hover:text-amber-900 font-medium inline-flex items-center gap-1 transition cursor-pointer"
+                title="Automatically generate phrase matching your itinerary events"
+              >
+                <Sparkles className="w-3 h-3 text-amber-600" />
+                <span>Sync with Itinerary</span>
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-stone-500 mb-1.5 leading-tight">
+            The main ceremony line displayed beneath the couple/host names on the card front.
+          </p>
           <textarea
             rows={2}
             value={content.subtitle}
             onChange={(e) => updateContent({ subtitle: e.target.value })}
+            placeholder="e.g., Request the honor of your presence at their Walima Reception"
             className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-stone-900 focus:outline-none"
           />
+
+          {/* Quick ceremony suggestion pills */}
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {[
+              "Walima Reception",
+              "Walima Dinner",
+              "Nikah & Walima",
+              "Nikah & Reception",
+              "Baraat & Walima",
+              "Baraat Ceremony",
+              "Mehndi Celebration",
+            ].map((preset) => {
+              const phrase = `Request the honor of your presence at their ${preset}`;
+              const isCurrent =
+                (content.subtitle || "").toLowerCase().includes(preset.toLowerCase());
+              return (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => updateContent({ subtitle: phrase })}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition cursor-pointer ${
+                    isCurrent
+                      ? "bg-amber-100 text-amber-900 border border-amber-300 font-semibold"
+                      : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
+                  }`}
+                >
+                  {preset}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>

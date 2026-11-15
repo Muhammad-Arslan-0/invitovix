@@ -5,6 +5,7 @@ import { Lock, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import { useStudioStore } from "@/store/useStudioStore";
 import { resolveCardBackdropUrl } from "@/lib/templates/presets";
 import { InvitationPlayer } from "@/components/invitation/InvitationPlayer";
+import { CardLanguageProvider } from "@/lib/i18n/CardLanguageContext";
 
 const DEVICE_SPECS = {
   mobile: {
@@ -288,22 +289,28 @@ export const StudioCanvas = memo(function StudioCanvas() {
                       : "relative z-10 w-full max-w-[400px] h-[610px] rounded-[24px] overflow-hidden border border-white/15 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.8)] shrink-0"
                 }
               >
-                <InvitationPlayer
-                  eventId={eventMeta.id}
-                  slug={eventMeta.slug}
-                  title={eventMeta.title}
-                  eventType={eventMeta.event_type}
-                  eventDate={eventMeta.event_date}
+                <CardLanguageProvider
+                  initialDesignData={designData}
                   venueName={eventMeta.venue_name}
                   venueAddress={eventMeta.venue_address}
-                  venueMapUrl={eventMeta.venue_map_url}
-                  audioUrl={eventMeta.audio_url}
-                  designData={designData}
-                  isStudioPreview
-                  bounded
-                  forcedStage={previewStage}
-                  replayKey={replayCounter}
-                />
+                >
+                  <InvitationPlayer
+                    eventId={eventMeta.id}
+                    slug={eventMeta.slug}
+                    title={eventMeta.title}
+                    eventType={eventMeta.event_type}
+                    eventDate={eventMeta.event_date}
+                    venueName={eventMeta.venue_name}
+                    venueAddress={eventMeta.venue_address}
+                    venueMapUrl={eventMeta.venue_map_url}
+                    audioUrl={eventMeta.audio_url}
+                    designData={designData}
+                    isStudioPreview
+                    bounded
+                    forcedStage={previewStage}
+                    replayKey={replayCounter}
+                  />
+                </CardLanguageProvider>
               </div>
 
               {/* Desktop Right Companion Wing */}

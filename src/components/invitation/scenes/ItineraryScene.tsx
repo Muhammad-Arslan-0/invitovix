@@ -9,6 +9,7 @@ import {
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 
 interface ItinerarySceneProps {
   id?: string;
@@ -24,6 +25,7 @@ export function ItineraryScene({
   eventType = "wedding",
   scrollRootRef,
 }: ItinerarySceneProps) {
+  const { t, isRTL, language } = useCardLanguage();
   const { theme, content, sections } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
 
@@ -54,21 +56,32 @@ export function ItineraryScene({
 
   const isWedding = typeMeta.domain === "wedding";
 
-  // Clean, customizable headings without ever showing "Evening Schedule"
   const headingTitle = isWedding
     ? distinctDays.length > 1
-      ? "Wedding Ceremonies"
-      : "Ceremonies & Events"
+      ? language !== "en"
+        ? t("weddingCeremonies")
+        : "Wedding Ceremonies"
+      : language !== "en"
+        ? t("ceremoniesAndEvents")
+        : "Ceremonies & Events"
     : typeMeta.itineraryHeading;
 
   const eyebrowTitle = isWedding
     ? distinctDays.length > 1
-      ? "Celebration Schedule"
-      : "Wedding Program"
+      ? language !== "en"
+        ? t("celebrationSchedule")
+        : "Celebration Schedule"
+      : language !== "en"
+        ? t("weddingProgram")
+        : "Wedding Program"
     : typeMeta.itineraryEyebrow;
 
   return (
-    <section id={id} className="scroll-mt-14 px-5 sm:px-7 py-8 max-w-lg mx-auto">
+    <section
+      id={id}
+      dir={isRTL ? "rtl" : "ltr"}
+      className="scroll-mt-14 px-5 sm:px-7 py-8 max-w-lg mx-auto"
+    >
       {/* Header */}
       <div className="text-center mb-6">
         <p
@@ -81,7 +94,7 @@ export function ItineraryScene({
           className="mt-1 text-2xl sm:text-3xl font-semibold"
           style={{
             color: theme.palette.primary,
-            fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+            fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
           }}
         >
           {headingTitle}
@@ -110,7 +123,7 @@ export function ItineraryScene({
                 borderColor: `${theme.palette.accent}40`,
               }}
             >
-              All Days ({distinctDays.length})
+              {t("allEvents")} ({distinctDays.length})
             </button>
             {distinctDays.map((day) => (
               <button
@@ -142,18 +155,18 @@ export function ItineraryScene({
       </div>
 
       {/* Timeline List */}
-      <div className="relative pl-6 space-y-4">
+      <div className={`relative ${isRTL ? "pr-6" : "pl-6"} space-y-4`}>
         {/* Timeline vertical rule */}
         <div
           aria-hidden="true"
-          className="absolute left-2.5 top-3 bottom-3 w-px"
+          className={`absolute ${isRTL ? "right-2.5" : "left-2.5"} top-3 bottom-3 w-px`}
           style={{ backgroundColor: `${theme.palette.accent}55` }}
         />
 
         {filteredByDay.map((item, idx) => (
           <motion.div
             key={item.id}
-            initial={{ opacity: 0, x: -12 }}
+            initial={{ opacity: 0, x: isRTL ? 12 : -12 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{
               once: true,
@@ -174,7 +187,7 @@ export function ItineraryScene({
             {/* Milestone node */}
             <span
               aria-hidden="true"
-              className="absolute -left-[20px] top-5 w-3 h-3 rounded-full border-2"
+              className={`absolute ${isRTL ? "-right-[20px]" : "-left-[20px]"} top-5 w-3 h-3 rounded-full border-2`}
               style={{
                 backgroundColor: theme.palette.accent,
                 borderColor: theme.palette.background,
@@ -198,31 +211,31 @@ export function ItineraryScene({
 
               {item.date && (
                 <div
-                  className="inline-flex items-center gap-1 text-[11px] font-medium"
+                  className="inline-flex items-center gap-1 text-xs"
                   style={{ color: theme.palette.mutedText }}
                 >
-                  <Calendar className="w-3 h-3" style={{ color: theme.palette.accent }} />
+                  <Calendar className="w-3 h-3 shrink-0" />
                   <span>{item.date}</span>
                 </div>
               )}
 
               {item.time && (
                 <div
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold ml-auto"
+                  className="inline-flex items-center gap-1 text-xs font-medium ml-auto"
                   style={{ color: theme.palette.accent }}
                 >
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3 h-3 shrink-0" />
                   <span>{item.time}</span>
                 </div>
               )}
             </div>
 
-            {/* Event Title */}
+            {/* Main title */}
             <h3
-              className="text-base sm:text-lg font-semibold leading-tight"
+              className="text-lg font-semibold leading-snug"
               style={{
-                color: theme.palette.text,
-                fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+                color: theme.palette.primary,
+                fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
               }}
             >
               {item.title}
@@ -233,57 +246,52 @@ export function ItineraryScene({
               <p
                 className="mt-1.5 text-xs sm:text-sm leading-relaxed"
                 style={{
-                  color: theme.palette.mutedText,
-                  fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+                  color: theme.palette.text,
+                  fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
                 }}
               >
                 {item.description}
               </p>
             )}
 
-            {/* Venue & Location if specified for this ceremony */}
-            {item.venue && (
-              <div className="mt-3 pt-2.5 border-t border-stone-200/50 flex flex-wrap items-center justify-between gap-2">
-                <div
-                  className="inline-flex items-center gap-1.5 text-xs font-medium"
-                  style={{ color: theme.palette.text }}
-                >
-                  <MapPin
-                    className="w-3.5 h-3.5 shrink-0"
-                    style={{ color: theme.palette.accent }}
-                  />
-                  <span>
-                    {item.venue}
-                    {item.venueAddress ? ` · ${item.venueAddress}` : ""}
-                  </span>
-                </div>
-                {item.mapUrl && (
-                  <a
-                    href={item.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-medium hover:underline"
-                    style={{ color: theme.palette.accent }}
+            {/* Location & Dress code footer */}
+            {(item.venue || item.dressCode) && (
+              <div
+                className="mt-3 pt-3 border-t flex flex-wrap items-center justify-between gap-2 text-xs"
+                style={{ borderColor: `${theme.palette.accent}24` }}
+              >
+                {item.venue && (
+                  <div
+                    className="inline-flex items-center gap-1"
+                    style={{ color: theme.palette.mutedText }}
                   >
-                    <span>Directions</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                    <MapPin
+                      className="w-3 h-3 shrink-0"
+                      style={{ color: theme.palette.accent }}
+                    />
+                    <span>{item.venue}</span>
+                    {item.mapUrl && (
+                      <a
+                        href={item.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1 hover:underline inline-flex items-center gap-0.5"
+                        style={{ color: theme.palette.accent }}
+                      >
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* Ceremony Dress Code hint if specified */}
-            {item.dressCode && (
-              <div className="mt-2">
-                <span
-                  className="inline-block rounded-md px-2 py-0.5 text-[10px] font-medium"
-                  style={{
-                    backgroundColor: `${theme.palette.accent}15`,
-                    color: theme.palette.mutedText,
-                  }}
-                >
-                  Attire: {item.dressCode}
-                </span>
+                {item.dressCode && (
+                  <span
+                    className="text-[11px] font-medium"
+                    style={{ color: theme.palette.mutedText }}
+                  >
+                    {t("dressCode")}: {item.dressCode}
+                  </span>
+                )}
               </div>
             )}
           </motion.div>

@@ -9,6 +9,7 @@ import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 
 interface StoryCountdownSceneProps {
   id?: string;
@@ -23,12 +24,14 @@ export function StoryCountdownScene({
   eventDate,
   scrollRootRef,
 }: StoryCountdownSceneProps) {
+  const { t, isRTL } = useCardLanguage();
   const { theme, content, sections } = designData;
   const remaining = useCountdown(eventDate);
 
   return (
     <motion.section
       id={id}
+      dir={isRTL ? "rtl" : "ltr"}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{
@@ -70,7 +73,9 @@ export function StoryCountdownScene({
                 className="w-3.5 h-3.5"
                 style={{ color: theme.palette.accent }}
               />
-              <span>Dress Code: {content.dressCode}</span>
+              <span>
+                {t("dressCode")}: {content.dressCode}
+              </span>
             </div>
           )}
         </div>
@@ -83,7 +88,7 @@ export function StoryCountdownScene({
             className="text-[11px] uppercase tracking-[0.25em] mb-4"
             style={{ color: theme.palette.mutedText }}
           >
-            {remaining.isPast ? "Celebration Moment" : "Counting Down To The Day"}
+            {remaining.isPast ? t("celebrationMoment") : t("countingDown")}
           </p>
 
           {remaining.isPast ? (
@@ -95,15 +100,15 @@ export function StoryCountdownScene({
                 color: theme.palette.primary,
               }}
             >
-              The celebration has arrived — we look forward to welcoming you!
+              {t("celebrationArrived")}
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2.5">
               {[
-                { label: "Days", value: remaining.days },
-                { label: "Hours", value: remaining.hours },
-                { label: "Mins", value: remaining.minutes },
-                { label: "Secs", value: remaining.seconds },
+                { label: t("days"), value: remaining.days },
+                { label: t("hrs"), value: remaining.hours },
+                { label: t("min"), value: remaining.minutes },
+                { label: t("sec"), value: remaining.seconds },
               ].map((unit, idx) => (
                 <motion.div
                   key={unit.label}
@@ -148,4 +153,3 @@ export function StoryCountdownScene({
     </motion.section>
   );
 }
-

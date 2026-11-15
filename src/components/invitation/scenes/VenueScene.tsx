@@ -19,6 +19,7 @@ import {
   getBodyFontFamily,
   getDisplayFontFamily,
 } from "@/lib/utils/fonts";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 
 interface VenueSceneProps {
   id?: string;
@@ -43,6 +44,7 @@ export function VenueScene({
   venueMapUrl,
   scrollRootRef,
 }: VenueSceneProps) {
+  const { t, isRTL, language } = useCardLanguage();
   const { theme, content, sections } = designData;
   const [mounted, setMounted] = useState(false);
 
@@ -72,6 +74,7 @@ export function VenueScene({
   return (
     <motion.section
       id={id}
+      dir={isRTL ? "rtl" : "ltr"}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{
@@ -103,13 +106,13 @@ export function VenueScene({
           className="text-[11px] uppercase tracking-[0.24em]"
           style={{ color: theme.palette.accent }}
         >
-          Location &amp; Sync
+          {t("locationAndSync")}
         </p>
         <h2
           className="mt-1.5 text-2xl font-semibold"
           style={{
             color: theme.palette.primary,
-            fontFamily: getDisplayFontFamily(theme.typography.displayFont),
+            fontFamily: getDisplayFontFamily(theme.typography.displayFont, language),
           }}
         >
           {venueName}
@@ -119,7 +122,7 @@ export function VenueScene({
             className="mt-2 text-sm leading-relaxed max-w-sm mx-auto"
             style={{
               color: theme.palette.mutedText,
-              fontFamily: getBodyFontFamily(theme.typography.bodyFont),
+              fontFamily: getBodyFontFamily(theme.typography.bodyFont, language),
             }}
           >
             {venueAddress}
@@ -149,7 +152,7 @@ export function VenueScene({
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-md transition hover:opacity-90"
           >
             <Navigation className="w-4 h-4" />
-            <span>Open Directions in Google Maps</span>
+            <span>{t("openDirectionsInGoogleMaps")}</span>
           </a>
 
           {osmUrl && (
@@ -167,7 +170,7 @@ export function VenueScene({
                 className="w-3 h-3"
                 style={{ color: theme.palette.accent }}
               />
-              <span>View Location on Map</span>
+              <span>{t("viewLocationOnMap")}</span>
             </a>
           )}
 
@@ -186,7 +189,7 @@ export function VenueScene({
                 className="w-3.5 h-3.5"
                 style={{ color: theme.palette.accent }}
               />
-              <span>Google Calendar</span>
+              <span>{t("googleCalendar")}</span>
             </a>
 
             <button
@@ -202,7 +205,7 @@ export function VenueScene({
                 className="w-3.5 h-3.5"
                 style={{ color: theme.palette.accent }}
               />
-              <span>Apple / .ICS</span>
+              <span>{t("appleIcs")}</span>
             </button>
           </div>
         </div>
@@ -210,4 +213,3 @@ export function VenueScene({
     </motion.section>
   );
 }
-

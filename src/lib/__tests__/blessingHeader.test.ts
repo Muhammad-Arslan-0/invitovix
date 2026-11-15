@@ -99,6 +99,6 @@ describe("Islamic Blessings & Ayat System", () => {
     };
     const merged = mergeDesignData(legacyRaw);
     expect(merged.content.blessingHeader).toBeDefined();
-    expect(merged.content.blessingHeader.enabled).toBe(false);
+    expect(merged.content.blessingHeader?.enabled).toBe(false);
   });
 });

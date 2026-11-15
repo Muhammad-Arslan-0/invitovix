@@ -457,3 +457,90 @@ export function getInvitationTypeMeta(
   };
 }
 
+/**
+ * Automatically harmonizes the main ceremony invitation phrase (subtitle)
+ * with the user's actual itinerary events or ceremony category, preventing
+ * generic template phrases (e.g. "Nikah & Reception") from lingering when
+ * the host only added a Walima / Valima event.
+ */
+export function resolveSubtitle(
+  subtitle?: string | null,
+  itinerary?: { title?: string; dayLabel?: string }[] | null,
+  eventType?: string | null
+): string {
+  const raw = (subtitle ?? "").trim();
+
+  // If user provided a truly customized phrase that doesn't match the default template phrase, respect it
+  const isDefaultTemplatePhrase =
+    !raw ||
+    /^request the honor of your presence at their nikah (&|and) reception$/i.test(raw) ||
+    /^request the honor of your presence at their nikah$/i.test(raw) ||
+    /^request the honor of your presence at their wedding celebration$/i.test(raw);
+
+  if (raw && !isDefaultTemplatePhrase) {
+    return raw;
+  }
+
+  // Inspect itinerary items
+  if (itinerary && itinerary.length > 0) {
+    const textCorpus = itinerary
+      .map((item) => `${item.title || ""} ${item.dayLabel || ""}`)
+      .join(" ")
+      .toLowerCase();
+
+    const hasWalima = /walima|valima/i.test(textCorpus);
+    const hasNikah = /nikah/i.test(textCorpus);
+    const hasBaraat = /baraat|barat/i.test(textCorpus);
+    const hasMehndi = /mehndi|mehendi|dholki|sangeet/i.test(textCorpus);
+    const hasReception = /reception|banquet/i.test(textCorpus);
+    const hasWeddingCeremony = /wedding ceremony|shaadi|shadi|vivah/i.test(textCorpus);
+
+    if (hasWalima && !hasNikah && !hasBaraat && !hasMehndi && !hasWeddingCeremony) {
+      return "Request the honor of your presence at their Walima Reception";
+    }
+    if (hasWalima && hasBaraat && !hasNikah) {
+      return "Request the honor of your presence at their Baraat & Walima";
+    }
+    if (hasWalima && (hasNikah || hasWeddingCeremony)) {
+      return "Request the honor of your presence at their Nikah & Walima";
+    }
+    if (hasBaraat && !hasNikah && !hasWalima && !hasWeddingCeremony && !hasReception) {
+      return "Request the honor of your presence at their Baraat Ceremony";
+    }
+    if (hasMehndi && !hasNikah && !hasWalima && !hasBaraat && !hasWeddingCeremony && !hasReception) {
+      return "Request the honor of your presence at their Mehndi Celebration";
+    }
+    if ((hasNikah || hasWeddingCeremony) && hasReception && !hasWalima) {
+      return "Request the honor of your presence at their Nikah & Reception";
+    }
+    if (hasNikah && !hasWalima && !hasReception && itinerary.length === 1) {
+      return "Request the honor of your presence at their Nikah Ceremony";
+    }
+    if (itinerary.length === 1 && itinerary[0].title) {
+      const cleanTitle = itinerary[0].title.trim();
+      if (/walima|valima/i.test(cleanTitle)) {
+        return "Request the honor of your presence at their Walima Reception";
+      }
+      return `Request the honor of your presence at their ${cleanTitle}`;
+    }
+  }
+
+  // Fallback to eventType
+  const normType = (eventType ?? "").toLowerCase();
+  if (normType === "valima" || normType === "walima") {
+    return "Request the honor of your presence at their Walima Reception";
+  }
+  if (normType === "mehndi") {
+    return "Request the honor of your presence at their Mehndi Celebration";
+  }
+  if (normType === "baraat") {
+    return "Request the honor of your presence at their Baraat Ceremony";
+  }
+  if (normType === "engagement") {
+    return "Request the honor of your presence at their Engagement Ceremony";
+  }
+
+  return raw || "Request the honor of your presence at their Wedding Celebration";
+}
+
+

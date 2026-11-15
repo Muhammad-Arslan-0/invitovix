@@ -7,6 +7,7 @@ import { ImageIcon, X } from "lucide-react";
 import { EventDesignData, GalleryPhoto } from "@/types/invitation";
 import { getDisplayFontFamily } from "@/lib/utils/fonts";
 import { getInvitationTypeMeta } from "@/lib/templates/categories";
+import { useCardLanguage } from "@/lib/i18n/CardLanguageContext";
 
 interface GallerySceneProps {
   id?: string;
@@ -23,6 +24,7 @@ export function GalleryScene({
   isStudioPreview = false,
   scrollRootRef,
 }: GallerySceneProps) {
+  const { t, isRTL } = useCardLanguage();
   const { theme, content, sections } = designData;
   const typeMeta = getInvitationTypeMeta(eventType);
   const [activePhoto, setActivePhoto] = useState<GalleryPhoto | null>(null);
@@ -37,7 +39,11 @@ export function GalleryScene({
   if (content.gallery.length === 0) {
     if (!isStudioPreview) return null;
     return (
-      <section id={id} className="scroll-mt-14 px-6 sm:px-7 py-6 max-w-lg mx-auto">
+      <section
+        id={id}
+        dir={isRTL ? "rtl" : "ltr"}
+        className="scroll-mt-14 px-6 sm:px-7 py-6 max-w-lg mx-auto"
+      >
         <div
           className="rounded-2xl border border-dashed p-6 text-center"
           style={{ borderColor: `${theme.palette.accent}55` }}
@@ -55,13 +61,17 @@ export function GalleryScene({
   }
 
   return (
-    <section id={id} className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto">
+    <section
+      id={id}
+      dir={isRTL ? "rtl" : "ltr"}
+      className="scroll-mt-14 px-6 sm:px-7 py-8 max-w-lg mx-auto"
+    >
       <div className="text-center mb-6">
         <p
           className="text-[11px] uppercase tracking-[0.25em]"
           style={{ color: theme.palette.accent }}
         >
-          Moments &amp; Memories
+          {t("momentsAndMemories")}
         </p>
         <h2
           className="mt-1.5 text-2xl sm:text-3xl font-semibold"
@@ -70,7 +80,7 @@ export function GalleryScene({
             fontFamily: getDisplayFontFamily(theme.typography.displayFont),
           }}
         >
-          Gallery
+          {t("gallery")}
         </h2>
       </div>
 
@@ -102,23 +112,21 @@ export function GalleryScene({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photo.url}
-              alt={photo.caption || "Event gallery photo"}
-              className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+              alt={photo.caption || t("gallery")}
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             {photo.caption && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3">
-                <p className="text-xs text-white/95 line-clamp-1">
-                  {photo.caption}
-                </p>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white text-xs">
+                <p className="line-clamp-2">{photo.caption}</p>
               </div>
             )}
           </motion.button>
         ))}
       </div>
 
-      {/* Portal Lightbox Modal so constrained card frames never clip zoom views */}
+      {/* Lightbox Portal */}
       {mounted &&
-        typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence>
             {activePhoto && (
@@ -127,35 +135,32 @@ export function GalleryScene({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setActivePhoto(null)}
-                className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
               >
-                <motion.div
-                  initial={{ scale: 0.92, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.92, opacity: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="relative max-w-lg w-full rounded-2xl overflow-hidden bg-stone-950 border border-white/15"
+                <button
+                  type="button"
+                  onClick={() => setActivePhoto(null)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+                  aria-label={t("close")}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setActivePhoto(null)}
-                    className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 cursor-pointer"
-                    aria-label="Close photo"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <X className="w-5 h-5" />
+                </button>
+                <div
+                  className="max-w-2xl w-full max-h-[85vh] flex flex-col items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={activePhoto.url}
-                    alt={activePhoto.caption || "Photo"}
-                    className="w-full max-h-[75vh] object-contain"
+                    alt={activePhoto.caption || t("gallery")}
+                    className="max-h-[75vh] w-auto object-contain rounded-2xl shadow-2xl"
                   />
                   {activePhoto.caption && (
-                    <p className="p-3.5 text-center text-sm text-stone-200">
+                    <p className="mt-3 text-sm text-stone-200 text-center max-w-md">
                       {activePhoto.caption}
                     </p>
                   )}
-                </motion.div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>,
@@ -164,4 +169,3 @@ export function GalleryScene({
     </section>
   );
 }
-

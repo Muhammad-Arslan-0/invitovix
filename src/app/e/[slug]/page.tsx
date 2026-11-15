@@ -20,6 +20,8 @@ interface GuestInvitePageProps {
     events?: string;
     day?: string;
     invite?: string;
+    lang?: string;
+    locale?: string;
   }>;
 }
 
@@ -134,6 +136,7 @@ export default async function GuestInvitePage({
   const sp = searchParams ? await searchParams : undefined;
   const guestAccess =
     sp?.access || sp?.tier || sp?.events || sp?.day || sp?.invite || null;
+  const initialLang = sp?.lang || sp?.locale || null;
   const { event, isOwnerDraft } = await resolveEventBySlug(slug, sp?.template);
 
   if (!event) {
@@ -188,6 +191,7 @@ export default async function GuestInvitePage({
       designData={event.design_data}
       guestAccess={guestAccess}
       isOwnerDraft={isOwnerDraft}
+      initialLang={initialLang}
     />
   );
 }

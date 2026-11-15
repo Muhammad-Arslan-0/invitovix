@@ -55,9 +55,19 @@ export const BODY_FONT_OPTIONS: FontOption<
   { id: "spectral", name: "Spectral", category: "serif", vibe: "Crisp Elegant Screen Serif" },
 ];
 
+export const URDU_NASTALEEQ_FONT_FAMILY =
+  "'Jameel Noori Nastaleeq', 'Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Nafees Nastaleeq', 'Urdu Typesetting', serif";
+
 export function getDisplayFontFamily(
-  font: EventDesignData["theme"]["typography"]["displayFont"]
+  font: EventDesignData["theme"]["typography"]["displayFont"],
+  language?: string
 ): string {
+  if (language === "ur") {
+    return URDU_NASTALEEQ_FONT_FAMILY;
+  }
+  if (language === "ar") {
+    return "var(--font-aref-ruqaa), var(--font-amiri), serif";
+  }
   switch (font) {
     case "cinzel":
       return "var(--font-cinzel), Georgia, serif";
@@ -93,8 +103,15 @@ export function getDisplayFontFamily(
 }
 
 export function getBodyFontFamily(
-  font: EventDesignData["theme"]["typography"]["bodyFont"]
+  font: EventDesignData["theme"]["typography"]["bodyFont"],
+  language?: string
 ): string {
+  if (language === "ur") {
+    return URDU_NASTALEEQ_FONT_FAMILY;
+  }
+  if (language === "ar") {
+    return "var(--font-amiri), system-ui, serif";
+  }
   switch (font) {
     case "jakarta":
       return "var(--font-jakarta), system-ui, sans-serif";
@@ -120,8 +137,15 @@ export function getBodyFontFamily(
 }
 
 export function getScriptFontFamily(
-  font: EventDesignData["theme"]["typography"]["scriptFont"]
+  font: EventDesignData["theme"]["typography"]["scriptFont"],
+  language?: string
 ): string {
+  if (language === "ur") {
+    return URDU_NASTALEEQ_FONT_FAMILY;
+  }
+  if (language === "ar") {
+    return "var(--font-amiri), serif";
+  }
   switch (font) {
     case "great-vibes":
       return "var(--font-great-vibes), cursive";

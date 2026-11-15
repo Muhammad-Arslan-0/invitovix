@@ -8,6 +8,7 @@ import {
   ScriptFont,
 } from "@/types/invitation";
 import { getDisplayFontFamily, getScriptFontFamily } from "@/lib/utils/fonts";
+import { LanguageCode } from "@/lib/i18n/languages";
 
 export type AnyPortraitShape = CoupleFrameShape | HeroFrameStyle;
 
@@ -27,6 +28,7 @@ interface PortraitFrameProps {
   tilt?: "left" | "right" | "none";
   size?: "hero" | "couple";
   isStudioPreview?: boolean;
+  language?: LanguageCode;
 }
 
 function getInitials(value: string): string {
@@ -52,6 +54,7 @@ export function PortraitFrame({
   tilt = "none",
   size = "couple",
   isStudioPreview = false,
+  language,
 }: PortraitFrameProps) {
   const initials = monogram || getInitials(alt);
   const aspectClass =
@@ -100,7 +103,7 @@ export function PortraitFrame({
                 className="text-3xl font-semibold tracking-wider"
                 style={{
                   color: primaryColor,
-                  fontFamily: getDisplayFontFamily(displayFont),
+                  fontFamily: getDisplayFontFamily(displayFont, language),
                 }}
               >
                 {initials}
@@ -126,7 +129,7 @@ export function PortraitFrame({
             className="mt-2.5 text-center leading-none truncate px-1"
             style={{
               color: "#2C221E",
-              fontFamily: getScriptFontFamily(scriptFont),
+              fontFamily: getScriptFontFamily(scriptFont, language),
               fontSize: scriptFont === "cormorant" ? "0.95rem" : "1.25rem",
             }}
           >
@@ -180,7 +183,7 @@ export function PortraitFrame({
             className="text-2xl sm:text-3xl font-semibold tracking-wider"
             style={{
               color: primaryColor,
-              fontFamily: getDisplayFontFamily(displayFont),
+              fontFamily: getDisplayFontFamily(displayFont, language),
             }}
           >
             {initials}

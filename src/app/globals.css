@@ -33,6 +33,31 @@
   --font-spectral: "Spectral", Georgia, serif;
   --font-amiri: "Amiri", "Scheherazade New", "Traditional Arabic", serif;
   --font-aref-ruqaa: "Aref Ruqaa", "Amiri", serif;
+  --font-nastaleeq: "Jameel Noori Nastaleeq", "Noori Nastaleeq", "Noto Nastaliq Urdu", "Nafees Nastaleeq", "Urdu Typesetting", serif;
+}
+
+@font-face {
+  font-family: "Jameel Noori Nastaleeq";
+  src: local("Jameel Noori Nastaleeq"),
+       local("JameelNooriNastaleeq"),
+       local("Noori Nastaleeq"),
+       local("NooriNastaleeq"),
+       url("https://cdn.jsdelivr.net/gh/urdutext/fonts@master/Jameel%20Noori%20Nastaleeq.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noori Nastaleeq";
+  src: local("Noori Nastaleeq"),
+       local("NooriNastaleeq"),
+       local("Jameel Noori Nastaleeq"),
+       local("JameelNooriNastaleeq"),
+       url("https://cdn.jsdelivr.net/gh/urdutext/fonts@master/Jameel%20Noori%20Nastaleeq.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 .font-arabic {
@@ -41,6 +66,20 @@
 
 .font-ruqaa {
   font-family: var(--font-aref-ruqaa), "Aref Ruqaa", "Amiri", serif;
+}
+
+.font-nastaleeq,
+.font-urdu {
+  font-family: var(--font-nastaleeq), "Jameel Noori Nastaleeq", "Noori Nastaleeq", "Noto Nastaliq Urdu", "Nafees Nastaleeq", "Urdu Typesetting", serif;
+}
+
+/* Urdu Nastaleeq typography optimizations for comfortable cascading ligature rendering */
+[lang="ur"],
+[dir="rtl"]:lang(ur),
+.font-nastaleeq,
+.font-urdu {
+  word-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 /* Performance & smooth 60fps GPU acceleration for interactive invitation transitions */
