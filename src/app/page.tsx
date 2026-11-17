@@ -1,5 +1,11 @@
 import { LandingShowcase } from "@/components/landing/LandingShowcase";
+import { AuthRedirectHandler } from "@/components/auth/AuthRedirectHandler";
 
 export default function HomePage() {
-  return <LandingShowcase />;
+  return (
+    <>
+      <AuthRedirectHandler />
+      <LandingShowcase />
+    </>
+  );
 }

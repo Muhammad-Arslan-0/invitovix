@@ -20,6 +20,33 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Handle Supabase Auth recovery or error query parameters landing on the root "/"
+  if (pathname === "/") {
+    const error = request.nextUrl.searchParams.get("error");
+    const errorCode = request.nextUrl.searchParams.get("error_code");
+    const code = request.nextUrl.searchParams.get("code");
+    const type = request.nextUrl.searchParams.get("type");
+
+    if (
+      errorCode === "otp_expired" ||
+      error === "access_denied" ||
+      type === "recovery"
+    ) {
+      const resetUrl = request.nextUrl.clone();
+      resetUrl.pathname = "/reset-password";
+      return NextResponse.redirect(resetUrl);
+    }
+
+    if (code && !request.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
+      const callbackUrl = request.nextUrl.clone();
+      callbackUrl.pathname = "/auth/callback";
+      if (!callbackUrl.searchParams.has("next")) {
+        callbackUrl.searchParams.set("next", "/reset-password");
+      }
+      return NextResponse.redirect(callbackUrl);
+    }
+  }
+
   const isProtected =
     pathname.startsWith("/dashboard") || pathname.startsWith("/studio");
 

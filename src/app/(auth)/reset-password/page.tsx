@@ -42,9 +42,18 @@ function ResetPasswordForm() {
     let mounted = true;
     const supabase = createClient();
 
-    // Check if URL has error params from Supabase (e.g. error_description=Email+link+expired)
+    // Check if URL has error params from Supabase (either in searchParams or hash fragment)
+    const hashParams =
+      typeof window !== "undefined" && window.location.hash
+        ? new URLSearchParams(window.location.hash.replace(/^#/, ""))
+        : null;
+
     const urlError =
-      searchParams.get("error_description") || searchParams.get("error");
+      searchParams.get("error_description") ||
+      searchParams.get("error") ||
+      hashParams?.get("error_description") ||
+      hashParams?.get("error");
+
     if (urlError) {
       setError(decodeURIComponent(urlError.replace(/\+/g, " ")));
       setCheckingSession(false);
@@ -62,9 +71,10 @@ function ResetPasswordForm() {
       }
     });
 
-    const code = searchParams.get("code");
-    const tokenHash = searchParams.get("token_hash");
-    const otpType = searchParams.get("type");
+    const code = searchParams.get("code") || hashParams?.get("code");
+    const tokenHash =
+      searchParams.get("token_hash") || hashParams?.get("token_hash");
+    const otpType = searchParams.get("type") || hashParams?.get("type");
 
     async function initializeSession() {
       // 1. If auth code is present in URL (PKCE redirect), exchange on client
