@@ -1,44 +1,90 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  SITE_DEFAULT_DESCRIPTION,
+  SITE_DEFAULT_TITLE,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  resolveMetadataBase,
+} from "@/lib/seo/siteConfig";
+import {
+  buildOrganizationSchema,
+  buildWebsiteSchema,
+} from "@/lib/seo/structuredData";
 import "./globals.css";
 
-function resolveMetadataBase(): URL {
-  const raw =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "") ||
-    "http://localhost:3000";
-  try {
-    return new URL(raw.startsWith("http") ? raw : `https://${raw}`);
-  } catch {
-    return new URL("http://localhost:3000");
-  }
-}
+const googleVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+const bingVerification =
+  process.env.NEXT_PUBLIC_BING_VERIFICATION?.trim();
+
+export const viewport: Viewport = {
+  themeColor: "#fcfaf7",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
+  applicationName: SITE_NAME,
   title: {
-    default:
-      "Invitovix — Interactive Wax-Seal Digital Invitations for Weddings, Birthdays, Galas & Parties",
-    template: "%s | Invitovix",
+    default: SITE_DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Design and share interactive wax-seal invitations across strictly curated categories — Weddings (Nikah, Mehndi, Baraat, Valima), Birthdays, Black-Tie Galas, Baby Showers, Anniversaries, and Graduations — with music, calendar sync, map pin selection, and live RSVP tracking.",
+  description: SITE_DEFAULT_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "Events & Digital Invitations",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Invitovix — Interactive Wax-Seal Digital Invitations",
-    description:
-      "Design bespoke animated invitations across strictly curated categories with custom music, map pin selection, and live RSVPs.",
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: SITE_NAME,
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
     images: [
       {
-        url: "/brand/invitovix-icon.png",
-        width: 512,
-        height: 512,
-        alt: "Invitovix Brand Crest",
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: SITE_DEFAULT_TITLE,
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
+    images: ["/twitter-image"],
+  },
+  ...(googleVerification || bingVerification
+    ? {
+        verification: {
+          ...(googleVerification ? { google: googleVerification } : {}),
+          ...(bingVerification
+            ? { other: { "msvalidate.01": bingVerification } }
+            : {}),
+        },
+      }
+    : {}),
 };
 
 const GOOGLE_FONTS_URL =
@@ -64,6 +110,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-screen bg-[#fcfaf7] text-stone-900 antialiased selection:bg-amber-200 selection:text-stone-950"
       >
+        <JsonLd data={[buildOrganizationSchema(), buildWebsiteSchema()]} />
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>

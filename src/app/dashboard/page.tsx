@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
@@ -9,6 +10,15 @@ import { EventRecord } from "@/types/invitation";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Host Dashboard",
+  description: "Manage your Invitovix live digital invitation cards and RSVPs.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();

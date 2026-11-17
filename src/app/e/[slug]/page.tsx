@@ -8,6 +8,8 @@ import {
 import { EventRecord } from "@/types/invitation";
 import { GuestInviteShell } from "@/components/invitation/GuestInviteShell";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildEventSchema } from "@/lib/seo/structuredData";
 
 export const dynamic = "force-dynamic";
 
@@ -84,9 +86,14 @@ export async function generateMetadata({
     return {
       title: "Invitation Unavailable",
       description: "This Invitovix invitation could not be found.",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
+  const isDemo = slug === "demo";
   const design = mergeDesignData(event.design_data);
   const formattedDate = new Date(event.event_date).toLocaleDateString("en-US", {
     month: "long",
@@ -94,36 +101,57 @@ export async function generateMetadata({
     year: "numeric",
   });
 
-  const description = `${design.content.subtitle} · ${formattedDate} at ${event.venue_name}`;
+  const description = isDemo
+    ? `Experience an interactive wax-seal live invitation card demo on Invitovix — ${design.content.subtitle} · ${formattedDate} at ${event.venue_name}.`
+    : `${design.content.subtitle} · ${formattedDate} at ${event.venue_name}`;
+
+  const ogImages =
+    design.content.heroImageUrl || design.content.couple.brideImageUrl
+      ? [
+          {
+            url: (design.content.heroImageUrl ||
+              design.content.couple.brideImageUrl)!,
+            alt: `${design.content.headline || event.title} invitation preview`,
+          },
+        ]
+      : [
+          {
+            url: "/opengraph-image",
+            width: 1200,
+            height: 630,
+            alt: `${design.content.headline || event.title} — Invitovix Live Invitation Card`,
+          },
+        ];
 
   return {
-    title: `${design.content.headline || event.title} — You're Invited`,
+    title: isDemo
+      ? `${design.content.headline || event.title} — Live Digital Invitation Card Demo`
+      : `${design.content.headline || event.title} — You're Invited`,
     description,
+    alternates: {
+      canonical: isDemo ? "/e/demo" : `/e/${slug}`,
+    },
+    robots: isDemo
+      ? {
+          index: true,
+          follow: true,
+        }
+      : {
+          index: false,
+          follow: true,
+        },
     openGraph: {
-      title: `${design.content.headline || event.title} — Invitation`,
+      title: `${design.content.headline || event.title} — Live Invitation`,
       description,
       type: "website",
-      images:
-        design.content.heroImageUrl || design.content.couple.brideImageUrl
-          ? [
-            {
-              url: (design.content.heroImageUrl ||
-                design.content.couple.brideImageUrl)!,
-            },
-          ]
-          : [
-            {
-              url: "/brand/invitovix-icon.png",
-              width: 512,
-              height: 512,
-              alt: "Invitovix Crest",
-            },
-          ],
+      url: isDemo ? "/e/demo" : `/e/${slug}`,
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title: `${design.content.headline || event.title}`,
       description,
+      images: ogImages.map((img) => img.url),
     },
   };
 }
@@ -178,21 +206,24 @@ export default async function GuestInvitePage({
   }
 
   return (
-    <GuestInviteShell
-      eventId={event.id}
-      slug={event.slug}
-      title={event.title}
-      eventType={event.event_type}
-      eventDate={event.event_date}
-      venueName={event.venue_name}
-      venueAddress={event.venue_address}
-      venueMapUrl={event.venue_map_url}
-      audioUrl={event.audio_url}
-      designData={event.design_data}
-      guestAccess={guestAccess}
-      isOwnerDraft={isOwnerDraft}
-      initialLang={initialLang}
-    />
+    <>
+      {slug === "demo" && <JsonLd data={buildEventSchema(event)} />}
+      <GuestInviteShell
+        eventId={event.id}
+        slug={event.slug}
+        title={event.title}
+        eventType={event.event_type}
+        eventDate={event.event_date}
+        venueName={event.venue_name}
+        venueAddress={event.venue_address}
+        venueMapUrl={event.venue_map_url}
+        audioUrl={event.audio_url}
+        designData={event.design_data}
+        guestAccess={guestAccess}
+        isOwnerDraft={isOwnerDraft}
+        initialLang={initialLang}
+      />
+    </>
   );
 }
 

@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BrandMark } from "@/components/ui/BrandMark";
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  description: "The Invitovix page or invitation link you followed could not be located.",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function NotFound() {
   return (

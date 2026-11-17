@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { RsvpRecord } from "@/types/invitation";
 import { RsvpTable } from "@/components/dashboard/RsvpTable";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Event RSVPs",
+  description: "Live guest RSVP responses for your Invitovix invitation.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface EventRsvpsPageProps {
   params: Promise<{ eventId: string }>;

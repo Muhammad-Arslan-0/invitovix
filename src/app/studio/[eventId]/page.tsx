@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
@@ -9,6 +10,15 @@ import { EventRecord } from "@/types/invitation";
 import { StudioShell } from "@/components/studio/StudioShell";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Creator Studio",
+  description: "Customize your live digital invitation card in Invitovix Studio.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface StudioPageProps {
   params: Promise<{ eventId: string }>;

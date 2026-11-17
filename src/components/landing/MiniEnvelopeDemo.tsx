@@ -140,7 +140,8 @@ export function MiniEnvelopeDemo({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={backdropUrl}
-                  alt=""
+                  alt={`${templateRecord.title} interactive wax-seal invitation card preview`}
+                  decoding="async"
                   className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-35"
                 />
                 <div

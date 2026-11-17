@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Invitovix — Luxury Digital Invitations",
+    name: "Invitovix — Live Digital Invitation Cards",
     short_name: "Invitovix",
     description:
-      "Design and share interactive wax-seal invitations for Weddings, Birthdays, Galas, Baby Showers, and Celebrations.",
+      "Design and share interactive wax-seal live invitation cards for Weddings, Nikah, Mehndi, Birthdays, Galas, Baby Showers & Celebrations.",
     start_url: "/",
     display: "standalone",
     background_color: "#fcfaf7",
