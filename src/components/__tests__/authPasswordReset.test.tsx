@@ -51,6 +51,9 @@ vi.mock("@/lib/supabase/env", () => ({
   }),
 }));
 
+const fetchMock = vi.fn();
+global.fetch = fetchMock;
+
 describe("Authentication & Password Reset Suite", () => {
   beforeEach(() => {
     pushMock.mockClear();
@@ -61,8 +64,15 @@ describe("Authentication & Password Reset Suite", () => {
     onAuthStateChangeMock.mockReset();
     exchangeCodeForSessionMock.mockReset();
     verifyOtpMock.mockReset();
+    fetchMock.mockReset();
 
     searchParamsMock = new URLSearchParams();
+
+    // Default email-existence API mock (registered user)
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ exists: true }),
+    });
 
     // Default Supabase auth mocks
     getSessionMock.mockResolvedValue({
@@ -123,16 +133,26 @@ describe("Authentication & Password Reset Suite", () => {
       render(<ForgotPasswordPage />);
 
       const input = screen.getByPlaceholderText("host@example.com");
-      fireEvent.change(input, { target: { value: "amina@example.com" } });
+      fireEvent.change(input, { target: { value: "Amina@Example.com " } });
 
       const submitBtn = screen.getByRole("button", { name: /send reset link/i });
       fireEvent.click(submitBtn);
 
       await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledWith(
+          "/api/auth/check-email",
+          expect.objectContaining({
+            method: "POST",
+            body: JSON.stringify({ email: "amina@example.com" }),
+          })
+        );
+      });
+
+      await waitFor(() => {
         expect(resetPasswordForEmailMock).toHaveBeenCalledWith(
           "amina@example.com",
           expect.objectContaining({
-            redirectTo: expect.stringContaining("/reset-password"),
+            redirectTo: expect.stringContaining("/auth/callback?next=/reset-password"),
           })
         );
       });
@@ -141,6 +161,29 @@ describe("Authentication & Password Reset Suite", () => {
         expect(screen.getByText("Check Your Inbox")).toBeTruthy();
         expect(screen.getByText(/amina@example\.com/)).toBeTruthy();
       });
+    });
+
+    it("rejects unregistered or spam emails without sending a reset link", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ exists: false }),
+      });
+
+      render(<ForgotPasswordPage />);
+
+      const input = screen.getByPlaceholderText("host@example.com");
+      fireEvent.change(input, { target: { value: "spam@notregistered.com" } });
+
+      const submitBtn = screen.getByRole("button", { name: /send reset link/i });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/no account found with this email address/i)
+        ).toBeTruthy();
+      });
+
+      expect(resetPasswordForEmailMock).not.toHaveBeenCalled();
     });
 
     it("handles rate limit errors gracefully", async () => {

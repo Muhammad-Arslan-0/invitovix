@@ -44,13 +44,46 @@ function ForgotPasswordForm() {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
     try {
+      // Verify the email exists in our database before sending any reset link
+      const checkRes = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const checkData = (await checkRes.json().catch(() => ({}))) as {
+        exists?: boolean;
+        error?: string;
+      };
+
+      if (!checkRes.ok) {
+        setError(
+          checkData.error ||
+            "Unable to verify this email right now. Please try again shortly."
+        );
+        return;
+      }
+
+      if (!checkData.exists) {
+        setError(
+          "No account found with this email address. Please enter the exact email you used when creating your account."
+        );
+        return;
+      }
+
       const supabase = createClient();
       const redirectUrl = `${window.location.origin}/auth/callback?next=/reset-password`;
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        normalizedEmail,
         {
           redirectTo: redirectUrl,
         }
@@ -68,6 +101,7 @@ function ForgotPasswordForm() {
         return;
       }
 
+      setEmail(normalizedEmail);
       setResetSent(true);
     } catch (err) {
       setError(

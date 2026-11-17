@@ -16,7 +16,10 @@ export async function updateSession(request: NextRequest) {
   const { url, anonKey, isConfigured } = getSupabaseEnv();
   const pathname = request.nextUrl.pathname;
 
-  if (pathname.startsWith("/api/geocode")) {
+  if (
+    pathname.startsWith("/api/geocode") ||
+    pathname.startsWith("/api/auth/check-email")
+  ) {
     return supabaseResponse;
   }
 
